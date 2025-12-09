@@ -1,0 +1,99 @@
+<app-navbar></app-navbar>
+<div class="user-detail-page">
+  <div class="page-header">
+    <div class="container">
+      <h1 class="page-title">User Profile</h1>
+      <p class="page-subtitle">Complete overview and management</p>
+    </div>
+  </div>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9 col-xl-8">
+        <button class="back-btn mb-5" (click)="goBack()">
+          Back to Users
+        </button>
+        <div *ngIf="loading" class="loading-state">
+          <div class="spinner-large"></div>
+          <p>Loading user details...</p>
+        </div>
+        <div *ngIf="!loading && user" class="user-card">
+          <div class="user-header">
+            <div class="user-info">
+              <div class="avatar-large" [style.background-color]="
+                     user.role === 'owner' ? '#3b82f6' :
+                     user.role === 'guest' ? '#8b5cf6' :
+                     user.role === 'management' ? '#ef4444' :
+                     '#27ae60'
+                   ">
+                {{
+                (user.first_name ? user.first_name[0] : '') +
+                (user.last_name ? user.last_name[0] : (user.username ? user.username[0] : '?'))
+                | uppercase
+                }}
+
+              </div>
+              <div>
+                <h1 class="user-name">{{ user.first_name }} {{ user.last_name }}</h1>
+                <p class="user-username">{{ user.username }}</p>
+              </div>
+            </div>
+            <div class="badges">
+              <span class="role-badge" [class.owner]="user.role === 'owner'" [class.guest]="user.role === 'guest'"
+                [class.management]="user.role === 'management'">
+                {{ user.role | titlecase }}
+              </span>
+              <span class="status-badge" [class.active]="user.status === 'active'"
+                [class.inactive]="user.status === 'inactive'" [class.suspended]="user.status === 'suspended'">
+                {{ user.status | titlecase }}
+              </span>
+            </div>
+          </div>
+          <div *ngIf="errorMessage" class="alert-error">
+            {{ errorMessage }}
+          </div>
+          <div *ngIf="successMessage" class="alert-success">
+            {{ successMessage }}
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Email Address</label>
+              <p>{{ user.email }}</p>
+            </div>
+            <div class="info-item">
+              <label>Phone Number</label>
+              <p>{{ user.phone_number || 'Not provided' }}</p>
+            </div>
+            <div class="info-item">
+              <label>Account Role</label>
+              <p>{{ user.role | titlecase }}</p>
+            </div>
+            <div class="info-item">
+              <label>Member Since</label>
+              <p>{{ user.created_at | date:'mediumDate' }}</p>
+            </div>
+          </div>
+          <div class="status-section">
+            <h3>Update Account Status</h3>
+            <div class="status-form">
+              <select class="status-select" [(ngModel)]="selectedStatus" [disabled]="statusChanging">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="suspended">Suspended</option>
+              </select>
+              <button class="btn-update-status" (click)="changeStatus()"
+                [disabled]="statusChanging || selectedStatus === user.status">
+                <span *ngIf="statusChanging" class="spinner"></span>
+                {{ statusChanging ? 'Updating...' : 'Update Status' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!loading && !user" class="empty-state">
+          <h3>User Not Found</h3>
+          <p>The requested user could not be located.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

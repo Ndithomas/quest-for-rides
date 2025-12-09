@@ -1,0 +1,146 @@
+.payment-container {
+  min-height: calc(100vh - 180px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
+}
+
+.payment-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 10px 35px rgba(0,0,0,0.1);
+  border-left: 5px solid #27ae60;
+}
+
+// Loading
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #eee;
+  border-top: 5px solid #27ae60;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Method Selector
+.method-selector {
+  .method-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    input { margin: 0; }
+    span { color: #2c3e50; }
+  }
+}
+
+// Saved Cards
+.saved-cards {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.saved-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+
+  i { font-size: 1.8rem; color: #27ae60; }
+
+  .details {
+    flex: 1;
+    .name { font-weight: 600; }
+    .number, .expiry { font-size: 0.9rem; color: #666; }
+  }
+
+  .badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #27ae60;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+  }
+
+  &.active, &:hover {
+    border-color: #27ae60;
+    background: rgba(39, 174, 96, 0.05);
+    transform: translateY(-2px);
+  }
+
+  input {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+// New Card Form
+.new-card-form {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed #ddd;
+}
+
+.form-control {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+
+  .btn {
+    flex: 1;
+    min-width: 160px;
+    font-weight: 600;
+  }
+
+  .btn-success {
+    background: #27ae60;
+    border: none;
+    &:hover { background: #219653; }
+  }
+}
+
+.security-note {
+  text-align: center;
+  margin-top: 2rem;
+  color: #666;
+  font-size: 0.9rem;
+
+  i {
+    color: #27ae60;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+  }
+}
+
+// Responsive
+@media (max-width: 576px) {
+  .payment-card { padding: 1.5rem; }
+  .action-buttons { flex-direction: column; }
+  .action-buttons .btn { width: 100%; }
+}

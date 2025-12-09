@@ -1,0 +1,81 @@
+/* src/app/footer/footer.component.scss */
+.app-footer {
+  background: #fafafa;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.footer-link {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  &:hover {
+    color: #00D1BF;
+  }
+}
+
+.social-links {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,209,191,0.1);
+  color: #00D1BF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  &:hover {
+    background: #00D1BF;
+    color: white;
+    transform: translateY(-3px);
+  }
+}
+
+.clean-input-sm {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  &:focus {
+    border-color: #00D1BF;
+    box-shadow: 0 0 0 4px rgba(0,209,191,0.15);
+  }
+}
+
+.turo-btn-primary {
+  background: #00D1BF;
+  border: none;
+  color: white;
+  font-weight: 700;
+  &:hover {
+    background: #00b8a9;
+    transform: translateY(-2px);
+  }
+}
+
+hr {
+  opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+  .app-footer .row > div {
+    text-align: center;
+  }
+  .social-links {
+    justify-content: center;
+  }
+}

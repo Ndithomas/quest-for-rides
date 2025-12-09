@@ -1,0 +1,263 @@
+/* WELCOME PAGE – Modern Turo-Style Listings (2025) */
+$primary: #00D1BF;
+$primary-hover: #00b8a9;
+$dark: #1a1a1a;
+$gray: #64748b;
+$light: #f8f9fa;
+$border: #e2e8f0;
+
+.listings-container {
+  min-height: 100vh;
+  background: white;
+  padding: 3rem 0;
+}
+
+.max-width-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: $dark;
+  margin-bottom: 3rem;
+}
+
+.filters-card {
+  background: white;
+  border-radius: 1.8rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: 1px solid $border;
+  padding: 2rem;
+  margin-bottom: 3rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.filter-input {
+  height: 58px;
+  padding: 0 1.6rem;
+  border: 2px solid $border;
+  border-radius: 50px;
+  font-size: 1rem;
+  background: #fafafa;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    background: white;
+    box-shadow: 0 0 0 5px rgba($primary, 0.15);
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.search-btn, .clear-btn, .clear-filters-btn {
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+
+.search-btn, .clear-filters-btn {
+  background: $primary;
+  color: white;
+  border: none;
+  box-shadow: 0 6px 20px rgba($primary, 0.3);
+
+  &:hover {
+    background: $primary-hover;
+    transform: translateY(-3px);
+  }
+}
+
+.clear-btn {
+  background: transparent;
+  color: $gray;
+  border: 2px solid #ddd;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: $primary;
+    color: $primary;
+  }
+}
+
+.cars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.car-card {
+  background: white;
+  border-radius: 1.8rem;
+  overflow: hidden;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.07);
+  border: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.4s ease;
+
+  &:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+  }
+}
+
+.car-image-container {
+  position: relative;
+  height: 220px;
+  background: $light;
+}
+
+.car-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.car-card:hover .car-image {
+  transform: scale(1.08);
+}
+
+.no-image-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.car-status-badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: #00d787;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pricing-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #ff9500;
+  color: white;
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.car-details {
+  padding: 1.5rem;
+}
+
+.car-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: $dark;
+  margin-bottom: 0.5rem;
+}
+
+.car-location {
+  font-size: 0.95rem;
+  color: $gray;
+  margin-bottom: 0.5rem;
+}
+
+.car-license {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 1rem;
+}
+
+.car-price-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.car-price {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: $primary;
+
+  &.no-pricing {
+    color: #94a3b8;
+  }
+}
+
+.car-owner {
+  font-size: 0.9rem;
+  color: $gray;
+  font-weight: 500;
+}
+
+.loading-state, .empty-state, .error-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: $gray;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f0f0f0;
+  border-top: 4px solid $primary;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.empty-state svg {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.error-state {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .page-title { font-size: 2.2rem; }
+  .filters-grid { grid-template-columns: 1fr; }
+  .filter-actions { flex-direction: column; }
+  .search-btn, .clear-btn { width: 100%; }
+}

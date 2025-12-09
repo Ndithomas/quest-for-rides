@@ -1,0 +1,240 @@
+/* management-dashboard.component.scss – LUXURY ADMIN DASHBOARD */
+
+$green: #27ae60;
+$green-dark: #219653;
+$dark: #2c3e50;
+$light: #f8f9fa;
+$radius: 1.6rem;
+$shadow: 0 20px 60px rgba(0,0,0,0.15);
+
+.dashboard-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Header */
+.dashboard-header {
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
+              url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover;
+  padding: 6rem 0 4rem;
+  text-align: center;
+  color: white;
+  margin-bottom: -3rem;
+}
+
+.dashboard-title {
+  font-size: 3.8rem;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  margin: 0;
+  text-shadow: 0 6px 25px rgba(0,0,0,0.6);
+}
+
+.dashboard-subtitle {
+  font-size: 1.4rem;
+  opacity: 0.95;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: $radius;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: $shadow;
+  border-left: 6px solid $green;
+  transition: all 0.5s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, $green, #1e8f52);
+    opacity: 0.8;
+  }
+
+  &:hover {
+    transform: translateY(-16px);
+    box-shadow: 0 30px 80px rgba(39,174,96,0.25);
+  }
+
+  &.total-users::before { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+  &.total-cars::before { background: linear-gradient(90deg, $green, #166534); }
+  &.active-cars::before { background: linear-gradient(90deg, #10b981, #059669); }
+  &.today-added::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+}
+
+.stat-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1.5rem;
+  background: rgba($green, 0.12);
+  color: $green;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+
+  .total-users & { background: rgba(59,130,246,0.15); color: #3b82f6; }
+  .total-cars & { background: rgba($green,0.15); }
+  .active-cars & { background: rgba(16,185,129,0.15); color: #10b981; }
+  .today-added & { background: rgba(251,146,60,0.15); color: #f59e0b; }
+}
+
+.stat-value {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: $dark;
+  margin: 0.5rem 0;
+}
+
+.stat-label {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Data Cards */
+.data-card {
+  background: white;
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: $shadow;
+  border-left: 6px solid $green;
+}
+
+.card-header {
+  padding: 1.6rem 2rem;
+  background: linear-gradient(135deg, rgba($green,0.08), rgba($green,0.04));
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $dark;
+  }
+
+  .badge {
+    background: $green;
+    color: white;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+
+    &.success { background: #10b981; }
+  }
+}
+
+.table-wrapper {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.data-table {
+  margin: 0;
+  width: 100%;
+
+  th {
+    background: rgba($green, 0.06);
+    color: $dark;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 1.2rem 1.5rem;
+    border: none;
+  }
+
+  td {
+    padding: 1.3rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  tr:hover {
+    background: rgba($green, 0.04);
+  }
+
+  .user-name, .car-name { font-weight: 700; color: $dark; }
+  .year { color: #94a3b8; font-weight: normal; }
+  .email, .owner { color: #666; font-size: 0.95rem; }
+  .price { font-size: 1.3rem; font-weight: 900; color: $green; }
+}
+
+.role-badge, .status-badge {
+  padding: 0.4rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-badge {
+  &.owner { background: #3b82f6; color: white; }
+  &.guest { background: #8b5cf6; color: white; }
+  &.management { background: #ef4444; color: white; }
+}
+
+.status-badge {
+  &.active { background: #10b981; color: white; }
+  &.inactive, &.suspended { background: #94a3b8; color: white; }
+  &.booked { background: #f59e0b; color: white; }
+  &.maintenance { background: #fb923c; color: white; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.card-footer {
+  padding: 1.4rem 2rem;
+  background: rgba($green, 0.04);
+  text-align: center;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+.view-all-btn {
+  color: $green;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.8rem 2rem;
+  border: 2.5px solid $green;
+  border-radius: 50px;
+  transition: all 0.4s ease;
+
+  &:hover {
+    background: $green;
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px rgba($green, 0.3);
+  }
+
+  &.success:hover {
+    background: #10b981;
+    border-color: #10b981;
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-title { font-size: 2.8rem; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .data-card { margin-bottom: 2rem; }
+}

@@ -1,0 +1,100 @@
+<app-navbar></app-navbar>
+<div class="bookings-container">
+  <div class="page-header text-center text-md-start mb-5">
+    <h1 class="display-5 fw-bold text-dark">My Bookings</h1>
+    <p class="lead text-muted">Manage and track all your car rental bookings</p>
+  </div>
+  <div *ngIf="error()" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <strong>Error:</strong> {{ error() }}
+    <button type="button" class="btn-close" (click)="error.set('')"></button>
+  </div>
+  <div class="filter-tabs mb-5">
+    <button *ngFor="let status of ['all', 'pending', 'confirmed', 'rejected', 'cancelled', 'completed']"
+      (click)="setFilterStatus(status)" [class.active]="filterStatus() === status" class="filter-btn">
+      {{ status | titlecase }}
+    </button>
+  </div>
+  <div *ngIf="loading()" class="text-center py-5">
+    <div class="spinner"></div>
+    <p class="mt-3 text-muted fs-5">Loading your bookings...</p>
+  </div>
+  <div *ngIf="!loading() && getFilteredBookings().length === 0" class="empty-state">
+    <div class="empty-box">
+      <i class="bi bi-car-front" style="font-size: 4.5rem; opacity: 0.4;"></i>
+      <h3 class="mt-4 mb-3">No bookings found</h3>
+      <p class="text-muted mb-4">You haven't made any bookings yet. Start exploring!</p>
+      <a routerLink="/listings" class="btn btn-success btn-lg px-5 rounded-pill">
+        Browse Cars
+      </a>
+    </div>
+  </div>
+  <div *ngIf="!loading() && getFilteredBookings().length > 0" class="bookings-grid">
+    <div *ngFor="let booking of getFilteredBookings()" class="booking-card-wrapper">
+      <div class="booking-card" [ngClass]="{
+           'status-pending':    booking.status === 'pending',
+           'status-confirmed':  booking.status === 'confirmed',
+           'status-rejected':   booking.status === 'rejected',
+           'status-cancelled':  booking.status === 'cancelled',
+           'status-completed':  booking.status === 'completed'
+         }">
+        <div class="card-header">
+          <div>
+            <h3 class="car-title mb-1">{{ booking.car_make }} {{ booking.car_model }}</h3>
+            <p class="text-muted small mb-0">{{ booking.car_title }}</p>
+          </div>
+          <span class="status-badge" [ngClass]="'status-' + booking.status">
+            {{ getStatusText(booking) | titlecase }}
+          </span>
+        </div>
+        <div class="date-range">
+          <div class="date-item">
+            <span class="label">Check-in</span>
+            <strong>{{ formatDate(booking.start_date) }}</strong>
+          </div>
+          <i class="bi bi-arrow-right arrow-icon"></i>
+          <div class="date-item text-end">
+            <span class="label">Check-out</span>
+            <strong>{{ formatDate(booking.end_date) }}</strong>
+          </div>
+        </div>
+        <div class="summary-row">
+          <div class="summary-item">
+            <span class="label">Duration</span>
+            <strong>{{ calculateDays(booking.start_date, booking.end_date) }} days</strong>
+          </div>
+          <div class="summary-item">
+            <span class="label">Daily Rate</span>
+            <strong>R{{ booking.daily_rate | number:'1.0-0' }}</strong>
+          </div>
+          <div class="summary-item total">
+            <span class="label">Total</span>
+            <strong class="text-success fs-4">R{{ booking.total_price | number:'1.0-0' }}</strong>
+          </div>
+        </div>
+        <div *ngIf="booking.special_requirements" class="note info">
+          <strong>Note:</strong> {{ booking.special_requirements }}
+        </div>
+        <div *ngIf="booking.owner_notes" class="note warning">
+          <strong>Owner:</strong> {{ booking.owner_notes }}
+        </div>
+        <div *ngIf="booking.rejection_reason" class="note danger">
+          <strong>Rejected:</strong> {{ booking.rejection_reason }}
+        </div>
+        <div class="action-buttons mt-4">
+          <button *ngIf="booking.status === 'pending'" (click)="cancelBooking(booking)"
+            class="btn btn-outline-danger btn-sm rounded-pill">
+            Cancel
+          </button>
+          <button *ngIf="booking.status === 'confirmed' && booking.payment_status !== 'completed'"
+            (click)="goToPayment(booking.id)" class="btn btn-success rounded-pill flex-grow-1">
+            Pay Now • R{{ booking.total_price | number:'1.0-0' }}
+          </button>
+          <a [routerLink]="['/booking-confirmation', booking.id]" class="btn btn-primary rounded-pill ms-2">
+            View Details
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

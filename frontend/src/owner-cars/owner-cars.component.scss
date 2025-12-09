@@ -1,0 +1,174 @@
+.fleet-container {
+  min-height: calc(100vh - 180px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
+}
+
+// Stats
+.stat-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: all 0.4s ease;
+  border-left: 5px solid;
+
+  &.total     { border-left-color: #6c757d; }
+  &.available { border-left-color: #27ae60; }
+  &.earnings  { border-left-color: #f39c12; }
+  &.trips     { border-left-color: #3498db; }
+
+  h3 { font-size: 2.4rem; font-weight: 800; margin: 0; color: #2c3e50; }
+  p  { margin: 0.5rem 0 0; color: #666; font-weight: 500; }
+
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  i { font-size: 5rem; opacity: 0.4; }
+  h3 { margin: 1.5rem 0 1rem; color: #495057; }
+}
+
+// Car Card
+.car-card {
+  background: white;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  transition: all 0.4s ease;
+
+  &.inactive { opacity: 0.85; }
+
+  &:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.18);
+  }
+}
+
+.image-wrapper {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.car-img {
+   width: 100%; 
+   height: 100%; 
+   object-fit: cover; 
+   transition: transform 0.5s ease;
+  }
+.car-card:hover .car-img { transform: scale(1.08); }
+
+.no-photo {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #ccc;
+  font-size: 3rem;
+}
+
+.status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 50rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.available   { background: #27ae60; color: white; }
+  &.booked      { background: #f39c12; color: white; }
+  &.maintenance { background: #6c757d; color: white; }
+  &.inactive    { background: #dc3545; color: white; }
+}
+
+.details {
+  padding: 1.5rem;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: #2c3e50;
+}
+
+.info {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.price-earnings {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2c3e50;
+  small { font-weight: 500; color: #888; }
+}
+
+.earnings {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+// Action Buttons (Beautiful & Consistent)
+.actions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.btn-view, .btn-edit, .btn-delete {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: none;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+}
+
+.btn-view   { background: #f8f9fa; color: #666; &:hover { background: #e9ecef; transform: translateY(-3px); } }
+.btn-edit   { background: #27ae60; color:hover { background: #219653; transform: translateY(-4px); box-shadow: 0 12px 25px rgba(39,174,96,0.4); } color: white; }
+.btn-delete { background: #dc3545; color: white; &:hover:not(:disabled) { background: #c82333; transform: translateY(-4px); box-shadow: 0 12px 25px rgba(220,53,69,0.4); } }
+
+// Spinner
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #eee;
+  border-top: 5px solid #27ae60;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .stat-card { padding: 1.5rem; }
+  .image-wrapper { height: 180px; }
+  .actions { gap: 0.5rem; }
+  .btn-view, .btn-edit, .btn-delete { width: 42px; height: 42px; }
+}

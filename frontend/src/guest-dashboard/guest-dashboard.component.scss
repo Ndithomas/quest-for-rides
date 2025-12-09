@@ -1,0 +1,102 @@
+.guest-dashboard {
+  min-height: calc(100vh - 180px);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+// Hero
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.12" d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,160C672,128,768,96,864,112C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L0,320Z"></path></svg>') bottom no-repeat;
+    background-size: cover;
+  }
+}
+
+// Stats Cards
+.stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.8rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  transition: all 0.4s ease;
+  border-left: 5px solid;
+
+  &.pending   { border-left-color: #f39c12; }
+  &.payment   { border-left-color: #3498db; }
+  &.upcoming  { border-left-color: #27ae60; }
+
+  .icon {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+    color: white;
+    flex-shrink: 0;
+
+    &.pending   { background: #f39c12; }
+    &.payment   { background: #3498db; }
+    &.upcoming  { background: #27ae60; }
+  }
+
+  h3 { font-size: 2.2rem; font-weight: 800; margin: 0; color: #2c3e50; }
+  p  { margin: 0; color: #666; font-weight: 500; }
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+}
+
+// Section Card
+.section-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+// Quick Action Cards
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  background: white;
+  padding: 1.8rem 1rem;
+  border-radius: 1rem;
+  text-decoration: none;
+  color: #2c3e50;
+  font-weight: 600;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  min-height: 110px;
+
+  i { font-size: 1.8rem; color: #667eea; }
+  span { font-size: 0.95rem; }
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 15px 30px rgba(102,126,234,0.15);
+    i { color: #27ae60; }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.2rem; }
+  .stat-card { padding: 1.4rem; }
+  .action-card { padding: 1.4rem; }
+}

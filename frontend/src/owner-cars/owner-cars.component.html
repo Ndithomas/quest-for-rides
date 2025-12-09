@@ -1,0 +1,111 @@
+<app-navbar></app-navbar>
+
+<div class="fleet-container">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark mb-3">My Fleet</h1>
+      <p class="lead text-muted">Manage your vehicles • Track earnings • Grow your business</p>
+      <a routerLink="/owner/add-car" class="btn btn-success btn-lg rounded-pill px-5 mt-4">
+        Add New Car
+      </a>
+    </div>
+    <div class="row g-4 mb-5 justify-content-center">
+      <div class="col-md-3 col-6">
+        <div class="stat-card total">
+          <h3>{{ totalCars() }}</h3>
+          <p>Total Vehicles</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-card available">
+          <h3>{{ availableCars() }}</h3>
+          <p>Available Now</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-card earnings">
+          <h3>R {{ totalEarnings() | number:'1.0-0' }}</h3>
+          <p>Total Earned</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="stat-card trips">
+          <h3>{{ totalTrips() }}</h3>
+          <p>Total Trips</p>
+        </div>
+      </div>
+    </div>
+    <div class="cars-section">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0">Your Vehicles</h4>
+        <button (click)="fetchCars()" class="btn btn-outline-secondary rounded-pill px-4">
+          Refresh
+        </button>
+      </div>
+      <div *ngIf="loading()" class="text-center py-5">
+        <div class="spinner"></div>
+        <p class="mt-4 text-muted fs-5">Loading your fleet...</p>
+      </div>
+      <div *ngIf="!loading() && cars().length === 0" class="empty-state">
+        <i class="bi bi-car-front fs-1 text-muted mb-4"></i>
+        <h3>Your fleet is empty</h3>
+        <p class="text-muted mb-4">Add your first car and start earning today</p>
+        <a routerLink="/owner/add-car" class="btn btn-success rounded-pill px-5">
+          Add Your First Car
+        </a>
+      </div>
+      <div class="row g-4" *ngIf="!loading() && cars().length > 0">
+        <div class="col-md-6 col-lg-4" *ngFor="let car of cars(); trackBy: trackByCarId">
+          <div class="car-card" [class.inactive]="car.status === 'inactive'">
+            <div class="image-wrapper">
+              <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model" class="car-img"
+                *ngIf="hasPhoto(car); else noPhoto">
+              <ng-template #noPhoto>
+                <div class="no-photo">
+                  <i class="bi bi-car-front"></i>
+                </div>
+              </ng-template>
+
+              <span class="status-badge" [ngClass]="getStatusBadgeClass(car.status)">
+                {{ getStatusDisplay(car.status) }}
+              </span>
+            </div>
+            <div class="details">
+              <h5 class="title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>
+              <p class="info">
+                {{ car.license_plate }} • {{ car.location_name || 'No location' }}
+              </p>
+
+              <div class="price-earnings">
+                <div>
+                  <div class="price">R {{ car.daily_rate }}<small>/day</small></div>
+                  <div class="earnings">
+                    <strong>{{ car.total_trips || 0 }}</strong> trips •
+                    <strong class="text-success">R {{ (car.total_earnings || 0) | number:'1.0-0' }}</strong>
+                  </div>
+                </div>
+                <div class="actions">
+                  <button (click)="view(car.id)" class="btn-view" title="View">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button (click)="edit(car.id)" class="btn-edit" title="Edit">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button (click)="openDeleteModal(car)" class="btn-delete" [disabled]="isDeleting()" title="Delete">
+                    <span *ngIf="isDeleting()" class="spinner-border spinner-border-sm"></span>
+                    <i *ngIf="!isDeleting()" class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@if (showDeleteModal() && selectedCar()) {
+<app-delete-car [car]="selectedCar()" [deleting]="isDeleting()" (cancel)="closeDeleteModal()" (confirm)="onDeleteCar()">
+</app-delete-car>
+}
+<app-footer></app-footer>

@@ -1,0 +1,61 @@
+
+body {
+  background: #fffbeb;
+  color: #1e293b;
+  font-family: system-ui, sans-serif;
+}
+
+/* Navbar */
+.navbar {
+  background: #ffffff !important;
+  border-bottom: 2px solid #ffdf9a;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+  color: #0f172a !important;
+  font-weight: 600;
+}
+
+.navbar .nav-link:hover {
+  color: #f59e0b !important;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+}
+
+.hero h1 span.text-primary {
+  color: #f59e0b !important;
+}
+
+/* Buttons */
+.btn-primary {
+  background: #0f172a !important;
+  border: none !important;
+  color: white !important;
+}
+
+.btn-primary:hover {
+  background: #1e293b !important;
+  transform: translateY(-2px);
+}
+
+/* Feature Icons */
+.feature-icon {
+  background: #f59e0b !important;
+  color: white !important;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CTA Section */
+.bg-primary {
+  background: #f59e0b !important;
+}

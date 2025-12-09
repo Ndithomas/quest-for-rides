@@ -1,0 +1,320 @@
+/* admin-users.component.scss – LUXURY ADMIN USERS PAGE */
+
+$green: #27ae60;
+$green-dark: #219653;
+$dark: #2c3e50;
+$light: #f8f9fa;
+$radius: 1.6rem;
+$shadow: 0 20px 60px rgba(0,0,0,0.15);
+
+.admin-users-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+/* Page Header */
+.page-header {
+  background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
+              url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover;
+  padding: 6rem 0 4rem;
+  position: relative;
+  color: white;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.page-title {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 0 0 0.5rem;
+  letter-spacing: -1.5px;
+  text-shadow: 0 6px 25px rgba(0,0,0,0.7);
+}
+
+.page-subtitle {
+  font-size: 1.4rem;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+.back-btn {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(12px);
+  color: white;
+  padding: 0.8rem 1.8rem;
+  border-radius: 50px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 2px solid rgba(255,255,255,0.3);
+  transition: all 0.4s ease;
+
+  &:hover {
+    background: white;
+    color: $dark;
+    transform: translateY(-3px);
+  }
+}
+
+/* Search Card */
+.search-card {
+  background: white;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  border-left: 6px solid $green;
+  overflow: hidden;
+}
+
+.search-form {
+  padding: 1.2rem;
+}
+
+.search-input-group {
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  border: 2px solid #e2e8f0;
+  border-radius: 50px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+
+  &:focus-within {
+    border-color: $green;
+    box-shadow: 0 0 0 6px rgba($green, 0.15);
+    background: white;
+  }
+}
+
+.search-icon {
+  padding: 0 1.5rem;
+  color: #94a3b8;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 1rem 0;
+  font-size: 1.1rem;
+  outline: none;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+}
+
+.search-btn {
+  background: $green;
+  color: white;
+  border: none;
+  padding: 0 2.2rem;
+  font-weight: 700;
+  border-radius: 50px;
+  transition: all 0.4s ease;
+
+  &:hover {
+    background: $green-dark;
+    transform: translateY(-3px);
+  }
+}
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: 6rem 0;
+  color: #666;
+}
+
+.spinner-large {
+  width: 80px;
+  height: 80px;
+  border: 6px solid #eee;
+  border-top: 6px solid $green;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+/* Users Table Card */
+.users-table-card {
+  background: white;
+  border-radius: $radius;
+  overflow: hidden;
+  box-shadow: $shadow;
+  border-left: 6px solid $green;
+}
+
+.table-wrapper {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.users-table {
+  width: 100%;
+  margin: 0;
+
+  th {
+    background: rgba($green, 0.08);
+    color: $dark;
+    font-weight: 800;
+    padding: 1.6rem 1.5rem;
+    border: none;
+    font-size: 0.98rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    padding: 1.6rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+
+  .index {
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .user-row:hover {
+    background: rgba($green, 0.05);
+    transform: scale(1.002);
+    transition: all 0.3s ease;
+  }
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: white;
+  font-weight: 900;
+  font-size: 1.2rem;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.user-details {
+  .username {
+    font-weight: 800;
+    color: $dark;
+    font-size: 1.1rem;
+  }
+  .email {
+    color: #666;
+    font-size: 0.95rem;
+  }
+}
+
+.role-badge, .status-badge {
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.role-badge {
+  &.owner { background: #3b82f6; color: white; }
+  &.guest { background: #8b5cf6; color: white; }
+  &.management, &.admin { background: #ef4444; color: white; }
+}
+
+.status-badge {
+  &.active { background: #10b981; color: white; }
+  &.inactive { background: #94a3b8; color: white; }
+  &.suspended { background: #f59e0b; color: white; }
+}
+
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.btn-view, .btn-update {
+  padding: 0.6rem 1.3rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.4s ease;
+}
+
+.btn-view {
+  background: transparent;
+  color: $dark;
+  border: 2px solid #ddd;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: $green;
+    color: $green;
+  }
+}
+
+.btn-update {
+  background: $green;
+  color: white;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background: $green-dark;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba($green, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.status-select {
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  border: 2px solid #e2e8f0;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  color: #94a3b8;
+
+  svg {
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-title { font-size: 2.8rem; }
+  .back-btn { position: static; display: inline-block; margin-top: 1rem; }
+  .actions-cell { flex-direction: column; gap: 0.5rem; }
+  .btn-view, .btn-update, .status-select { width: 100%; }
+}

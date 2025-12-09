@@ -1,0 +1,112 @@
+<app-navbar></app-navbar>
+
+<div class="add-car-container">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark mb-3">Add New Car</h1>
+      <p class="lead text-muted">List your vehicle and start earning today</p>
+    </div>
+
+    <div class="form-card">
+      <form (ngSubmit)="submit()" #carForm="ngForm">
+
+        <!-- Basic Info Grid -->
+        <div class="input-grid">
+          <input [ngModel]="make()" (ngModelChange)="make.set($event)" 
+                 name="make" placeholder="Make (e.g. Toyota, BMW)" 
+                 class="form-input" required />
+
+          <input [ngModel]="model()" (ngModelChange)="model.set($event)" 
+                 name="model" placeholder="Model" 
+                 class="form-input" required />
+
+          <input [ngModel]="year()" (ngModelChange)="year.set($event)" 
+                 name="year" type="number" min="1990" max="2030" 
+                 placeholder="Year" class="form-input" required />
+
+          <input [ngModel]="licensePlate()" (ngModelChange)="licensePlate.set($event)" 
+                 name="licensePlate" placeholder="License Plate" 
+                 class="form-input" required />
+
+          <input [ngModel]="title()" (ngModelChange)="title.set($event)" 
+                 name="title" placeholder="Listing Title (e.g. 2023 BMW M3 Competition)" 
+                 class="form-input" required />
+
+          <input [ngModel]="locationName()" (ngModelChange)="locationName.set($event)" 
+                 name="locationName" placeholder="Pickup Location (City)" 
+                 class="form-input" required />
+
+          <input [ngModel]="dailyRate()" (ngModelChange)="dailyRate.set($event)" 
+                 name="dailyRate" type="number" min="100" step="50" 
+                 placeholder="Daily Rate (R)" class="form-input" required />
+        </div>
+
+        <!-- Description & Features -->
+        <div class="row g-4 mt-3">
+          <div class="col-lg-6">
+            <textarea [ngModel]="description()" (ngModelChange)="description.set($event)" 
+                      name="description" placeholder="Description (optional)" 
+                      class="form-textarea" rows="5"></textarea>
+          </div>
+          <div class="col-lg-6">
+            <textarea [ngModel]="features()" (ngModelChange)="features.set($event)" 
+                      name="features" placeholder="Features (one per line (e.g. Bluetooth, Sunroof)" 
+                      class="form-textarea" rows="5"></textarea>
+          </div>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="photo-section mt-5">
+          <h5 class="fw-bold mb-3">
+            Car Photos <span class="text-danger small">(Required – Min 1)</span>
+          </h5>
+          <p class="text-muted small mb-4">First photo = Primary. Max 6 photos.</p>
+
+          <div class="photo-grid">
+            <!-- Selected Photos -->
+            <div *ngFor="let file of selectedFiles; let i = index" class="photo-item">
+              <img [src]="getPreviewUrl(file)" class="photo-preview" />
+              <button type="button" class="remove-photo" (click)="removePhoto(i)">×</button>
+              <div class="primary-badge" *ngIf="i === 0">Primary</div>
+            </div>
+
+            <!-- Upload Slot -->
+            <label class="upload-slot" *ngIf="selectedFiles.length < 6">
+              <input type="file" (change)="onFileSelected($event)" multiple accept="image/*" hidden />
+              <div class="upload-inner">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add Photo<br><small>{{ 6 - selectedFiles.length }} slots left</small></span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Photo Section -->
+
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-success btn-lg rounded-pill px-5" 
+                  [disabled]="loading() || selectedFiles.length === 0">
+            <span *ngIf="loading()" class="spinner-border spinner-border-sm me-2"></span>
+            {{ loading() ? 'Adding Car...' : 'Add Car to Fleet' }}
+          </button>
+
+          <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-5" 
+                  (click)="clearForm()">
+            Clear Form
+          </button>
+        </div>
+
+        <!-- Messages -->
+        <div *ngIf="successMessage()" class="alert alert-success mt-4">
+          {{ successMessage() }}
+        </div>
+        <div *ngIf="errorMessage()" class="alert alert-danger mt-4">
+          {{ errorMessage() }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

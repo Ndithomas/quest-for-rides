@@ -1,0 +1,114 @@
+<app-navbar></app-navbar>
+<div class="owner-dashboard">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold text-dark mb-3">Owner Dashboard</h1>
+      <p class="lead text-muted">Manage your fleet • Track earnings • Grow your business</p>
+    </div>
+
+    <div class="row g-4 mb-5 justify-content-center">
+      <div class="col-md-5">
+        <a routerLink="/owner/add-car" class="action-btn primary">
+          <i class="bi bi-plus-circle-fill"></i>
+          Add New Car
+        </a>
+      </div>
+      <div class="col-md-5">
+        <a routerLink="/owner/cars" class="action-btn outline">
+          <i class="bi bi-car-front"></i>
+          View My Fleet
+        </a>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="stat-card earnings">
+          <div class="icon"><i class="bi bi-currency-exchange"></i></div>
+          <div>
+            <h3>R 24,800</h3>
+            <p>Earnings this month</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card bookings">
+          <div class="icon"><i class="bi bi-calendar-check"></i></div>
+          <div>
+            <h3>7</h3>
+            <p>Active Bookings</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stat-card growth">
+          <div class="icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <div>
+            <h3 class="text-success">+18%</h3>
+            <p>Growth vs last month</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <i class="bi bi-car-front-fill mb-3"></i>
+          <h5>Manage Fleet</h5>
+          <p class="text-muted small">Add, edit, or update your vehicles</p>
+          <div class="mt-auto">
+            <a routerLink="/owner/cars" class="link">View all cars</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <i class="bi bi-graph-up-arrow mb-3"></i>
+          <h5>Earnings & Analytics</h5>
+          <p class="text-muted small">Track revenue and performance</p>
+          <div class="mt-auto">
+            <a routerLink="/owner/analytics" class="link">View analytics</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <i class="bi bi-journal-text mb-3"></i>
+          <h5>Bookings</h5>
+          <p class="text-muted small">Review and manage rentals</p>
+          <div class="mt-auto">
+            <a routerLink="/owner/bookings" class="link">View bookings</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="activity-card mt-5">
+      <h4 class="mb-4">Recent Activity</h4>
+      <div class="activity-list">
+        <div class="activity-item">
+          <i class="bi bi-car-front"></i>
+          <div>
+            <p>BMW 3 Series booked for 3 days</p>
+            <small>Today at 14:30 • R 2,400</small>
+          </div>
+        </div>
+        <div class="activity-item">
+          <i class="bi bi-check-circle"></i>
+          <div>
+            <p>Payment received for Mercedes rental</p>
+            <small>Yesterday • R 1,800</small>
+          </div>
+        </div>
+        <div class="activity-item">
+          <i class="bi bi-plus-circle"></i>
+          <div>
+            <p>New car added: Audi A4</p>
+            <small>2 days ago</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<app-footer></app-footer>

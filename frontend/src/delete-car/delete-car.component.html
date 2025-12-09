@@ -1,0 +1,60 @@
+<!-- Backdrop -->
+<div class="modal-backdrop fade show" (click)="cancel.emit()"></div>
+
+<!-- Modal -->
+<div class="modal d-block" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+
+      <!-- Header -->
+      <div class="modal-header border-0 pb-0 px-4 pt-4">
+        <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M3 6h18"></path>
+            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            <path d="M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"></path>
+            <path d="M10 11v6"></path>
+            <path d="M14 11v6"></path>
+          </svg>
+          Delete Car?
+        </h5>
+        <button type="button" class="btn-close" (click)="cancel.emit()" [disabled]="deleting"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body text-center py-5 px-4">
+        <p class="text-muted mb-4 lead">
+          This action <strong>cannot be undone</strong>. The car will be permanently removed.
+        </p>
+
+        <!-- Car Preview -->
+        <div class="bg-light rounded-4 p-4 mx-auto" style="max-width: 360px;">
+          <div *ngIf="primaryPhoto(); else noImage" class="mb-3">
+            <img [src]="primaryPhoto()" [alt]="carTitle()" class="img-fluid rounded-3 shadow-sm"
+              style="height: 180px; width: 100%; object-fit: cover;">
+          </div>
+          <ng-template #noImage>
+            <div class="no-photo-placeholder rounded-3 mb-3">
+              <span>No Image</span>
+            </div>
+          </ng-template>
+
+          <h5 class="fw-bold text-dark mb-1">{{ carTitle() }}</h5>
+          <p class="text-secondary small mb-0">{{ licensePlate() }}</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer border-0 justify-content-center gap-3 pb-4">
+        <button class="btn btn-outline-secondary px-5 py-2 fw-semibold" (click)="cancel.emit()" [disabled]="deleting">
+          Cancel
+        </button>
+        <button class="btn btn-danger px-5 py-2 fw-bold" (click)="confirm.emit()" [disabled]="deleting">
+          <span *ngIf="deleting" class="spinner-border spinner-border-sm me-2"></span>
+          Delete Car
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

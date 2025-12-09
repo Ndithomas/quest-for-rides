@@ -1,0 +1,65 @@
+<app-navbar></app-navbar>
+<div class="login-page">
+  <div class="hero-bg">
+    <div class="hero-overlay"></div>
+  </div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <div class="text-center mb-5">
+        <div class="logo-wrapper mb-4">
+          <svg width="92" height="92" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2.8">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+            <path d="M21 16v-2a4 4 0 0 0-4-4 4 4 0 0 0-4 4"></path>
+            <path d="M4 12h16"></path>
+            <circle cx="7" cy="17" r="3"></circle>
+            <circle cx="17" cy="17" r="3"></circle>
+          </svg>
+        </div>
+        <h1 class="login-title">Welcome Back</h1>
+        <p class="login-subtitle">Sign in to continue your journey</p>
+      </div>
+
+      <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)" novalidate>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="username">Username or Email</label>
+          <input type="text" class="form-input" placeholder="Enter your username or email"
+            [(ngModel)]="credentials.username" name="username" id="username" autocomplete="username" required />
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" class="form-input" id="password" placeholder="Enter your password"
+            [(ngModel)]="credentials.password" name="password" required />
+        </div>
+
+
+        <div class="options-row mb-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="remember">
+            <label class="form-check-label" for="remember">Remember me</label>
+          </div>
+          <a routerLink="/forgot-password" class="link-forgot">Forgot password?</a>
+        </div>
+
+        <div class="alert-error" *ngIf="error">
+          {{ error }}
+        </div>
+
+        <button type="submit" class="btn-login" [disabled]="loading">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
+
+        <p class="text-center mt-4 signup-text">
+          Don't have an account?
+          <a routerLink="/register" class="link-signup">Sign up free</a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <div class="bottom-gradient"></div>
+</div>
+<app-footer></app-footer>

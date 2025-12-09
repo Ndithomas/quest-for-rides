@@ -1,0 +1,20 @@
+/* src/app/management-setup/management-setup.component.scss */
+.bg-gradient {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.card {
+  border-radius: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.form-control {
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.btn-danger {
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+  font-size: 1.1rem;
+}
