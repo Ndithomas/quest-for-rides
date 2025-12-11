@@ -38,6 +38,10 @@
           </div>
 
           <div class="status-badge available">Available</div>
+          <div *ngIf="car.is_verified" class="verified-badge">
+            ✔ Verified
+          </div>
+
           <div *ngIf="!hasPricing(car)" class="pricing-needed">Pricing Needed</div>
         </div>
 

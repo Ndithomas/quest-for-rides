@@ -20,6 +20,8 @@ export interface Car {
   status: 'active' | 'inactive' | 'maintenance';
   created_at: string;
   updated_at: string;
+
+  is_verified: boolean;
 }
 
 export interface CarPhoto {
@@ -67,6 +69,9 @@ export interface CarList {
   primary_photo: string | null;
   photos: CarPhoto[];
   owner_name: string;
+  is_verified: boolean;
+  status: 'active' | 'inactive' | 'maintenance';
+  license_plate: string;
 }
 
 export interface CarDetail extends Car {
@@ -79,12 +84,12 @@ export interface CarDetail extends Car {
 })
 export class ListingsService {
   private apiUrl = `${environment.apiBaseUrl}/api/listings`;
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Public: Search all active cars (guests OK)
   search(filters: any = {}): Observable<CarList[]> {
     let params = new HttpParams();
-    
+
     Object.keys(filters).forEach(key => {
       const value = filters[key];
       if (value !== null && value !== undefined && value !== '' && value !== false) {
@@ -109,23 +114,23 @@ export class ListingsService {
     return this.http.get<CarDetail>(`${this.apiUrl}/cars/${id}/`).pipe(catchError(this.handleError));
   }
 
-  
 
-updateCar(id: number, data: any): Observable<Car> {
-  // Use /owner/cars/ for updates
-  return this.http.put<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
-    .pipe(catchError(this.handleError));
-}
 
-patchCar(id: number, data: any): Observable<Car> {
-  return this.http.patch<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
-    .pipe(catchError(this.handleError));
-}
+  updateCar(id: number, data: any): Observable<Car> {
+    // Use /owner/cars/ for updates
+    return this.http.put<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
+      .pipe(catchError(this.handleError));
+  }
 
-deleteCar(id: number): Observable<void> {
-  return this.http.delete<void>(`${this.apiUrl}/owner/cars/${id}/`)
-    .pipe(catchError(this.handleError));
-}
+  patchCar(id: number, data: any): Observable<Car> {
+    return this.http.patch<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteCar(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/owner/cars/${id}/`)
+      .pipe(catchError(this.handleError));
+  }
 
 
   // Photo management - UPDATED to match backend
@@ -171,10 +176,21 @@ deleteCar(id: number): Observable<void> {
     return this.http.patch<Car>(`${this.apiUrl}/cars/${carId}/toggle-status/`, { status })
       .pipe(catchError(this.handleError));
   }
+  // listings.service.ts — replace the hardcoded one
+
+  getAllCars(): Observable<CarList[]> {
+    return this.http.get<CarList[]>(`${this.apiUrl}/cars/all/`)
+      .pipe(catchError(this.handleError));
+  }
+  // listings.service.ts
+  verifyCar(id: number, is_verified: boolean) {
+    return this.http.patch(`${this.apiUrl}/cars/${id}/verify/`, { is_verified });
+  }
+
 
   private handleError(error: any) {
     console.error('Listings Service Error:', error);
-    
+
     let errorMessage = 'An error occurred';
     if (error instanceof HttpErrorResponse) {
       if (error.error && error.error.detail) {
@@ -193,7 +209,7 @@ deleteCar(id: number): Observable<void> {
     } else if (typeof error === 'string') {
       errorMessage = error;
     }
-    
+
     return throwError(() => new Error(errorMessage));
   }
 }

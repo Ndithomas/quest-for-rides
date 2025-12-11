@@ -12,4 +12,6 @@ urlpatterns = [
     path('cars/<int:car_id>/pricing/', views.PricingRuleListCreateAPIView.as_view()),
     path('cars/<int:pk>/toggle-status/', views.CarToggleStatusAPIView.as_view()),
     path('search/', views.PublicCarSearchAPIView.as_view()),
+    path('cars/<int:pk>/verify/', views.CarVerifyAPIView.as_view()),
+    path('cars/all/', views.ManagementAllCarsAPIView.as_view()),
 ]

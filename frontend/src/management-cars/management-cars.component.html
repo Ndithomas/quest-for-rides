@@ -1,0 +1,123 @@
+<!-- src/app/management-cars/management-cars.component.html -->
+<app-navbar></app-navbar>
+
+<div class="management-cars-page">
+  <div class="page-header">
+    <div class="container">
+      <div class="header-content">
+        <h1 class="page-title">Car Management</h1>
+        <p class="page-subtitle">Overview of all vehicles • Verification handled in dedicated panel</p>
+      </div>
+      <a routerLink="/management-dashboard" class="back-btn">
+        ← Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <div class="container py-5">
+
+    <!-- Stats -->
+    <div class="row g-4 mb-5 justify-content-center">
+      <div class="col-md-4 col-sm-6">
+        <div class="stat-card total">
+          <h3>{{ totalCars() }}</h3>
+          <p>Total Vehicles</p>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6">
+        <div class="stat-card verified">
+          <h3>{{ verifiedCars() }}</h3>
+          <p>Verified</p>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-6" *ngIf="pendingCars() > 0">
+        <div class="stat-card pending">
+          <h3 class="text-warning">{{ pendingCars() }}</h3>
+          <p>Pending Verification</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Urgent Action Button -->
+    <div class="text-center my-5" *ngIf="pendingCars() > 0">
+      <a routerLink="/verify-cars" class="btn btn-warning btn-lg rounded-pill px-5 shadow-lg fw-bold">
+        {{ pendingCars() }} Car{{ pendingCars() > 1 ? 's' : '' }} Need Verification
+      </a>
+    </div>
+
+    <!-- Cars Table (Read-only) -->
+    <div class="table-card">
+      <div class="table-wrapper">
+        <table class="cars-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Car</th>
+              <th>Owner</th>
+              <th>Status</th>
+              <th>Verified</th>
+              <th class="text-end">View</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let car of cars(); let i = index" class="car-row">
+              <td class="index">{{ i + 1 }}</td>
+
+              <td class="car-cell">
+                <div class="car-info">
+               
+                  <div>
+                    <strong>{{ car.year }} {{ car.make }} {{ car.model }}</strong><br>
+                    <small class="text-muted">{{ car.license_plate }} • {{ car.location_name }}</small>
+                  </div>
+                </div>
+              </td>
+
+              <td>{{ car.owner_name || '—' }}</td>
+
+              <td>
+                <span class="badge status-badge"
+                  [ngClass]="{
+                    'bg-success': car.status === 'active',
+                    'bg-warning text-dark': car.status === 'maintenance',
+                    'bg-secondary': car.status === 'inactive'
+                  }">
+                  {{ car.status | titlecase }}
+                </span>
+              </td>
+
+              <td>
+                <span class="badge"
+                  [class.bg-success]="car.is_verified"
+                  [class.bg-danger]="!car.is_verified">
+                  {{ car.is_verified ? 'Verified' : 'Pending' }}
+                </span>
+              </td>
+
+              <td class="text-end">
+                <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary">
+                  View
+                </a>
+              </td>
+            </tr>
+
+            <tr *ngIf="cars().length === 0">
+              <td colspan="6" class="empty-state">
+                <p class="text-muted">No cars found</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="text-center mt-5">
+      <a routerLink="/verify-cars" class="btn btn-success rounded-pill px-5">
+        Open Car Verification Panel
+      </a>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

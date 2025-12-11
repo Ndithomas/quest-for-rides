@@ -74,13 +74,21 @@ export const routes: Routes = [
         canActivate: [roleAuthGuard],
         data: { roles: ['management'] }
       },
-      // {
-      //   path: 'admin/cars',
-      //   loadComponent: () => import('../management-cars/management-cars.component')
-      //     .then(m => m.ManagementCarsComponent),
-      //   canActivate: [roleAuthGuard],
-      //   data: { roles: ['management'] }
-      // },
+      {
+        path: 'management/cars',
+        loadComponent: () => import('../management-cars/management-cars.component')
+          .then(m => m.ManagementCarsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
+      {
+        path: 'verify-cars',
+        loadComponent: () => import('../car-verification/car-verification.component')
+          .then(m => m.CarVerificationComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }  // only management can verify cars
+      },
+
       {
         path: 'profile',
         loadComponent: () => import('../profile/profile.component').then(m => m.ProfileComponent),

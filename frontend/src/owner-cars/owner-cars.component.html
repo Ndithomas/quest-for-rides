@@ -69,6 +69,14 @@
               <span class="status-badge" [ngClass]="getStatusBadgeClass(car.status)">
                 {{ getStatusDisplay(car.status) }}
               </span>
+              <!-- Verification Status Badge -->
+              <span class="status-badge verify-badge" [class.bg-danger]="!car.is_verified"
+                [class.bg-success]="car.is_verified"
+                [title]="car.is_verified ? 'Visible to guests' : 'Waiting for management approval'">
+                <i class="bi" [class.bi-shield-check]="car.is_verified"
+                  [class.bi-shield-exclamation]="!car.is_verified"></i>
+                {{ car.is_verified ? 'Verified' : 'Pending Approval' }}
+              </span>
             </div>
             <div class="details">
               <h5 class="title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>

@@ -1,0 +1,109 @@
+<app-navbar></app-navbar>
+
+<div class="verification-page">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="container">
+      <a routerLink="/management-dashboard" class="back-btn">Back</a>
+      <h1 class="page-title">Car Verification</h1>
+      <p class="page-subtitle">Review and approve cars before they go live</p>
+    </div>
+  </header>
+
+  <div class="container py-4 py-md-5">
+    <div class="search-box mb-4">
+      <input
+        type="text"
+        placeholder="      Search make, model, owner, plate... "
+        [(ngModel)]="searchTerm"
+        (input)="filterCars()"
+        class="search-input"
+      />
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading()" class="text-center py-5">
+      <div class="spinner"></div>
+      <p class="text-muted mt-3">Loading cars...</p>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive" *ngIf="!loading()">
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Car</th>
+            <th>Owner</th>
+            <th>Status</th>
+            <th>Verification</th>
+            <th class="text-center">View</th>
+            <th class="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let car of filteredCars(); let i = index">
+            <td class="fw-bold">{{ i + 1 }}</td>
+
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                <div>
+                  <div class="fw-bold">{{ car.year }} {{ car.make }} {{ car.model }}</div>
+                  <small class="text-muted">{{ car.license_plate }}</small>
+                </div>
+              </div>
+            </td>
+
+            <td>{{ car.owner_name || '—' }}</td>
+
+            <td>
+              <span class="badge rounded-pill px-3" [ngClass]="{
+                'bg-success': car.status === 'active',
+                'bg-warning text-dark': car.status === 'maintenance',
+                'bg-secondary': car.status === 'inactive'
+              }">
+                {{ car.status | titlecase }}
+              </span>
+            </td>
+
+            <td>
+              <span class="badge rounded-pill px-3 fs-6 fw-bold"
+                [class.bg-success]="car.is_verified"
+                [class.bg-danger]="!car.is_verified">
+                {{ car.is_verified ? 'Verified' : 'Pending' }}
+              </span>
+            </td>
+
+            <!-- View Button -->
+            <td class="text-center">
+              <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                View
+              </a>
+            </td>
+
+            <!-- Verify Button -->
+            <td class="text-center">
+              <button
+                class="btn rounded-pill px-4"
+                [class.btn-success]="!car.is_verified"
+                [class.btn-outline-success]="car.is_verified"
+                (click)="toggleVerify(car)"
+              >
+                {{ car.is_verified ? 'Unverify' : 'Verify Now' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="text-center py-5" *ngIf="filteredCars().length === 0">
+        <p class="text-success fs-3 fw-bold mb-0">
+          All cars verified!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

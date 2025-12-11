@@ -46,6 +46,9 @@ class CarCreateSerializer(serializers.ModelSerializer):
             'daily_rate': {'required': True, 'min_value': 1},
             'year': {'min_value': 1900, 'max_value': 2030},
         }
+    def create(self, validated_data):
+        # Force new cars to be unverified until management approves
+        return Car.objects.create(**validated_data, is_verified=False, owner=self.context['request'].user)    
 
     def validate_license_plate(self, value):
         value = value.upper().strip()
@@ -62,7 +65,7 @@ class CarListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Car
         fields = ['id', 'title', 'make', 'model', 'year', 'daily_rate',
-                  'location_name', 'primary_photo', 'photos', 'owner_name']
+                  'location_name', 'primary_photo', 'photos', 'owner_name', 'is_verified']
 
     def get_primary_photo(self, obj):
         photo = obj.photos.filter(is_primary=True).first()

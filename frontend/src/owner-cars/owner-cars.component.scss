@@ -24,7 +24,7 @@
 
   &:hover {
     transform: translateY(-10px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 20px 40px rgba(54, 35, 35, 0.15);
   }
 }
 
@@ -171,4 +171,18 @@
   .image-wrapper { height: 180px; }
   .actions { gap: 0.5rem; }
   .btn-view, .btn-edit, .btn-delete { width: 42px; height: 42px; }
+}
+.verify-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  z-index: 10;
+}
+
+.status-badge + .verify-badge {
+  top: 48px; /* pushes it below the first badge */
 }

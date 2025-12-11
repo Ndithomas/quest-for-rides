@@ -193,7 +193,7 @@ class PublicCarSearchAPIView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny] 
 
     def get_queryset(self):
-        queryset = Car.objects.filter(status='active') \
+        queryset = Car.objects.filter(status='active', is_verified=True) \
             .select_related('owner') \
             .prefetch_related('photos')
 
@@ -212,3 +212,37 @@ class PublicCarSearchAPIView(generics.ListAPIView):
             queryset = queryset.filter(daily_rate__lte=max_price)
 
         return queryset.order_by('-created_at') 
+
+# views.py — Improve CarVerifyAPIView (optional but better)
+
+class CarVerifyAPIView(generics.UpdateAPIView):
+    queryset = Car.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        if request.user.role not in ['management', 'staff']:
+            return Response({"detail": "Permission denied."}, status=403)
+
+        car = self.get_object()
+        new_status = request.data.get('is_verified', not car.is_verified)  # toggle if not sent
+
+        car.is_verified = new_status
+        car.save(update_fields=['is_verified'])
+
+        return Response({
+            "message": "Verification status updated.",
+            "is_verified": car.is_verified
+        })
+    
+# views.py — add this anywhere in the file
+
+class ManagementAllCarsAPIView(generics.ListAPIView):
+    """Only management/staff can list ALL cars (including unverified ones)"""
+    queryset = Car.objects.select_related('owner').prefetch_related('photos')
+    serializer_class = CarDetailSerializer  # or CarListSerializer if you prefer lighter
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.role not in ['management', 'staff']:
+            raise permissions.exceptions.PermissionDenied("Access denied.")
+        return self.queryset.all().order_by('-created_at')

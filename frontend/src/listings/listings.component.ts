@@ -10,7 +10,7 @@ import { AuthService } from '../services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './listings.component.html',
-  styleUrls: ['./listings.component.scss']
+  styleUrl: './listings.component.scss'
 })
 export class ListingsComponent implements OnInit {
   location = signal('');
