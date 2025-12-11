@@ -3,12 +3,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
-  private readonly baseUrl = 'http://localhost:8000/api';
+  private readonly baseUrl = `${environment.apiBaseUrl}/api`;
 
   constructor(
     private http: HttpClient,

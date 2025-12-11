@@ -1,246 +1,242 @@
-/* navbar.component.scss – FINAL ELITE 2025 DESIGN */
+/* ===== VARIABLES ===== */
+$primary: #27ae60;
+$primary-dark: #219a52;
+$gray-light: #f8f9fa;
+$gray-border: #e9ecef;
+$shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+$radius: 10px;
 
-$green: #27ae60;
-$green-dark: #219653;
-$green-light: rgba(39, 174, 96, 0.12);
-$dark: #2c3e50;
-$light: #ffffff;
-$gray: #94a3b8;
-$shadow: 0 15px 45px rgba(0,0,0,0.12);
-$radius: 1.6rem;
-
-.elite-navbar {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  padding: 1.6rem 0;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1030;
+/* ===== NAVBAR ROOT ===== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid #eee;
+  z-index: 1000;
+  transition: padding 0.3s ease;
 
   &.scrolled {
-    padding: 1rem 0;
-    background: rgba(255, 255, 255, 0.98);
+    padding: 0.5rem 1rem;
     box-shadow: $shadow;
   }
 }
 
-/* Brand */
-.brand-wrapper {
+/* ===== NAVBAR CONTENT ===== */
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ===== BRAND ===== */
+.nav-brand {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 10px;
+  cursor: pointer;
+
+  svg {
+    transition: 0.3s ease;
+  }
+
+  span {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $primary;
+    letter-spacing: -0.5px;
+  }
+
+  &:hover svg {
+    transform: scale(1.08);
+  }
 }
 
-.brand-icon {
-  color: $green;
-  filter: drop-shadow(0 4px 12px rgba(39,174,96,0.3));
-  transition: transform 0.4s ease;
-}
-
-.brand-name {
-  font-size: 2.4rem;
-  font-weight: 900;
-  background: linear-gradient(135deg, $green, #1e8f52);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -1.2px;
-}
-
-.navbar-brand:hover .brand-icon {
-  transform: rotate(8deg) scale(1.1);
-}
-
-/* Nav Links */
-.nav-link {
-  color: $dark !important;
-  font-weight: 600;
-  font-size: 1.05rem;
-  padding: 0.7rem 1.4rem !important;
-  border-radius: 50px;
-  position: relative;
-  transition: all 0.4s ease;
+/* ===== USER BUTTON ===== */
+.user-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  transition: 0.3s ease;
+  cursor: pointer;
+  padding: 0;
 
   &:hover,
   &.active {
-    color: white !important;
-    background: $green;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 30px rgba(39,174,96,0.4);
-  }
-
-  &.active::after {
-    content: '';
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    background: $green;
-    border-radius: 50%;
-    transform: translateX(-50%);
+    background: rgba($primary, 0.1);
+    border-color: $primary;
+    color: $primary;
   }
 }
 
-/* Buttons */
-.btn-login,
-.btn-signup {
-  padding: 0.8rem 2rem;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 1.02rem;
-  transition: all 0.4s ease;
-  min-width: 110px;
-  text-align: center;
-}
-
-.btn-login {
-  background: transparent;
-  color: $dark;
-  border: 2.5px solid $green;
-
-  &:hover {
-    background: $green-light;
-    color: $green-dark;
-    transform: translateY(-4px);
-    box-shadow: 0 12px 35px rgba(39,174,96,0.3);
-  }
-}
-
-.btn-signup {
-  background: $green;
-  color: white;
-  border: none;
-  box-shadow: 0 10px 30px rgba(39,174,96,0.4);
-
-  &:hover {
-    background: $green-dark;
-    transform: translateY(-5px);
-    box-shadow: 0 18px 50px rgba(39,174,96,0.5);
-  }
-}
-
-/* User Dropdown */
-.user-menu {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.6rem 1rem !important;
-  border-radius: 50px;
-  transition: all 0.3s;
-
-  &:hover {
-    background: $green-light;
-  }
-}
-
-.avatar {
-  width: 44px;
-  height: 44px;
-  background: $green;
-  color: white;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 6px 20px rgba(39,174,96,0.35);
-}
-
-.username {
-  font-weight: 700;
-  color: $dark;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
+/* ===== DROPDOWN MENU ===== */
 .dropdown-menu {
-  border: none;
-  border-radius: $radius;
-  padding: 0.8rem;
-  box-shadow: $shadow;
+  position: absolute;
+  right: 1rem;
+  top: 65px;
+  width: 280px;
   background: white;
-  min-width: 220px;
-  margin-top: 12px !important;
-  backdrop-filter: blur(12px);
+  border-radius: $radius;
+  box-shadow: $shadow;
+  opacity: 0;
+  transform: translateY(-8px);
+  visibility: hidden;
+  transition: all 0.25s ease;
+  z-index: 3000;
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+/* HEADER */
+.dropdown-header {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid $gray-border;
+
+  h3 {
+    margin: 0 0 3px 0;
+    font-size: 1.1rem;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #777;
+  }
+}
+
+/* MENU ITEMS */
+.dropdown-items {
+  padding: 0.6rem 0;
 }
 
 .dropdown-item {
-  padding: 0.7rem 1.3rem;
-  border-radius: 12px;
-  font-weight: 600;
-  color: $dark;
-  transition: all 0.3s;
+  padding: 0.9rem 1.2rem;
+  display: block;
+  text-decoration: none;
+  color: #333;
+  transition: 0.2s ease;
 
   &:hover {
-    background: $green-light;
-    color: $green-dark;
-    transform: translateX(6px);
+    background: rgba($primary, 0.05);
+    color: $primary;
   }
 
-  &.text-danger:hover {
-    background: #fee2e2;
-    color: #dc2626;
-  }
-}
+  &.logout {
+    color: #e74c3c !important;
 
-/* Mobile Menu */
-@media (max-width: 991.98px) {
-  .navbar-collapse {
-    margin-top: 1.8rem;
-    background: white;
-    border-radius: $radius;
-    padding: 1.8rem;
-    box-shadow: $shadow;
-    border: 1px solid rgba(0,0,0,0.06);
-  }
-
-  .nav-link,
-  .btn-login,
-  .btn-signup {
-    text-align: center;
-    margin: 0.5rem 0;
-    width: 100%;
-  }
-
-  .user-menu {
-    justify-content: center;
+    &:hover {
+      background: rgba(#e74c3c, 0.05);
+    }
   }
 }
 
-/* Toggler */
-.navbar-toggler {
-  border: none;
-  padding: 0.6rem;
+.dropdown-divider {
+  height: 1px;
+  background: $gray-border;
+  margin: 0.4rem 1.2rem;
 }
 
-.toggler-icon {
+/* BUTTONS INSIDE DROPDOWN */
+.btn {
+  display: block;
+  margin: 0.8rem 1.2rem;
+  padding: 0.8rem;
+  text-align: center;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.btn-outline {
+    border: 2px solid $primary;
+    color: $primary;
+
+    &:hover {
+      background: rgba($primary, 0.05);
+    }
+  }
+
+  &.btn-primary {
+    background: $primary;
+    color: white;
+
+    &:hover {
+      background: $primary-dark;
+    }
+  }
+}
+
+/* FOOTER */
+.dropdown-footer {
+  padding: 0.8rem 1.2rem;
+  border-top: 1px solid $gray-border;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  justify-content: space-between;
 
-  span {
-    width: 28px;
-    height: 3px;
-    background: $green;
-    border-radius: 3px;
-    transition: all 0.3s;
+  a {
+    color: #666;
+    font-size: 0.85rem;
+    text-decoration: none;
+
+    &:hover {
+      color: $primary;
+    }
   }
 }
 
-.navbar-toggler[aria-expanded="true"] .toggler-icon {
-  span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
-  span:nth-child(2) { opacity: 0; }
-  span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+/* ===== OVERLAY ===== */
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
+  z-index: 1500;
+  pointer-events: none;
+  
+  &.show {
+    opacity: 1;
+    visibility: visible;
+  
+  }
 }
 
-/* Spacer */
-.navbar-spacer {
-  height: 96px;
+/* ===== SPACER FOR FIXED NAVBAR ===== */
+.nav-spacer {
+  height: 30px;
 }
 
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .navbar-spacer { height: 88px; }
-  .brand-name { font-size: 2rem; }
+
+  .nav-brand span {
+    font-size: 1.2rem;
+  }
+
+  .dropdown-menu {
+    left: 1rem;
+    right: 1rem;
+    top: 70px;
+    width: auto;
+  }
 }

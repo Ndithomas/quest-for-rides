@@ -1,162 +1,152 @@
-/* register.component.scss – 100% CONSISTENT WITH LOGIN & ENTIRE APP */
+/* register.component.scss – Lightweight 2025 clean version */
 
 $green: #27ae60;
 $green-dark: #219653;
 $dark: #2c3e50;
-$radius: 1.6rem;
-$shadow: 0 20px 60px rgba(0,0,0,0.18);
+$radius: 1.4rem;
+$shadow: 0 10px 35px rgba(0,0,0,0.12);
 
+/* PAGE BACKGROUND */
 .register-page {
   position: relative;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #eef2f3 0%, #cfd9df 100%);
   overflow: hidden;
 }
 
-.hero-bg {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
-              url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
-  background-attachment: fixed;
-  z-index: -2;
-}
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(39,174,96,0.45), rgba(0,0,0,0.4));
-  z-index: -1;
-}
-
+/* CONTAINER */
 .register-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 2rem;
+  align-items: center;
+  padding: 1.8rem;
+  min-height: 100vh;
 }
 
+/* CARD */
 .register-card {
   background: white;
   border-radius: $radius;
-  padding: 3rem 2.6rem;
+  padding: 2.4rem 2rem;
   width: 100%;
-  max-width: 520px;
+  max-width: 480px;
+
   box-shadow: $shadow;
-  border-left: 6px solid $green;
-  animation: floatIn 0.9s ease-out;
-  backdrop-filter: blur(12px);
+  border-left: 5px solid $green;
+  backdrop-filter: blur(10px);
+
+  animation: fadeIn 0.7s ease-out;
 }
 
+/* LOGO */
 .logo-wrapper svg {
-  filter: drop-shadow(0 6px 20px rgba(39,174,96,0.35));
+  filter: drop-shadow(0 4px 14px rgba($green, 0.28));
 }
 
+/* TITLES */
 .register-title {
-  font-size: 2.8rem;
-  font-weight: 900;
+  font-size: 2.3rem;
   color: $dark;
-  margin: 0 0 0.6rem;
-  letter-spacing: -0.8px;
+  font-weight: 800;
 }
 
 .register-subtitle {
-  font-size: 1.18rem;
+  font-size: 1rem;
   color: #666;
-  margin: 0;
 }
 
-.form-group {
-  margin-bottom: 1.6rem;
-}
+/* FORMS */
+.form-group { margin-bottom: 1.3rem; }
 
 .form-label {
+  display: block;
   font-weight: 600;
   color: $dark;
-  font-size: 0.98rem;
-  margin-bottom: 0.7rem;
-  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
-.form-input,
-select.form-input {
+.form-input {
   width: 100%;
-  height: 62px;
-  padding: 0 1.8rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 50px;
-  font-size: 1.02rem;
-  background: #fafafa;
-  transition: all 0.4s ease;
+  height: 54px;
+  padding: 0 1.4rem;
+  border-radius: 40px;
+  border: 2px solid #e1e5eb;
+  background: #f8f9fa;
+  transition: 0.3s;
 
-  &::placeholder { color: #94a3b8; }
+  &::placeholder { color: #9aa1ad; }
 
   &:focus {
-    outline: none;
     border-color: $green;
     background: white;
-    box-shadow: 0 0 0 6px rgba($green, 0.15);
+    box-shadow: 0 0 0 5px rgba($green, 0.15);
+    outline: none;
   }
 }
 
 select.form-input {
-  padding: 0 1.8rem;
   cursor: pointer;
 }
 
+/* ERROR */
 .alert-error {
-  background: #fdf2f2;
-  border: 2px dashed #fca5a5;
-  color: #dc2626;
-  padding: 1.2rem 1.6rem;
+  background: #fdecec;
+  border: 1px dashed #f5a3a3;
+  color: #d62828;
+  padding: 0.9rem 1.2rem;
   border-radius: $radius;
+  margin-top: 1rem;
   text-align: center;
   font-weight: 600;
-  margin: 1.5rem 0;
 }
 
+/* BUTTON */
 .btn-register {
   width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  border-radius: 40px;
+  border: none;
+
   background: $green;
   color: white;
-  border: none;
-  padding: 1.2rem;
-  border-radius: 50px;
-  font-size: 1.3rem;
   font-weight: 700;
-  margin-top: 1rem;
-  box-shadow: 0 10px 35px rgba($green, 0.45);
-  transition: all 0.4s ease;
+
+  transition: 0.35s ease;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.9rem;
+  align-items: center;
+  gap: 0.6rem;
+
+  box-shadow: 0 8px 28px rgba($green, 0.35);
 
   &:hover:not(:disabled) {
     background: $green-dark;
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba($green, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 14px 40px rgba($green, 0.45);
   }
 
   &:disabled {
-    opacity: 0.65;
+    opacity: 0.6;
     cursor: not-allowed;
   }
 }
 
 .spinner {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   border: 3px solid #fff;
-  border-top: 3px solid transparent;
+  border-top-color: transparent;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
+/* LINKS */
 .signup-text {
   color: #666;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
 }
 
 .link-login {
@@ -170,30 +160,43 @@ select.form-input {
   }
 }
 
+/* FADE BOTTOM */
 .bottom-gradient {
   position: fixed;
-  bottom: 0; left: 0; width: 100%; height: 220px;
-  background: linear-gradient(to top, white 10%, transparent);
+  bottom: 0;
+  left: 0;
+  height: 120px;
+  width: 100%;
+  background: linear-gradient(to top, white, transparent);
   pointer-events: none;
-  z-index: 1;
 }
 
-@keyframes floatIn {
-  from { opacity: 0; transform: translateY(70px) scale(0.93); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(35px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 576px) {
   .register-card {
-    padding: 2.4rem 1.8rem;
+    padding: 2rem 1.4rem;
     margin: 1rem;
   }
-  .register-title { font-size: 2.4rem; }
-  .form-input { height: 58px; }
-  .btn-register { font-size: 1.2rem; }
+
+  .register-title {
+    font-size: 2rem;
+  }
+
+  .form-input {
+    height: 50px;
+  }
+
+  .btn-register {
+    font-size: 1.1rem;
+  }
 }

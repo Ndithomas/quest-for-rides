@@ -3,20 +3,36 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-// Hero
+// Hero Section
 .hero {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 0 0 2rem 2rem;
   overflow: hidden;
   position: relative;
+  padding: 1rem 0;
 
-  &::before {
-    content: '';
+  h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    span { color: #27ae60; }
+  }
+
+  p {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .bi-car-front-fill {
+    font-size: 13rem;
+    opacity: 0.11;
+    transform: translateY(-50%) rotate(8deg);
+    pointer-events: none;
     position: absolute;
-    inset: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.12" d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,160C672,128,768,96,864,112C960,128,1056,192,1152,208C1248,224,1344,192,1392,176L1440,160L1440,320L0,320Z"></path></svg>') bottom no-repeat;
-    background-size: cover;
+    right: 0;
+    top: 50%;
   }
 }
 
@@ -29,8 +45,8 @@
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  transition: all 0.4s ease;
   border-left: 5px solid;
+  transition: all 0.4s ease;
 
   &.pending   { border-left-color: #f39c12; }
   &.payment   { border-left-color: #3498db; }
@@ -54,8 +70,8 @@
   p  { margin: 0; color: #666; font-weight: 500; }
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    transform: translateY(-6px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
   }
 }
 
@@ -99,4 +115,5 @@
   .hero h1 { font-size: 2.2rem; }
   .stat-card { padding: 1.4rem; }
   .action-card { padding: 1.4rem; }
+  .hero .bi-car-front-fill { font-size: 10rem; }
 }

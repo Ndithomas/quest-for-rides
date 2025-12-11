@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 export interface AdminUser {
   id: number;
@@ -34,10 +35,8 @@ export interface AdminCar {
   providedIn: 'root'
 })
 export class ManagementAuthService {
-  private readonly apiUrl = 'http://localhost:8000/api/auth/';
-  private readonly api = 'http://localhost:8000/api/management/';
-
-
+  private readonly apiUrl = `${environment.apiBaseUrl}/api/auth/`;
+  private readonly api = `${environment.apiBaseUrl}/api/management/`;
   constructor(private readonly http: HttpClient) {}
 
   createManagementAccount(data: any, secretCode: string): Observable<any> {

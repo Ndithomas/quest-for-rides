@@ -1,60 +1,38 @@
-<!-- listings.component.html – FINAL LUXURY VERSION -->
-
-
 <div class="listings-page">
-  <div class="hero-section">
-    <div class="hero-overlay"></div>
-    <div class="container">
-      <h1 class="hero-title">Find Your Perfect Ride</h1>
-      <p class="hero-subtitle">Luxury cars, sports cars, daily drivers — all in one place</p>
-    </div>
-  </div>
-
   <div class="container py-5">
-    <!-- Search Filters Card -->
     <div class="filters-card mb-5">
       <div class="filters-grid">
         <input [ngModel]="location()" name="location" (ngModelChange)="location.set($event)"
-               placeholder="Location (City, Area)" class="filter-input" />
+          placeholder="Location (City, Area)" class="filter-input" />
+
         <input [ngModel]="make()" name="make" (ngModelChange)="make.set($event)"
-               placeholder="Make (Tesla, BMW, Toyota...)" class="filter-input" />
-        <input [ngModel]="minPrice()" (ngModelChange)="minPrice.set($event ? +$event : null)"
-               placeholder="Min R/day" type="number" name="minPrice" min="0" class="filter-input" />
-        <input [ngModel]="maxPrice()" (ngModelChange)="maxPrice.set($event ? +$event : null)"
-               placeholder="Max R/day" type="number" name="maxPrice" min="0" class="filter-input" />
+          placeholder="Make (Tesla, BMW, Toyota...)" class="filter-input" />
+
+        <input [ngModel]="minPrice()" (ngModelChange)="minPrice.set($event ? +$event : null)" placeholder="Min R/day"
+          type="number" name="minPrice" min="0" class="filter-input" />
+
+        <input [ngModel]="maxPrice()" (ngModelChange)="maxPrice.set($event ? +$event : null)" placeholder="Max R/day"
+          type="number" name="maxPrice" min="0" class="filter-input" />
       </div>
 
       <div class="filter-actions">
-        <button (click)="search()" class="search-btn">
-          Search Cars
-        </button>
-        <button (click)="clear()" class="clear-btn">
-          Clear Filters
-        </button>
+        <button (click)="search()" class="search-btn">Search Cars</button>
+        <button (click)="clear()" class="clear-btn">Clear Filters</button>
       </div>
     </div>
-
-    <!-- Error -->
     <div *ngIf="searchError()" class="alert-error">
       <p>{{ searchError() }}</p>
     </div>
-
-    <!-- Loading -->
     <div *ngIf="loading()" class="loading-state">
       <div class="spinner"></div>
       <p>Searching for the best cars...</p>
     </div>
-
-    <!-- Car Grid -->
     <div *ngIf="!loading() && !searchError() && cars().length > 0" class="cars-grid">
-      <div *ngFor="let car of cars(); trackBy: trackByCarId"
-           (click)="view(car.id)" class="car-card">
-        
+      <div *ngFor="let car of cars(); trackBy: trackByCarId" (click)="view(car.id)" class="car-card">
+
         <div class="image-wrapper">
-          <img *ngIf="getCarImage(car)"
-               [src]="getCarImage(car)"
-               [alt]="getCarTitle(car)"
-               class="car-image" />
+          <img *ngIf="getCarImage(car)" [src]="getCarImage(car)" [alt]="getCarTitle(car)" class="car-image" />
+
           <div *ngIf="!getCarImage(car)" class="no-image">
             <span>No Image</span>
           </div>
@@ -68,6 +46,7 @@
           <p class="location">
             {{ car.location_name || 'Location not set' }}
           </p>
+
           <div class="price-owner">
             <div class="price" [class.no-price]="!hasPricing(car)">
               R{{ getDailyRate(car) }}<small>/day</small>
@@ -77,18 +56,11 @@
         </div>
       </div>
     </div>
-
-    <!-- Empty State -->
     <div *ngIf="!loading() && !searchError() && cars().length === 0" class="empty-state">
       <i class="bi bi-car-front fs-1 text-muted mb-4"></i>
       <h4>No cars found</h4>
-      <p class="text-muted mb-4">
-        Try adjusting your filters or search in a different location
-      </p>
-      <button (click)="clear()" class="btn-clear">
-        Clear All Filters
-      </button>
+      <p class="text-muted mb-4">Try adjusting your filters or search in a different location</p>
+      <button (click)="clear()" class="btn-clear">Clear All Filters</button>
     </div>
   </div>
 </div>
-

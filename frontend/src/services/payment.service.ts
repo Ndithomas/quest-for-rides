@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 export interface PaymentMethod {
   id: number;
@@ -60,7 +61,7 @@ export interface BookingPayment {
   providedIn: 'root'
 })
 export class PaymentService {
-  private apiUrl = 'http://localhost:8000/api/payments';
+  private apiUrl = `${environment.apiBaseUrl}/api/payments`;
 
   constructor(private http: HttpClient) {}
 

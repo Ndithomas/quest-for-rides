@@ -25,6 +25,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   isLoggedIn = signal(false);
   username = signal<string>('Guest');
+  isScrolled = false;
+
+  // This signal now controls the dropdown visibility
+  isSidebarOpen = signal(false);
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update(open => !open);
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen.set(false);
+  }
 
   ngOnInit(): void {
     this.updateAuthStatus();
@@ -89,6 +101,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.authService.clearAuthData();
     this.updateAuthStatus();
     this.closeMobileMenu();
+    this.closeSidebar();
     this.clearBrowserCache();
     this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
       window.location.reload();
@@ -106,7 +119,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
     window.history.pushState(null, '', window.location.href);
   }
-
 
   getBookingsRoute(): string {
     const user = this.authService.decodeUserFromToken();

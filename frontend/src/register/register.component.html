@@ -1,9 +1,7 @@
 <app-navbar></app-navbar>
-<div class="register-page">
-  <div class="hero-bg">
-    <div class="hero-overlay"></div>
-  </div>
 
+<div class="register-page">
+ 
   <div class="register-container">
     <div class="register-card">
       <div class="text-center mb-5">
@@ -16,29 +14,34 @@
             <circle cx="17" cy="17" r="3"></circle>
           </svg>
         </div>
+
         <h1 class="register-title">Create Your Account</h1>
         <p class="register-subtitle">Join thousands of drivers and owners — free forever</p>
       </div>
 
       <form #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)" novalidate>
+
         <div class="form-group">
           <label class="form-label">Username</label>
-          <input type="text" class="form-input" placeholder="Choose a unique username" [(ngModel)]="user.username"
-            name="username" required />
+          <input type="text" class="form-input" placeholder="Choose a unique username"
+            [(ngModel)]="user.username" name="username" required />
         </div>
+
         <div class="form-group">
           <label class="form-label">Email Address</label>
-          <input type="email" class="form-input" placeholder="you@example.com" [(ngModel)]="user.email" name="email"
-            required />
+          <input type="email" class="form-input" placeholder="you@example.com"
+            [(ngModel)]="user.email" name="email" required />
         </div>
+
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" class="form-input" placeholder="Minimum 8 characters" [(ngModel)]="user.password"
-            name="password" minlength="8" #pwd="ngModel" required />
+          <input type="password" class="form-input" placeholder="Minimum 8 characters"
+            [(ngModel)]="user.password" name="password" minlength="8" #pwd="ngModel" required />
           <small *ngIf="pwd.invalid && pwd.touched" class="text-danger d-block mt-1">
             Password must be at least 8 characters long.
           </small>
         </div>
+
         <div class="form-group">
           <label class="form-label">I am a...</label>
           <select class="form-input" [(ngModel)]="user.role" name="role" required>
@@ -47,41 +50,51 @@
             <option value="guest">Guest / Renter (Book cars)</option>
           </select>
         </div>
+
         <div class="row g-3">
           <div class="col-6">
             <div class="form-group">
               <label class="form-label">First Name</label>
-              <input type="text" class="form-input" placeholder="John" [(ngModel)]="user.first_name" name="first_name"
-                required />
+              <input type="text" class="form-input" placeholder="John"
+                [(ngModel)]="user.first_name" name="first_name" required />
             </div>
           </div>
+
           <div class="col-6">
             <div class="form-group">
               <label class="form-label">Last Name</label>
-              <input type="text" class="form-input" placeholder="Doe" [(ngModel)]="user.last_name" name="last_name"
-                required />
+              <input type="text" class="form-input" placeholder="Doe"
+                [(ngModel)]="user.last_name" name="last_name" required />
             </div>
           </div>
         </div>
+
         <div class="form-group">
           <label class="form-label">Phone Number</label>
-          <input type="text" class="form-input" placeholder="+27 82 123 4567" [(ngModel)]="user.phone_number"
-            name="phone_number" />
+          <input type="text" class="form-input" placeholder="+27 82 123 4567"
+            [(ngModel)]="user.phone_number" name="phone_number" />
         </div>
+
         <div class="alert-error" *ngIf="error">
           {{ error }}
         </div>
-        <button type="submit" class="btn-register" [disabled]="loading || registerForm.invalid">
+
+        <button type="submit" class="btn-register"
+          [disabled]="loading || registerForm.invalid">
           <span *ngIf="loading" class="spinner"></span>
           {{ loading ? 'Creating Account...' : 'Create Account' }}
         </button>
+
         <p class="text-center mt-4 signup-text">
           Already have an account?
           <a routerLink="/login" class="link-login">Sign in here</a>
         </p>
       </form>
+
     </div>
   </div>
+
   <div class="bottom-gradient"></div>
 </div>
+
 <app-footer></app-footer>

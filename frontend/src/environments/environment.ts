@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api/auth/',
+  apiBaseUrl: 'http://localhost:8000',
+  // apiBaseUrl: 'https://jvl4wmvx-8000.uks1.devtunnels.ms/',
   managementSetupToken: 'x9k2mPx!2025-internal-mgmt-setup'
 };

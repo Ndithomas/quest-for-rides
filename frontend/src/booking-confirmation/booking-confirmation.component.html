@@ -1,9 +1,14 @@
 <app-navbar></app-navbar>
+
 <div class="confirmation-container">
+
+  <!-- Loading State -->
   <div *ngIf="loading()" class="loading-state">
     <div class="spinner"></div>
     <p>Loading your booking confirmation...</p>
   </div>
+
+  <!-- Error State -->
   <div *ngIf="error() && !loading()" class="error-state">
     <div class="error-box">
       <h2>Error</h2>
@@ -11,12 +16,18 @@
       <button (click)="goBack()" class="btn btn-secondary">Go Back</button>
     </div>
   </div>
+
+  <!-- Success State -->
   <div *ngIf="booking() && car() && !loading() && !error()" class="success-state">
+
+    <!-- Confirmation Header -->
     <div class="confirmation-header">
       <div class="check-icon">✓</div>
       <h1>Booking Confirmed!</h1>
       <p class="subtitle">Your booking request has been submitted successfully</p>
     </div>
+
+    <!-- Status Card -->
     <div class="status-card" [ngClass]="getStatusColor()">
       <div class="status-content">
         <p class="status-label">Current Status</p>
@@ -34,6 +45,8 @@
         </p>
       </div>
     </div>
+
+    <!-- Payment Section -->
     <div
       *ngIf="booking()?.status === 'confirmed' && (!booking()?.payment || booking()?.payment?.status !== 'completed')"
       class="payment-section">
@@ -49,6 +62,8 @@
         </p>
       </div>
     </div>
+
+    <!-- Booking Details -->
     <div class="details-section">
       <div class="section-title">
         <h3>Booking Details</h3>
@@ -64,6 +79,7 @@
             <p class="license-plate">{{ car().license_plate }}</p>
           </div>
         </div>
+
         <div class="detail-card">
           <h4>Trip Dates</h4>
           <div class="date-info">
@@ -81,6 +97,7 @@
             </div>
           </div>
         </div>
+
         <div class="detail-card">
           <h4>Pricing Summary</h4>
           <div class="pricing-info">
@@ -98,6 +115,7 @@
             </div>
           </div>
         </div>
+
         <div class="detail-card">
           <h4>Car Owner</h4>
           <div class="owner-info">
@@ -106,16 +124,20 @@
             <p class="owner-phone" *ngIf="booking().owner.phone_number">{{ booking().owner.phone_number }}</p>
           </div>
         </div>
+
         <div class="detail-card" *ngIf="booking().special_requirements">
           <h4>Special Requirements</h4>
           <p class="requirements-text">{{ booking().special_requirements }}</p>
         </div>
       </div>
     </div>
+
+    <!-- Action Buttons -->
     <div class="action-buttons">
       <button (click)="goToDashboard()" class="btn btn-primary">Go to Dashboard</button>
       <button (click)="goToBookings()" class="btn btn-secondary">View All Bookings</button>
     </div>
+
   </div>
 </div>
 

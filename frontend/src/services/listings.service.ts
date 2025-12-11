@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 export interface Car {
   id: number;
@@ -77,8 +78,7 @@ export interface CarDetail extends Car {
   providedIn: 'root'
 })
 export class ListingsService {
-  private apiUrl = 'http://localhost:8000/api/listings';
-
+  private apiUrl = `${environment.apiBaseUrl}/api/listings`;
   constructor(private http: HttpClient) {}
 
   // Public: Search all active cars (guests OK)

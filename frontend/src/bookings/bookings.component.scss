@@ -22,6 +22,7 @@
   padding-bottom: 0.5rem;
   overflow-x: auto;
   scrollbar-width: none;
+
   &::-webkit-scrollbar { display: none; }
 }
 
@@ -63,6 +64,7 @@
 .empty-state {
   text-align: center;
   padding: 4rem 1rem;
+
   .empty-box {
     background: white;
     max-width: 500px;
