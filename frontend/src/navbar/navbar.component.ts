@@ -26,8 +26,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn = signal(false);
   username = signal<string>('Guest');
   isScrolled = false;
-
-  // This signal now controls the dropdown visibility
   isSidebarOpen = signal(false);
 
   toggleSidebar(): void {
@@ -47,7 +45,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.isLoggedIn.set(loggedIn);
 
     if (!loggedIn) {
-      this.username.set('Guest');
+      this.username.set('User');
       return;
     }
 
