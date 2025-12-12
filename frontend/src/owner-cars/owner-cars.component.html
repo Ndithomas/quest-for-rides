@@ -1,5 +1,4 @@
 <app-navbar></app-navbar>
-
 <div class="fleet-container">
   <div class="container py-5">
     <div class="text-center mb-5">
@@ -58,6 +57,15 @@
         <div class="col-md-6 col-lg-4" *ngFor="let car of cars(); trackBy: trackByCarId">
           <div class="car-card" [class.inactive]="car.status === 'inactive'">
             <div class="image-wrapper">
+              <span class="status-badge" [ngClass]="getStatusBadgeClass(car.status)">
+                {{ getStatusDisplay(car.status) }}
+              </span>
+              <span class="verify-badge" [class.bg-danger]="!car.is_verified" [class.bg-success]="car.is_verified"
+                [title]="car.is_verified ? 'Visible to guests' : 'Waiting for management approval'">
+                <i class="bi" [class.bi-shield-check]="car.is_verified"
+                  [class.bi-shield-exclamation]="!car.is_verified"></i>
+                {{ car.is_verified ? 'Verified' : 'Pending Approval' }}
+              </span>
               <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model" class="car-img"
                 *ngIf="hasPhoto(car); else noPhoto">
               <ng-template #noPhoto>
@@ -66,18 +74,8 @@
                 </div>
               </ng-template>
 
-              <span class="status-badge" [ngClass]="getStatusBadgeClass(car.status)">
-                {{ getStatusDisplay(car.status) }}
-              </span>
-              <!-- Verification Status Badge -->
-              <span class="status-badge verify-badge" [class.bg-danger]="!car.is_verified"
-                [class.bg-success]="car.is_verified"
-                [title]="car.is_verified ? 'Visible to guests' : 'Waiting for management approval'">
-                <i class="bi" [class.bi-shield-check]="car.is_verified"
-                  [class.bi-shield-exclamation]="!car.is_verified"></i>
-                {{ car.is_verified ? 'Verified' : 'Pending Approval' }}
-              </span>
             </div>
+
             <div class="details">
               <h5 class="title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>
               <p class="info">

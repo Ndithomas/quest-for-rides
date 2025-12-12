@@ -78,7 +78,7 @@
 .status-badge {
   position: absolute;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
   padding: 0.5rem 1rem;
   border-radius: 50rem;
   font-size: 0.8rem;
@@ -174,8 +174,8 @@
 }
 .verify-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 1rem;
+  right: 1rem;  // stays right
   font-size: 0.75rem;
   padding: 4px 10px;
   border-radius: 20px;
@@ -183,6 +183,6 @@
   z-index: 10;
 }
 
-.status-badge + .verify-badge {
-  top: 48px; /* pushes it below the first badge */
-}
+// .status-badge + .verify-badge {
+//   top: 48px; /* pushes it below the first badge */
+// }
