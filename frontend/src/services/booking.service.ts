@@ -13,7 +13,7 @@ export interface BookingCreateRequest {
 export interface BookingPayment {
   id: number;
   amount: number;
-  status: string; 
+  status: string;
   payment_method?: string;
   transaction_id?: string;
   created_at: string;
@@ -30,18 +30,19 @@ export interface Booking {
   car_model: string;
   start_date: string;
   end_date: string;
-  status: string; 
+  status: string;
   daily_rate: number;
   total_price: number;
   special_requirements?: string;
   owner_notes?: string;
   rejection_reason?: string;
-  payment_status?: string;     
-  payment?: BookingPayment;    
+  payment_status?: string;
+  payment?: BookingPayment;
   review?: any;
   created_at: string;
   confirmed_at?: string;
   updated_at?: string;
+  car_status?: string;
 }
 
 @Injectable({
@@ -50,7 +51,7 @@ export interface Booking {
 export class BookingService {
   private apiUrl = `${environment.apiBaseUrl}/api/bookings`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createBooking(booking: BookingCreateRequest): Observable<Booking> {
     return this.http.post<Booking>(`${this.apiUrl}/`, booking);
@@ -81,7 +82,7 @@ export class BookingService {
     const payload: any = { status };
     if (notes) payload.owner_notes = notes;
     if (reason) payload.rejection_reason = reason;
-    return this.http.post<Booking>(`${this.apiUrl}/${id}/confirm/`, payload);
+    return this.http.patch<Booking>(`${this.apiUrl}/${id}/confirm/`, payload);
   }
 
   updateBookingStatus(id: number, status: string): Observable<Booking> {
@@ -91,4 +92,9 @@ export class BookingService {
   guestCancelBooking(id: number): Observable<{ detail: string }> {
     return this.http.post<{ detail: string }>(`${this.apiUrl}/${id}/guest-cancel/`, {});
   }
+
+  ownerCancelUnpaidBooking(id: number): Observable<{ detail: string }> {
+    return this.http.post<{ detail: string }>(`${this.apiUrl}/${id}/owner-cancel-unpaid/`, {});
+  }
 }
+

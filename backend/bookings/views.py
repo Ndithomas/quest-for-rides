@@ -1,4 +1,3 @@
-# bookings/views.py
 from django.utils import timezone
 from django.db import transaction, models
 from django.shortcuts import get_object_or_404
@@ -8,12 +7,11 @@ from rest_framework.response import Response
 from .models import *
 from .serializers import *
 from userAuth.permissions import IsManagement
-
+from django.utils import timezone
 
 class BookingListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
-    # Add these two lines to fix the error
     serializer_class = BookingListSerializer
     queryset = Booking.objects.select_related('guest', 'owner', 'car', 'payment')
     
@@ -24,22 +22,36 @@ class BookingListCreateAPIView(generics.ListCreateAPIView):
     
     @transaction.atomic
     def perform_create(self, serializer):
-        car = serializer.validated_data['car']
-        if car.status != 'active':
-            raise serializers.ValidationError("Cannot book an unavailable car.")
-
-        booking = serializer.save(
-            guest=self.request.user,
+        validated_data = serializer.validated_data
+        car = validated_data['car']
+        user = self.request.user
+        
+        start_date = validated_data['start_date']
+        end_date = validated_data['end_date']
+        days = (end_date - start_date).days
+        daily_rate = car.daily_rate
+        total_price = daily_rate * days
+        booking = Booking.objects.create(
+            guest=user,
             owner=car.owner,
-            daily_rate=car.daily_rate,
+            car=car,
+            daily_rate=daily_rate,
+            total_price=total_price,
+            start_date=start_date,
+            end_date=end_date,
+            special_requirements=validated_data.get('special_requirements', ''),
             status='pending'
         )
+        
+        car.status = 'inactive'
+        car.save(update_fields=['status'])
+        
         BookingPayment.objects.create(
             booking=booking,
-            amount=booking.total_price,
+            amount=total_price,
             status='pending'
         )
-
+        serializer.instance = booking
 
 class BookingDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Booking.objects.select_related('guest', 'owner', 'car', 'payment')
@@ -54,46 +66,42 @@ class BookingDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             self.permission_denied(self.request)
         return booking
 
-
-class BookingConfirmAPIView(APIView):
+class BookingConfirmAPIView(generics.UpdateAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingConfirmSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
-    def post(self, request, pk):
-        booking = get_object_or_404(Booking, pk=pk)
+    lookup_field = 'pk'
 
-        if request.user != booking.car.owner:
-            return Response(
-                {"detail": "Only the car owner can confirm or reject this booking."},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
+    def get_object(self):
+        booking = super().get_object()
+        if booking.car.owner != self.request.user:
+            raise PermissionDenied("You are not the owner of this car.")
         if booking.status != 'pending':
-            return Response(
-                {"detail": "This booking is no longer pending."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        serializer = BookingConfirmSerializer(data=request.data)
+            raise PermissionDenied("Only pending bookings can be confirmed or rejected.")
+        return booking
+
+    def update(self, request, *args, **kwargs):
+        booking = self.get_object()
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
 
-        with transaction.atomic():
-            if data['status'] == 'confirmed':
-                booking.status = 'confirmed'
-                booking.confirmed_at = timezone.now()
-                booking.owner_notes = data.get('owner_notes', '')
-                
-            else:  
-                booking.status = 'rejected'
-                booking.rejection_reason = data.get('rejection_reason', '')
-                if booking.payment:
-                    booking.payment.status = 'cancelled'
-                    booking.payment.save()
+        new_status = serializer.validated_data['status']
+        booking.status = new_status
 
-            booking.save()
+        if new_status == 'confirmed':
+            booking.confirmed_at = timezone.now()
+            booking.car.status = 'booked'
+        elif new_status == 'rejected':
+            booking.rejection_reason = serializer.validated_data.get('rejection_reason', '')
+            booking.car.status = 'available'
 
-        return Response(BookingDetailSerializer(booking, context={'request': request}).data)
+        booking.car.save(update_fields=['status'])
+        booking.save()
 
+        return Response({
+            "message": f"Booking has been {new_status}.",
+            "booking": BookingDetailSerializer(booking, context=self.get_serializer_context()).data
+        })
 
 class BookingUpdateStatusAPIView(generics.GenericAPIView):
     queryset = Booking.objects.all()
@@ -110,7 +118,6 @@ class BookingUpdateStatusAPIView(generics.GenericAPIView):
 
         return Response(BookingDetailSerializer(booking, context={'request': request}).data)
 
-
 class GuestCancelBookingAPIView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -126,15 +133,17 @@ class GuestCancelBookingAPIView(generics.GenericAPIView):
         with transaction.atomic():
             booking.status = 'cancelled'
             booking.save()
-
             if booking.payment:
                 booking.payment.status = 'cancelled'
                 booking.payment.save()
+        
+            if booking.car.status == 'booked':
+                booking.car.status = 'available'
+                booking.car.save(update_fields=['status'])
 
         return Response({
-            "detail": "Booking cancelled successfully."
+            "detail": "Booking cancelled successfully and car is now available."
         }, status=status.HTTP_200_OK)
-
 
 class MyBookingsAPIView(generics.ListAPIView):
     serializer_class = BookingListSerializer
@@ -142,10 +151,22 @@ class MyBookingsAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
+        timeout_hours = 24
+        expiry_threshold = timezone.now() - timezone.timedelta(hours=timeout_hours)
+        expired = Booking.objects.filter(
+            status='pending',
+            created_at__lt=expiry_threshold
+        )
+        for booking in expired:
+            booking.status = 'cancelled'
+            booking.rejection_reason = "Expired: Owner did not respond in time."
+            booking.save()
+            booking.car.status = 'available'
+            booking.car.save(update_fields=['status'])
+
         return Booking.objects.filter(
             models.Q(guest=user) | models.Q(owner=user)
         ).select_related('car', 'guest', 'owner', 'payment').order_by('-created_at')
-
 
 class PendingConfirmationsAPIView(generics.ListAPIView):
     serializer_class = BookingListSerializer
@@ -161,3 +182,39 @@ class AllBookingsAPIView(generics.ListAPIView):
     serializer_class = BookingListSerializer
     permission_classes = [permissions.IsAuthenticated, IsManagement]
     queryset = Booking.objects.select_related('car', 'guest', 'owner', 'payment').order_by('-created_at')
+
+# views.py
+class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(Booking, pk=pk)
+        
+        if booking.car.owner != request.user:
+            return Response({"detail": "Not your car."}, status=403)
+        
+        if booking.status != 'confirmed':
+            return Response({"detail": "Only confirmed bookings can be cancelled by owner."}, status=400)
+        
+        if booking.payment and booking.payment.status == 'completed':
+            return Response({"detail": "Cannot cancel a paid booking."}, status=400)
+        
+        hours_since_confirm = (timezone.now() - booking.confirmed_at).total_seconds() / 3600
+        if hours_since_confirm < 6:  # example: must wait at least 6 hours
+            return Response({"detail": "Guest still has time to pay."}, status=400)
+
+        with transaction.atomic():
+            booking.status = 'cancelled'
+            booking.rejection_reason = "Cancelled by owner: Payment not received in time."
+            booking.save()
+            
+            booking.car.status = 'available'
+            booking.car.save(update_fields=['status'])
+            
+            if booking.payment:
+                booking.payment.status = 'cancelled'
+                booking.payment.save()
+
+        return Response({
+            "detail": "Booking cancelled. Car is now available again."
+        })

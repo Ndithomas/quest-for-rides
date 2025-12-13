@@ -17,7 +17,7 @@ export interface Car {
   daily_rate: number;
   owner: number;
   owner_name: string;
-  status: 'active' | 'inactive' | 'maintenance';
+  status: 'available' | 'booked' | 'maintenance' | 'inactive';
   created_at: string;
   updated_at: string;
 
@@ -70,13 +70,19 @@ export interface CarList {
   photos: CarPhoto[];
   owner_name: string;
   is_verified: boolean;
-  status: 'active' | 'inactive' | 'maintenance';
+  // Updated type to match backend serializers
+  status_display: 'Available' | 'Booked' | 'Under Maintenance' | 'Unavailable'; 
+  status_badge: 'available' | 'booked' | 'maintenance' | 'inactive';
   license_plate: string;
+  // Add the actual car status field from the model
+  status: 'available' | 'booked' | 'maintenance' | 'inactive';
 }
 
 export interface CarDetail extends Car {
-  photos: CarPhoto[];
-  pricing_rules: PricingRule[];
+   photos: CarPhoto[];
+   pricing_rules: PricingRule[];
+   status_display: string;
+   status_badge: string;
 }
 
 @Injectable({
@@ -86,7 +92,6 @@ export class ListingsService {
   private apiUrl = `${environment.apiBaseUrl}/api/listings`;
   constructor(private http: HttpClient) { }
 
-  // Public: Search all active cars (guests OK)
   search(filters: any = {}): Observable<CarList[]> {
     let params = new HttpParams();
 
@@ -101,7 +106,6 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
-  // Owner: Get my cars
   getMyCars(): Observable<Car[]> {
     return this.http.get<Car[]>(`${this.apiUrl}/cars/`).pipe(catchError(this.handleError));
   }
@@ -114,10 +118,7 @@ export class ListingsService {
     return this.http.get<CarDetail>(`${this.apiUrl}/cars/${id}/`).pipe(catchError(this.handleError));
   }
 
-
-
   updateCar(id: number, data: any): Observable<Car> {
-    // Use /owner/cars/ for updates
     return this.http.put<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
       .pipe(catchError(this.handleError));
   }
@@ -132,8 +133,6 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
-
-  // Photo management - UPDATED to match backend
   uploadPhotos(carId: number, files: File[]): Observable<CarPhoto[]> {
     const formData = new FormData();
     files.forEach(f => formData.append('images', f));
@@ -151,7 +150,6 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
-  // Availability
   getAvailability(carId: number): Observable<Availability[]> {
     return this.http.get<Availability[]>(`${this.apiUrl}/cars/${carId}/availability/`).pipe(catchError(this.handleError));
   }
@@ -161,7 +159,6 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
-  // Pricing
   getPricing(carId: number): Observable<PricingRule[]> {
     return this.http.get<PricingRule[]>(`${this.apiUrl}/cars/${carId}/pricing/`).pipe(catchError(this.handleError));
   }
@@ -171,22 +168,45 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
-  // Status
-  toggleStatus(carId: number, status: 'active' | 'inactive' | 'maintenance'): Observable<Car> {
+ 
+  toggleStatus(carId: number, status: 'available' | 'maintenance' | 'inactive'): Observable<Car> {
     return this.http.patch<Car>(`${this.apiUrl}/cars/${carId}/toggle-status/`, { status })
       .pipe(catchError(this.handleError));
   }
-  // listings.service.ts — replace the hardcoded one
 
   getAllCars(): Observable<CarList[]> {
     return this.http.get<CarList[]>(`${this.apiUrl}/cars/all/`)
       .pipe(catchError(this.handleError));
   }
-  // listings.service.ts
+  
   verifyCar(id: number, is_verified: boolean) {
     return this.http.patch(`${this.apiUrl}/cars/${id}/verify/`, { is_verified });
   }
+  
+ 
+isCarCurrentlyBooked(car: CarList | CarDetail): boolean {
+  return car.status_badge === 'booked' || car.status === 'booked';
+}
 
+markCarAvailable(id: number): Observable<any> {
+  return this.http.post(`${this.apiUrl}/cars/${id}/mark-available/`, {})
+    .pipe(catchError(this.handleError));
+}
+
+getCarStatusDisplay(car: CarList | CarDetail): string {
+  if (this.isCarCurrentlyBooked(car)) {
+    return 'Booked';
+  }
+  
+  const statusMap: Record<string, string> = {
+    'available': 'Available',
+    'booked': 'Booked',
+    'maintenance': 'Under Maintenance',
+    'inactive': 'Unavailable'
+  };
+  
+  return statusMap[car.status] || 'Unavailable';
+}
 
   private handleError(error: any) {
     console.error('Listings Service Error:', error);

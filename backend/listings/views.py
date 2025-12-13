@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import *
 from .serializers import *  
-
+from django.utils import timezone
+from bookings.models import Booking
 
 class CarListCreateAPIView(generics.ListCreateAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos')
@@ -27,27 +28,19 @@ class CarListCreateAPIView(generics.ListCreateAPIView):
 
 
 
-class CarDetailAPIView(generics.RetrieveAPIView):  
+class CarDetailAPIView(generics.RetrieveAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos', 'pricing_rules')
     serializer_class = CarDetailSerializer
     lookup_field = 'pk'
     
-    
     def get_permissions(self):
-        if self.request.method in ['GET']:
+        if self.request.method == 'GET':
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]  
+        return [permissions.IsAuthenticated()]
 
     def get_object(self):
-        car = super().get_object()
-        
-        if car.status != 'active':
-            if not (self.request.user.is_authenticated and 
-                   (self.request.user == car.owner or 
-                    self.request.user.role in ['management', 'staff'])):
-                raise permissions.exceptions.NotFound()  
-        
-        return car
+        # SIMPLY RETURN THE CAR WITHOUT STATUS CHECK
+        return super().get_object()
 
 class OwnerCarDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Car.objects.all()
@@ -164,6 +157,8 @@ class PricingRuleListCreateAPIView(generics.ListCreateAPIView):
         car = get_object_or_404(Car, id=self.kwargs['car_id'], owner=self.request.user)
         serializer.save(car=car)
 
+# views.py
+
 class CarToggleStatusAPIView(generics.UpdateAPIView):
     queryset = Car.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -174,29 +169,34 @@ class CarToggleStatusAPIView(generics.UpdateAPIView):
             return Response({"detail": "You do not own this car."}, status=403)
 
         new_status = request.data.get('status')
-        valid_statuses = ['active', 'inactive', 'maintenance']
+        valid_statuses = ['available', 'inactive', 'maintenance']  # ← Fixed: was 'active'
+
         if new_status not in valid_statuses:
             return Response({
                 "detail": f"Invalid status. Must be one of: {', '.join(valid_statuses)}"
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         car.status = new_status
         car.save(update_fields=['status'])
 
+        # Better: return full updated car data
+        serializer = CarDetailSerializer(car, context={'request': request})
         return Response({
             "message": "Status updated successfully",
-            "status": car.get_status_display()
+            "car": serializer.data
         })
 
 class PublicCarSearchAPIView(generics.ListAPIView):
     serializer_class = CarListSerializer
-    permission_classes = [permissions.AllowAny] 
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Car.objects.filter(status='active', is_verified=True) \
-            .select_related('owner') \
-            .prefetch_related('photos')
-
+        today = timezone.now().date()
+        queryset = Car.objects.filter(
+            is_verified=True,
+            status__in=['available', 'booked', 'inactive']  # Keep all statuses
+        ).select_related('owner').prefetch_related('photos')
+        
         location = self.request.query_params.get('location')
         make = self.request.query_params.get('make')
         min_price = self.request.query_params.get('min_price')
@@ -211,9 +211,7 @@ class PublicCarSearchAPIView(generics.ListAPIView):
         if max_price:
             queryset = queryset.filter(daily_rate__lte=max_price)
 
-        return queryset.order_by('-created_at') 
-
-# views.py — Improve CarVerifyAPIView (optional but better)
+        return queryset.order_by('-created_at')
 
 class CarVerifyAPIView(generics.UpdateAPIView):
     queryset = Car.objects.all()
@@ -237,7 +235,6 @@ class CarVerifyAPIView(generics.UpdateAPIView):
 # views.py — add this anywhere in the file
 
 class ManagementAllCarsAPIView(generics.ListAPIView):
-    """Only management/staff can list ALL cars (including unverified ones)"""
     queryset = Car.objects.select_related('owner').prefetch_related('photos')
     serializer_class = CarDetailSerializer  # or CarListSerializer if you prefer lighter
     permission_classes = [permissions.IsAuthenticated]
@@ -246,3 +243,39 @@ class ManagementAllCarsAPIView(generics.ListAPIView):
         if self.request.user.role not in ['management', 'staff']:
             raise permissions.exceptions.PermissionDenied("Access denied.")
         return self.queryset.all().order_by('-created_at')
+    
+class MarkCarAvailableAPIView(generics.GenericAPIView):
+    queryset = Car.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        car = self.get_object()
+        if car.owner != request.user:
+            return Response(
+                {"detail": "You do not own this car."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        today = timezone.now().date()
+        has_recently_ended_booking = Booking.objects.filter(
+            car=car,
+            status='confirmed',
+            end_date__lt=today,
+            end_date__gte=today - timezone.timedelta(days=3)
+        ).exists()
+
+        if not has_recently_ended_booking and car.status != 'available':
+            return Response(
+                {"detail": "This car has no recently ended booking and cannot be re-activated."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        car.status = 'available'
+        car.save(update_fields=['status'])
+
+        return Response({
+            "message": "Car successfully marked as available!",
+            "car_id": car.id,
+            "status": "available",
+            "status_display": "Available",
+            "status_badge": "available"
+        }, status=status.HTTP_200_OK)

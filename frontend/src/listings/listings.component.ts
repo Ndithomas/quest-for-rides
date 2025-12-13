@@ -110,7 +110,6 @@ export class ListingsComponent implements OnInit {
         return car.photos[0].image;
       }
     }
-    // Fallback to primary_photo field if available (direct URL)
     if (car.primary_photo) {
       return car.primary_photo;
     }

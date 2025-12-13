@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -16,20 +16,66 @@ import { NavbarComponent } from '../navbar/navbar.component';
   styleUrl: './car-detail.component.scss'
 })
 export class CarDetailComponent implements OnInit {
+
+  // Data
   car = signal<any>(null);
   photos = signal<any[]>([]);
   currentPhoto = signal(0);
 
+  // UI state
   loading = signal(true);
-  error = signal('');
+  error = signal<string>('');
 
-  startDate: string = '';
-  endDate: string = '';
-  specialRequirements: string = '';
+  // Form fields — startDate & endDate as signals for instant price update
+  startDate = signal<string>('');
+  endDate = signal<string>('');
+  specialRequirements = ''; // ← normal string (perfect for [(ngModel)])
 
+  // Booking state
   bookingLoading = signal(false);
-  bookingError = signal('');
   bookingSuccess = signal(false);
+  bookingError = signal<string>('');
+
+  // Live calculations
+  numDays = computed(() => {
+    const start = this.startDate();
+    const end = this.endDate();
+    if (!start || !end) return 0;
+
+    const s = new Date(start);
+    const e = new Date(end);
+    const diff = e.getTime() - s.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  });
+
+  totalPrice = computed(() => {
+    return this.numDays() * (this.car()?.daily_rate || 0);
+  });
+
+  isCarBookable = computed(() => {
+    const c = this.car();
+    if (!c || !c.is_verified) return false;
+
+    const badge = (c.status_badge || '').toLowerCase();
+    const display = (c.status_display || '').toLowerCase();
+
+    const booked = badge === 'booked' || display.includes('booked');
+    const unavailable = ['maintenance', 'inactive'].includes(badge);
+
+    return !booked && !unavailable;
+  });
+
+  processedFeatures = computed<string[]>(() => {
+    const f = this.car()?.features;
+    if (!f) return [];
+    if (Array.isArray(f)) return f;
+    return f.toString()
+      .replace(/\n/g, ',')
+      .split(',')
+      .map((s: string) => s.trim())
+      .filter((s: string) => s.length > 0);
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -37,152 +83,113 @@ export class CarDetailComponent implements OnInit {
     private location: Location,
     private listingsService: ListingsService,
     private bookingService: BookingService,
-    private auth: AuthService
-  ) { }
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadCar(+id);
-    } else {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam ? Number(idParam) : NaN;
+    if (isNaN(id)) {
       this.error.set('Invalid car ID');
       this.loading.set(false);
+      return;
     }
+    this.loadCar(id);
   }
 
-  loadCar(id: number): void {
+  loadCar(id: number) {
     this.loading.set(true);
     this.error.set('');
-
     this.listingsService.getCar(id).subscribe({
-      next: (data: any) => {
-        if (!data) {
-          this.error.set('Car not found');
-          this.loading.set(false);
-          return;
-        }
+      next: (data) => {
         this.car.set(data);
-        this.photos.set(data.photos && Array.isArray(data.photos) ? data.photos : []);
+        this.photos.set(Array.isArray(data.photos) ? data.photos : []);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('Failed to load car details');
+      error: (err) => {
+        this.error.set(err.status === 404 ? 'Car not found.' : 'Failed to load car details.');
         this.loading.set(false);
       }
     });
   }
 
-  // Gallery
-  getCurrentPhotoUrl(): string {
-    const photo = this.photos()[this.currentPhoto()];
-    return photo?.image || '';
+  refreshCar() {
+    const id = this.car()?.id;
+    if (id) this.loadCar(id);
   }
 
-  getThumbnailUrl(photo: any): string {
-    return photo.image;
+  // Gallery
+  getCurrentPhotoUrl(): string {
+    return this.photos()[this.currentPhoto()]?.image || '/assets/placeholder.jpg';
   }
 
   next() {
-    if (this.photos().length > 1) {
-      this.currentPhoto.set((this.currentPhoto() + 1) % this.photos().length);
-    }
+    const len = this.photos().length;
+    if (len > 1) this.currentPhoto.set((this.currentPhoto() + 1) % len);
   }
 
   prev() {
-    if (this.photos().length > 1) {
-      this.currentPhoto.set(
-        (this.currentPhoto() - 1 + this.photos().length) % this.photos().length
-      );
+    const len = this.photos().length;
+    if (len > 1) {
+      this.currentPhoto.set(this.currentPhoto() === 0 ? len - 1 : this.currentPhoto() - 1);
     }
+  }
+
+  // Helpers
+  today(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  back() {
+    this.location.back();
   }
 
   getCarTitle(): string {
     const c = this.car();
-    return c ? `${c.year || ''} ${c.make || ''} ${c.model || ''}`.trim() : 'Loading...';
+    return c ? `${c.year} ${c.make} ${c.model}` : 'Loading...';
   }
 
   getCarLocation(): string {
     return this.car()?.location_name || 'Location not set';
   }
 
-  getDailyRate(): number {
-    return this.car()?.daily_rate || 0;
-  }
-
-  getOwnerName(): string {
-    return this.car()?.owner_name || this.car()?.owner?.username || 'Owner';
-  }
-
   getLicensePlate(): string {
-    return this.car()?.license_plate || 'Not specified';
+    return this.car()?.license_plate || 'N/A';
   }
 
-  getStatus(): string {
-    const status = this.car()?.status || 'available';
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  }
-
-  today(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  numDays(): number {
-    if (!this.startDate || !this.endDate) return 0;
-    const start = new Date(this.startDate);
-    const end = new Date(this.endDate);
-    const diffMs = end.getTime() - start.getTime();
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
-  }
-
-  totalPrice(): number {
-    return this.numDays() * this.getDailyRate();
-  }
-
-
-  submitBooking(): void {
-    this.bookingError.set('');
-
-    if (!this.startDate || !this.endDate) {
-      this.bookingError.set('Please select start and end dates.');
+  // Booking
+  submitBooking() {
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
 
-    if (new Date(this.endDate) <= new Date(this.startDate)) {
-      this.bookingError.set('End date must be after start date.');
+    if (this.numDays() === 0) {
+      this.bookingError.set('Please select valid dates.');
       return;
     }
 
     this.bookingLoading.set(true);
+    this.bookingError.set('');
+    this.bookingSuccess.set(false);
 
-    const bookingRequest = {
+    this.bookingService.createBooking({
       car: this.car()!.id,
-      start_date: this.startDate,
-      end_date: this.endDate,
-      special_requirements: this.specialRequirements || null
-    };
-
-    this.bookingService.createBooking(bookingRequest).subscribe({
+      start_date: this.startDate(),
+      end_date: this.endDate(),
+      special_requirements: this.specialRequirements  // ← normal string, no ()
+    }).subscribe({
       next: (booking) => {
-        this.bookingLoading.set(false);
         this.bookingSuccess.set(true);
-
+        this.bookingLoading.set(false);
         setTimeout(() => {
           this.router.navigate(['/booking-confirmation', booking.id]);
-        }, 1800);
+        }, 1500);
       },
-      error: (error) => {
+      error: (err) => {
+        this.bookingError.set(err.error?.detail || 'Booking failed. Please try again.');
         this.bookingLoading.set(false);
-        const message =
-          error?.error?.detail ||
-          error?.error?.car?.[0] ||
-          'Failed to create booking. The car may be unavailable for these dates.';
-        this.bookingError.set(message);
       }
     });
-  }
-
-  back() {
-    this.location.back();
   }
 }

@@ -166,7 +166,17 @@ $radius: 1.4rem;
   font-size: 0.75rem;
   font-weight: 700;
 }
-
+.status-badge {
+  &.booked {
+    background: #f39c12; /* Turo orange */
+  }
+  &.maintenance {
+    background: #6c757d;
+  }
+  &.inactive {
+    background: #dc3545;
+  }
+}
 .pricing-needed {
   position: absolute;
   top: 0.8rem;

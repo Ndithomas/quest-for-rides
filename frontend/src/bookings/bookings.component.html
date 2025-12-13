@@ -29,23 +29,27 @@
     </div>
   </div>
   <div *ngIf="!loading() && getFilteredBookings().length > 0" class="bookings-grid">
-    <div *ngFor="let booking of getFilteredBookings()" class="booking-card-wrapper">
-      <div class="booking-card" [ngClass]="{
-           'status-pending':    booking.status === 'pending',
-           'status-confirmed':  booking.status === 'confirmed',
-           'status-rejected':   booking.status === 'rejected',
-           'status-cancelled':  booking.status === 'cancelled',
-           'status-completed':  booking.status === 'completed'
-         }">
-        <div class="card-header">
-          <div>
-            <h3 class="car-title mb-1">{{ booking.car_make }} {{ booking.car_model }}</h3>
-            <p class="text-muted small mb-0">{{ booking.car_title }}</p>
-          </div>
-          <span class="status-badge" [ngClass]="'status-' + booking.status">
-            {{ getStatusText(booking) | titlecase }}
-          </span>
+     <div *ngFor="let booking of getFilteredBookings()" class="booking-card-wrapper">
+    <div class="booking-card" [ngClass]="{
+         'status-pending':    booking.status === 'pending',
+         'status-confirmed':  booking.status === 'confirmed',
+         'status-rejected':   booking.status === 'rejected',
+         'status-cancelled':  booking.status === 'cancelled',
+         'status-completed':  booking.status === 'completed'
+       }">
+      <div class="card-header">
+        <div>
+          <h3 class="car-title mb-1">{{ booking.car_make }} {{ booking.car_model }}</h3>
+          <p class="text-muted small mb-0">{{ booking.car_title }}</p>
         </div>
+        <span class="status-badge" [ngClass]="'status-' + booking.status">
+          {{ getStatusText(booking) | titlecase }}
+        </span>
+      </div>
+       <div *ngIf="booking.status === 'pending'" class="timer-alert">
+        <i class="bi bi-clock"></i>
+        <span>{{ timeLeftMap().get(booking.id) || getTimeLeft(booking) }}</span>
+      </div>
         <div class="date-range">
           <div class="date-item">
             <span class="label">Check-in</span>

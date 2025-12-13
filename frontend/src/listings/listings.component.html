@@ -37,7 +37,9 @@
             <span>No Image</span>
           </div>
 
-          <div class="status-badge available">Available</div>
+          <div class="status-badge" [ngClass]="car.status_badge">
+            {{ car.status_display }}
+          </div>
           <div *ngIf="car.is_verified" class="verified-badge">
             ✔ Verified
           </div>

@@ -19,7 +19,9 @@ export class OwnerBookingsComponent implements OnInit {
   error = signal('');
   success = signal('');
   filter = signal<'pending' | 'confirmed-unpaid' | 'confirmed-paid' | 'active' | 'completed' | 'rejected' | 'cancelled' | 'all'>('pending');
-
+  cancellingId = signal<number | null>(null);
+  showCancelModal = signal(false);
+  bookingToCancel = signal<Booking | null>(null);  
   showModal = signal(false);
   modalType = signal<'confirm' | 'reject'>('confirm');
   currentBooking = signal<Booking | null>(null);
@@ -240,4 +242,54 @@ export class OwnerBookingsComponent implements OnInit {
       default: return filterValue;
     }
   }
+  cancelUnpaidBooking(bookingId: number): void {
+    if (!confirm('Are you sure you want to cancel this booking because the guest has not paid? The car will become available again.')) {
+      return;
+    }
+
+    this.cancellingId.set(bookingId);
+
+    this.bookingService.ownerCancelUnpaidBooking(bookingId).subscribe({
+      next: () => {
+        this.success.set('Booking cancelled successfully. Car is now available.');
+        this.loadBookingsSimple();
+        this.cancellingId.set(null);
+        setTimeout(() => this.success.set(''), 4000);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || 'Failed to cancel booking.');
+        this.cancellingId.set(null);
+      }
+    });
+  }
+  openCancelConfirmModal(booking: Booking): void {
+  this.bookingToCancel.set(booking);
+  this.showCancelModal.set(true);
+}
+
+closeCancelModal(): void {
+  this.showCancelModal.set(false);
+  this.bookingToCancel.set(null);
+}
+
+confirmCancelUnpaid(): void {
+  const booking = this.bookingToCancel();
+  if (!booking) return;
+
+  this.cancellingId.set(booking.id);
+
+  this.bookingService.ownerCancelUnpaidBooking(booking.id).subscribe({
+    next: () => {
+      this.success.set('Booking cancelled successfully. The car is now available again.');
+      this.loadBookingsSimple();
+      this.closeCancelModal();
+      this.cancellingId.set(null);
+      setTimeout(() => this.success.set(''), 5000);
+    },
+    error: (err) => {
+      this.error.set(err.error?.detail || 'Failed to cancel booking. Please try again.');
+      this.cancellingId.set(null);
+    }
+  });
+}
 }

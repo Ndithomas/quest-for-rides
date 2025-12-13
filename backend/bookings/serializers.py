@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers
 from .models import Booking, BookingPayment, BookingReview
 from userAuth.models import User
+from listings.models import Car
 
 
 class UserSimpleSerializer(serializers.ModelSerializer):
@@ -15,16 +16,12 @@ class UserSimpleSerializer(serializers.ModelSerializer):
 class BookingPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookingPayment
-        fields = [
-            'id', 'amount', 'status', 'payment_method',
-            'transaction_id', 'created_at', 'updated_at'
-        ]
+        fields = ['id', 'amount', 'status', 'payment_method', 'transaction_id', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
 
 class BookingReviewSerializer(serializers.ModelSerializer):
     reviewer = UserSimpleSerializer(read_only=True)
-    
     class Meta:
         model = BookingReview
         fields = ['id', 'reviewer', 'rating', 'comment', 'created_at']
@@ -32,25 +29,38 @@ class BookingReviewSerializer(serializers.ModelSerializer):
 
 
 class BookingCreateSerializer(serializers.ModelSerializer):
+    car = serializers.PrimaryKeyRelatedField(queryset=Car.objects.all())
+
     class Meta:
         model = Booking
         fields = ['car', 'start_date', 'end_date', 'special_requirements']
-    
-    def validate(self, data):
 
+    def validate(self, data):
         if data['end_date'] <= data['start_date']:
             raise serializers.ValidationError({"dates": "End date must be after start date."})
-        
+
         if data['start_date'] < timezone.now().date():
             raise serializers.ValidationError({"start_date": "Start date cannot be in the past."})
-        
-        max_days = 365
-        days_diff = (data['end_date'] - data['start_date']).days
-        if days_diff > max_days:
-            raise serializers.ValidationError({"dates": f"Booking cannot exceed {max_days} days."})
-        
-        return data
 
+        days_diff = (data['end_date'] - data['start_date']).days
+        if days_diff > 365:
+            raise serializers.ValidationError({"dates": "Booking cannot exceed 365 days."})
+
+        car = data['car']
+        if car.status != 'available':
+            raise serializers.ValidationError({"car": "This car is not available for booking."})
+
+        overlapping = Booking.objects.filter(
+            car=car,
+            status__in=['pending', 'confirmed'],
+            start_date__lte=data['end_date'],
+            end_date__gte=data['start_date']
+        ).exists()
+
+        if overlapping:
+            raise serializers.ValidationError({"dates": "This car is already booked for these dates."})
+
+        return data
 
 class BookingListSerializer(serializers.ModelSerializer):
     guest = UserSimpleSerializer(read_only=True)
@@ -58,19 +68,13 @@ class BookingListSerializer(serializers.ModelSerializer):
     car_title = serializers.CharField(source='car.title', read_only=True)
     car_make = serializers.CharField(source='car.make', read_only=True)
     car_model = serializers.CharField(source='car.model', read_only=True)
-    
-    payment_status = serializers.CharField(
-        source='payment.status', read_only=True, default='pending'
-    )
-    
+    payment_status = serializers.CharField(source='payment.status', read_only=True, default='pending')
+
     class Meta:
         model = Booking
-        fields = ['id','guest','owner','car','car_title','car_make',
-                  'car_model','start_date','end_date','status',
-                  'daily_rate','total_price','special_requirements',
-                  'owner_notes','rejection_reason','payment_status',
-                  'created_at','confirmed_at',
-                   ]
+        fields = ['id', 'guest', 'owner', 'car', 'car_title', 'car_make', 'car_model',
+                  'start_date', 'end_date', 'status', 'daily_rate', 'total_price',
+                  'special_requirements', 'owner_notes', 'rejection_reason', 'payment_status', 'created_at', 'confirmed_at']
         read_only_fields = fields
 
 
@@ -84,35 +88,23 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     car_license_plate = serializers.CharField(source='car.license_plate', read_only=True)
     payment = BookingPaymentSerializer(read_only=True)
     review = BookingReviewSerializer(read_only=True)
-    
+
     class Meta:
         model = Booking
         fields = '__all__'
-        read_only_fields = [
-            'guest', 'owner', 'car', 'daily_rate', 'total_price',
-            'status', 'created_at', 'updated_at', 'confirmed_at',
-            'owner_notes', 'rejection_reason'
-        ]
+        read_only_fields = ['guest', 'owner', 'car', 'daily_rate', 'total_price', 'status', 'created_at', 'updated_at', 'confirmed_at']
 
 
 class BookingConfirmSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['confirmed', 'rejected'])
-    owner_notes = serializers.CharField(
-        required=False, allow_blank=True, max_length=500
-    )
-    rejection_reason = serializers.CharField(
-        required=False, allow_blank=True, max_length=500
-    )
-    
+    owner_notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    rejection_reason = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
     def validate(self, data):
         if data['status'] == 'rejected' and not data.get('rejection_reason'):
-            raise serializers.ValidationError(
-                {"rejection_reason": "Rejection reason is required when rejecting a booking."}
-            )
+            raise serializers.ValidationError({"rejection_reason": "Reason is required when rejecting."})
         return data
 
 
 class BookingStatusUpdateSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(
-        choices=['active', 'completed', 'cancelled', 'refunded']
-    )
+    status = serializers.ChoiceField(choices=['active', 'completed', 'cancelled', 'refunded'])

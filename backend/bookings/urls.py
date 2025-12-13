@@ -11,4 +11,5 @@ urlpatterns = [
     path('my-bookings/', views.MyBookingsAPIView.as_view()),
     path('pending-confirmations/', views.PendingConfirmationsAPIView.as_view()),
     path('all-bookings/', views.AllBookingsAPIView.as_view()),
+    path('<int:pk>/owner-cancel-unpaid/', views.OwnerCancelUnpaidBookingAPIView.as_view()),
 ]
