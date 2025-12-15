@@ -61,7 +61,7 @@ export const routes: Routes = [
 
 
       {
-        path: 'admin/users',
+        path: 'management/users',
         loadComponent: () => import('../management-users/management-users.component')
           .then(m => m.ManagementUsersComponent),
         canActivate: [roleAuthGuard],
@@ -78,6 +78,13 @@ export const routes: Routes = [
         path: 'management/cars',
         loadComponent: () => import('../management-cars/management-cars.component')
           .then(m => m.ManagementCarsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
+      {
+        path: 'management/bookings',
+        loadComponent: () => import('../management-bookings/management-bookings.component')
+          .then(m => m.ManagementBookingsComponent),
         canActivate: [roleAuthGuard],
         data: { roles: ['management'] }
       },
@@ -134,6 +141,12 @@ export const routes: Routes = [
         loadComponent: () => import('../owner-bookings/owner-bookings.component').then(m => m.OwnerBookingsComponent),
         canActivate: [roleAuthGuard],
         data: { roles: ['owner'] }
+      },
+      {
+        path: 'booking-details/:bookingId',
+        loadComponent: () => import('../booking-details/booking-details.component').then(m => m.BookingDetailsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
       },
 
       {

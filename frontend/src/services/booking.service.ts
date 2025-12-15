@@ -28,6 +28,8 @@ export interface Booking {
   car_title: string;
   car_make: string;
   car_model: string;
+  car_year?: number; // Add this
+  car_license_plate?: string; // Add this
   start_date: string;
   end_date: string;
   status: string;
@@ -95,6 +97,9 @@ export class BookingService {
 
   ownerCancelUnpaidBooking(id: number): Observable<{ detail: string }> {
     return this.http.post<{ detail: string }>(`${this.apiUrl}/${id}/owner-cancel-unpaid/`, {});
+  }
+  getBookingStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/stats/`);
   }
 }
 

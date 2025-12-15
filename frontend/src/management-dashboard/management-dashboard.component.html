@@ -2,7 +2,6 @@
 <app-navbar></app-navbar>
 
 <div class="dashboard-page">
-
   <!-- Hero Header -->
   <div class="dashboard-header">
     <div class="container">
@@ -13,7 +12,6 @@
 
   <div class="container py-5">
 
-    <!-- Stats Grid -->
     <div class="stats-grid">
       <div class="stat-card total-users">
         <div class="stat-icon">
@@ -42,29 +40,54 @@
         <div class="stat-label">Total Cars</div>
       </div>
 
-      <div class="stat-card active-cars">
+      <div class="stat-card total-bookings">
         <div class="stat-icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 22.81 2.81 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
           </svg>
         </div>
-        <div class="stat-value">{{ stats.active_cars || 0 }}</div>
-        <div class="stat-label">Active Listings</div>
+        <div class="stat-value">{{ stats.total_bookings || 0 }}</div>
+        <div class="stat-label">Total Bookings</div>
       </div>
 
-      <div class="stat-card today-added">
+      <div class="stat-card active-bookings">
         <div class="stat-icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M12 2v20M2 12h20"></path>
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
           </svg>
         </div>
-        <div class="stat-value">{{ stats.cars_added_today || 0 }}</div>
-        <div class="stat-label">Added Today</div>
+        <div class="stat-value">{{ stats.active_bookings || 0 }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+
+      <div class="stat-card pending-bookings">
+        <div class="stat-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-value">{{ stats.pending_bookings || 0 }}</div>
+        <div class="stat-label">Pending</div>
+      </div>
+
+      <div class="stat-card revenue">
+        <div class="stat-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="stat-value">{{ formatCurrency(stats.total_revenue || 0) }}</div>
+        <div class="stat-label">Revenue</div>
       </div>
     </div>
 
     <div class="row g-5 mt-4">
-
       <!-- Recent Users -->
       <div class="col-lg-6">
         <div class="data-card">
@@ -86,17 +109,15 @@
                 <tr *ngFor="let u of recentUsers">
                   <td class="user-name">{{ u.first_name }} {{ u.last_name }}</td>
                   <td>
-                    <span class="role-badge" [class.owner]="u.role === 'owner'"
-                          [class.guest]="u.role === 'guest'"
-                          [class.management]="u.role === 'management'">
+                    <span class="role-badge" [class.owner]="u.role === 'owner'" [class.guest]="u.role === 'guest'"
+                      [class.management]="u.role === 'management'">
                       {{ u.role | titlecase }}
                     </span>
                   </td>
                   <td class="email">{{ u.email }}</td>
                   <td>
                     <span class="status-badge" [class.active]="u.status === 'active'"
-                          [class.inactive]="u.status === 'inactive'"
-                          [class.suspended]="u.status === 'suspended'">
+                      [class.inactive]="u.status === 'inactive'" [class.suspended]="u.status === 'suspended'">
                       {{ u.status | titlecase }}
                     </span>
                   </td>
@@ -108,7 +129,7 @@
             </table>
           </div>
           <div class="card-footer">
-            <a routerLink="/admin/users" class="view-all-btn">View All Users</a>
+            <a routerLink="/management/users" class="view-all-btn">View All Users</a>
           </div>
         </div>
       </div>
@@ -136,11 +157,9 @@
                   <td class="owner">{{ c.owner_name || c.owner_username }}</td>
                   <td class="price">R{{ c.price_per_day | number:'1.0-0' }}</td>
                   <td>
-                    <span class="status-badge car-status"
-                          [class.active]="c.status === 'active'"
-                          [class.booked]="c.status === 'booked'"
-                          [class.maintenance]="c.status === 'maintenance'"
-                          [class.suspended]="c.status === 'suspended'">
+                    <span class="status-badge car-status" [class.active]="c.status === 'active'"
+                      [class.booked]="c.status === 'booked'" [class.maintenance]="c.status === 'maintenance'"
+                      [class.suspended]="c.status === 'suspended'">
                       {{ c.status | titlecase }}
                     </span>
                   </td>
@@ -153,6 +172,63 @@
           </div>
           <div class="card-footer">
             <a routerLink="/management/cars" class="view-all-btn success">View All Cars</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Bookings -->
+      <div class="col-lg-12">
+        <div class="data-card">
+          <div class="card-header">
+            <h3>Recent Bookings</h3>
+            <span class="badge info">{{ recentBookings.length }}</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Car</th>
+                  <th>Guest</th>
+                  <th>Dates</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let booking of recentBookings">
+                  <td class="booking-id">{{ booking.id }}</td>
+                  <td class="car-name">
+                    {{ booking.car_make }} {{ booking.car_model }}
+                    <div class="small text-muted">{{ booking.car_title }}</div>
+                  </td>
+                  <td class="user-name">
+                    {{ booking.guest?.username || 'N/A' }}
+                    <div class="small text-muted">{{ booking.guest?.email || '' }}</div>
+                  </td>
+                  <td class="dates">
+                    {{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}
+                    <div class="small text-muted">{{ getDaysBetween(booking.start_date, booking.end_date) }} days</div>
+                  </td>
+                  <td class="price">R{{ booking.total_price | number:'1.0-0' }}</td>
+                  <td>
+                    <span class="status-badge booking-status" [class.pending]="booking.status === 'pending'"
+                      [class.confirmed]="booking.status === 'confirmed'" [class.active]="booking.status === 'active'"
+                      [class.completed]="booking.status === 'completed'"
+                      [class.cancelled]="booking.status === 'cancelled'">
+                      {{ booking.status | titlecase }}
+                    </span>
+                  </td>
+                  
+                </tr>
+                <tr *ngIf="!recentBookings.length">
+                  <td colspan="7" class="empty-state">No recent bookings</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-footer">
+            <a routerLink="/management/bookings" class="view-all-btn info">View All Bookings</a>
           </div>
         </div>
       </div>

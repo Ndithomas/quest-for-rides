@@ -8,6 +8,10 @@ from .models import *
 from .serializers import *
 from userAuth.permissions import IsManagement
 from django.utils import timezone
+from django.db.models import Count, Sum, Q
+from listings.models import Car
+from userAuth.models import User
+
 
 class BookingListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]    
@@ -216,3 +220,48 @@ class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
         return Response({
             "detail": "Booking cancelled. Car is now available again."
         })
+    
+class BookingStatsAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsManagement]
+    
+    def get(self, request):
+        # Get counts for each booking status
+        bookings_by_status = Booking.objects.values('status').annotate(
+            count=Count('id')
+        )
+        
+        # Initialize stats
+        stats = {
+            'total_bookings': 0,
+            'pending_bookings': 0,
+            'confirmed_bookings': 0,
+            'active_bookings': 0,
+            'completed_bookings': 0,
+            'cancelled_bookings': 0,
+            'total_revenue': 0
+        }
+        
+        # Fill stats from database
+        for item in bookings_by_status:
+            status = item['status']
+            count = item['count']
+            stats['total_bookings'] += count
+            
+            if status == 'pending':
+                stats['pending_bookings'] = count
+            elif status == 'confirmed':
+                stats['confirmed_bookings'] = count
+            elif status == 'active':
+                stats['active_bookings'] = count
+            elif status == 'completed':
+                stats['completed_bookings'] = count
+            elif status == 'cancelled':
+                stats['cancelled_bookings'] = count
+        
+        # Calculate total revenue from completed bookings
+        completed_bookings = Booking.objects.filter(status='completed')
+        if completed_bookings.exists():
+            revenue = completed_bookings.aggregate(total=Sum('total_price'))
+            stats['total_revenue'] = revenue['total'] or 0
+        
+        return Response(stats)

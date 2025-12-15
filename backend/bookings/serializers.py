@@ -87,7 +87,7 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = '__all__'
-        read_only_fields = ['guest', 'owner', 'car', 'daily_rate', 'total_price', 'status', 'created_at', 'updated_at', 'confirmed_at']
+        read_only_fields = ['guest', 'owner', 'car', 'daily_rate', 'total_price', 'status', 'created_at', 'updated_at', 'confirmed_at', 'car_year', 'car_license_plate']
 
 class BookingConfirmSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['confirmed', 'rejected'])
