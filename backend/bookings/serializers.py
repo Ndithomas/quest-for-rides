@@ -1,10 +1,8 @@
-# bookings/serializers.py
 from django.utils import timezone
 from rest_framework import serializers
-from .models import Booking, BookingPayment, BookingReview
+from .models import *
 from userAuth.models import User
 from listings.models import Car
-
 
 class UserSimpleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,13 +10,11 @@ class UserSimpleSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number']
         read_only_fields = fields
 
-
 class BookingPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookingPayment
         fields = ['id', 'amount', 'status', 'payment_method', 'transaction_id', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
-
 
 class BookingReviewSerializer(serializers.ModelSerializer):
     reviewer = UserSimpleSerializer(read_only=True)
@@ -26,7 +22,6 @@ class BookingReviewSerializer(serializers.ModelSerializer):
         model = BookingReview
         fields = ['id', 'reviewer', 'rating', 'comment', 'created_at']
         read_only_fields = ['reviewer', 'created_at']
-
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     car = serializers.PrimaryKeyRelatedField(queryset=Car.objects.all())
@@ -94,7 +89,6 @@ class BookingDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['guest', 'owner', 'car', 'daily_rate', 'total_price', 'status', 'created_at', 'updated_at', 'confirmed_at']
 
-
 class BookingConfirmSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['confirmed', 'rejected'])
     owner_notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
@@ -104,7 +98,6 @@ class BookingConfirmSerializer(serializers.Serializer):
         if data['status'] == 'rejected' and not data.get('rejection_reason'):
             raise serializers.ValidationError({"rejection_reason": "Reason is required when rejecting."})
         return data
-
 
 class BookingStatusUpdateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['active', 'completed', 'cancelled', 'refunded'])

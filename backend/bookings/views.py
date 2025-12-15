@@ -10,8 +10,7 @@ from userAuth.permissions import IsManagement
 from django.utils import timezone
 
 class BookingListCreateAPIView(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    
+    permission_classes = [permissions.IsAuthenticated]    
     serializer_class = BookingListSerializer
     queryset = Booking.objects.select_related('guest', 'owner', 'car', 'payment')
     
@@ -183,7 +182,6 @@ class AllBookingsAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
     queryset = Booking.objects.select_related('car', 'guest', 'owner', 'payment').order_by('-created_at')
 
-# views.py
 class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 

@@ -26,8 +26,6 @@ class CarListCreateAPIView(generics.ListCreateAPIView):
             raise permissions.exceptions.PermissionDenied("Only owners can list cars.")
         serializer.save(owner=self.request.user)
 
-
-
 class CarDetailAPIView(generics.RetrieveAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos', 'pricing_rules')
     serializer_class = CarDetailSerializer
@@ -39,7 +37,6 @@ class CarDetailAPIView(generics.RetrieveAPIView):
         return [permissions.IsAuthenticated()]
 
     def get_object(self):
-        # SIMPLY RETURN THE CAR WITHOUT STATUS CHECK
         return super().get_object()
 
 class OwnerCarDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -60,7 +57,6 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         car = get_object_or_404(Car, id=self.kwargs['car_id'], owner=self.request.user)
-        
         current_photos = car.photos.count()
         if current_photos >= 6:
             return Response(
@@ -109,7 +105,6 @@ class SetPrimaryPhotoAPIView(generics.UpdateAPIView):
         photo.save()
         return Response({"message": "Primary photo updated successfully."})
 
-
 class CarPhotoDeleteAPIView(generics.DestroyAPIView):
     queryset = CarPhoto.objects.all()
     permission_classes = [permissions.IsAuthenticated]
@@ -131,7 +126,6 @@ class CarPhotoDeleteAPIView(generics.DestroyAPIView):
                 first_photo.is_primary = True
                 first_photo.save()
 
-
 class AvailabilityListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = AvailabilitySerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -144,7 +138,6 @@ class AvailabilityListCreateAPIView(generics.ListCreateAPIView):
         car = get_object_or_404(Car, id=self.kwargs['car_id'], owner=self.request.user)
         serializer.save(car=car)
 
-
 class PricingRuleListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = PricingRuleSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -156,8 +149,6 @@ class PricingRuleListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         car = get_object_or_404(Car, id=self.kwargs['car_id'], owner=self.request.user)
         serializer.save(car=car)
-
-# views.py
 
 class CarToggleStatusAPIView(generics.UpdateAPIView):
     queryset = Car.objects.all()
@@ -178,8 +169,6 @@ class CarToggleStatusAPIView(generics.UpdateAPIView):
 
         car.status = new_status
         car.save(update_fields=['status'])
-
-        # Better: return full updated car data
         serializer = CarDetailSerializer(car, context={'request': request})
         return Response({
             "message": "Status updated successfully",
@@ -231,8 +220,6 @@ class CarVerifyAPIView(generics.UpdateAPIView):
             "message": "Verification status updated.",
             "is_verified": car.is_verified
         })
-    
-# views.py — add this anywhere in the file
 
 class ManagementAllCarsAPIView(generics.ListAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos')
@@ -271,7 +258,6 @@ class MarkCarAvailableAPIView(generics.GenericAPIView):
             )
         car.status = 'available'
         car.save(update_fields=['status'])
-
         return Response({
             "message": "Car successfully marked as available!",
             "car_id": car.id,

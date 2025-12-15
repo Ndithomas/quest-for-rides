@@ -10,7 +10,6 @@
     <div class="form-card">
       <form (ngSubmit)="submit()">
 
-        <!-- Basic Info -->
         <div class="input-grid">
           <input [ngModel]="title()" (ngModelChange)="title.set($event)" name="title" placeholder="Listing Title"
             class="form-input" required />

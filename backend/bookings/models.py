@@ -13,7 +13,6 @@ class Booking(models.Model):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ]
-    
 
     guest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings_as_guest')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings_as_owner')
@@ -39,7 +38,6 @@ class Booking(models.Model):
         ]
     
     def save(self, *args, **kwargs):
-        # Calculate total price
         num_days = (self.end_date - self.start_date).days
         if num_days < 1:
             raise ValidationError("End date must be after start date")

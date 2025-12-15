@@ -85,6 +85,7 @@ export class AddCarComponent implements OnDestroy {
 
     this.loading.set(true);
 
+    // FormData WITHOUT photos (just like edit)
     const formData = new FormData();
     formData.append('make', this.make().trim());
     formData.append('model', this.model().trim());
@@ -97,18 +98,17 @@ export class AddCarComponent implements OnDestroy {
     if (this.description().trim()) formData.append('description', this.description().trim());
     if (this.features().trim()) formData.append('features', this.features().trim());
 
-    // Add photos to the same FormData if backend supports it
-    for (let i = 0; i < this.selectedFiles.length; i++) {
-      formData.append('photos', this.selectedFiles[i]);
-    }
-
     this.listingsService.createCar(formData).subscribe({
       next: (response: any) => {
-        // Handle different response formats
-        const carId = response.id || response.car?.id || response.data?.id;
-        
-        if (carId && this.selectedFiles.length > 0) {
-          // Try to upload photos separately if not included in initial request
+        const carId = response.id 
+
+        if (!carId) {
+          this.errorMessage.set('Car created but no ID returned. Photos not uploaded.');
+          this.loading.set(false);
+          return;
+        }
+
+        if (this.selectedFiles.length > 0) {
           this.uploadPhotosSeparately(carId);
         } else {
           this.finishSuccess();
@@ -121,12 +121,7 @@ export class AddCarComponent implements OnDestroy {
     });
   }
 
-  uploadPhotosSeparately(carId: number): void {
-    if (this.selectedFiles.length === 0) {
-      this.finishSuccess();
-      return;
-    }
-
+  private uploadPhotosSeparately(carId: number): void {
     this.listingsService.uploadPhotos(carId, this.selectedFiles).subscribe({
       next: () => {
         this.finishSuccess();
@@ -134,18 +129,19 @@ export class AddCarComponent implements OnDestroy {
       error: (err) => {
         console.error('Photo upload failed:', err);
         this.successMessage.set('Car added successfully! Photos failed to upload – you can add them later.');
-        setTimeout(() => this.router.navigate(['/owner/cars']), 2000);
+        this.loading.set(false);
+        setTimeout(() => this.router.navigate(['/owner/cars']), 3000);
       }
     });
   }
 
-  finishSuccess(): void {
+  private finishSuccess(): void {
     this.successMessage.set('Car added successfully!');
     this.loading.set(false);
     setTimeout(() => this.router.navigate(['/owner/cars']), 1500);
   }
 
-  handleError(err: any): void {
+  private handleError(err: any): void {
     console.error('Error:', err);
     let msg = 'Failed to add car';
     if (err.error) {

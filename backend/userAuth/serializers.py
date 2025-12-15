@@ -6,8 +6,7 @@ from rest_framework_simplejwt.settings import api_settings
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'role',
-                  'first_name', 'last_name', 'phone_number', 'address']
+        fields = ['username', 'email', 'password', 'role', 'first_name', 'last_name', 'phone_number', 'address']
         extra_kwargs = {
             'password': {'write_only': True},
             'role': {
@@ -51,8 +50,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
-        # Add custom claims
         token['role'] = user.role
         token['username'] = user.username
         token['user_id'] = user.id

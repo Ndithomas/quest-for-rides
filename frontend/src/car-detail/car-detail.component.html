@@ -73,7 +73,7 @@
               <textarea [(ngModel)]="specialRequirements" name="msg" placeholder="Special requests (optional)...">
 </textarea>
 
-              <!-- LIVE PRICE BOX (fixed @ symbol) -->
+
               <div class="price-box" *ngIf="numDays() > 0">
                 <div class="days">{{ numDays() }} day{{ numDays() > 1 ? 's' : '' }}</div>
                 <div class="total">R {{ totalPrice() | number:'1.0-0' }}</div>
@@ -89,7 +89,6 @@
             </form>
           </div>
         </ng-container>
-
         <ng-template #notAvailable>
           <div class="not-available">
             <p>This car is currently not available for booking</p>

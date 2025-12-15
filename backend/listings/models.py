@@ -5,7 +5,7 @@ from userAuth.models import User
 class Car(models.Model):
     STATUS_CHOICES = [
         ('available', 'Available'),
-        ('booked', 'Booked'),                    # ← New: means currently rented
+        ('booked', 'Booked'),                  
         ('maintenance', 'Under Maintenance'),
         ('inactive', 'Inactive'),
     ]
@@ -46,7 +46,6 @@ class CarPhoto(models.Model):
     def __str__(self):
         return f"Photo of {self.car}"
 
-
 class Availability(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="availability")
     date = models.DateField()
@@ -59,7 +58,6 @@ class Availability(models.Model):
 
     def __str__(self):
         return f"{self.car.license_plate} | {self.date} → {'Available' if self.is_available else 'Booked'}"
-
 
 class PricingRule(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name="pricing_rules")

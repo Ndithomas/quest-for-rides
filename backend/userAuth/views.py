@@ -66,8 +66,6 @@ class ManagementRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = ManagementRegisterSerializer
 
-    
-
     def create(self, request, *args, **kwargs):
         code = request.data.get('secret_code')
         if code != settings.MANAGEMENT_SECRET_CODE:
@@ -164,7 +162,6 @@ class LogoutView(generics.GenericAPIView):
         except Exception:
             return Response({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
         
-
 class ForgotPasswordView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')

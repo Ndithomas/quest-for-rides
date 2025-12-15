@@ -1,24 +1,63 @@
 <app-navbar></app-navbar>
+
 <div class="profile-container">
   <div class="container py-5">
     <div class="row justify-content-center">
       <div class="col-lg-8 col-xl-6">
+
+        <!-- Header: Avatar with Edit Overlay + User Info -->
         <div class="text-center mb-5">
-          <div class="avatar-wrapper">
-            <img [src]="previewUrl || profile.profile_picture || 'assets/default-avatar.png'" class="profile-avatar"
-              alt="Profile">
+          <div class="avatar-wrapper position-relative d-inline-block">
+            <img
+              [src]="previewUrl || profile.profile_picture || 'assets/default-avatar.png'"
+              class="profile-avatar rounded-circle shadow"
+              alt="Profile"
+            >
+
+            <!-- Camera Overlay (visible only in edit mode) -->
+            <label class="camera-overlay" *ngIf="isEditing" for="profilePictureInput">
+              <i class="bi bi-camera fs-3"></i>
+              <span class="d-block small">Change Photo</span>
+            </label>
+
+            <!-- Hidden File Input -->
+            <input
+              type="file"
+              id="profilePictureInput"
+              class="d-none"
+              (change)="onFileSelected($event)"
+              accept="image/*"
+            >
           </div>
+
+          <!-- Remove Button (below avatar, only if image exists) -->
+          <div *ngIf="isEditing && (profile.profile_picture || previewUrl)" class="mt-3">
+            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removePicture()">
+              <i class="bi bi-trash me-1"></i> Remove Photo
+            </button>
+          </div>
+
+          <!-- Selected file feedback -->
+          <small *ngIf="isEditing && selectedFile" class="text-success d-block mt-2">
+            ✓ New photo selected: {{ selectedFile.name }}
+          </small>
+
+          <!-- User Info -->
           <h1 class="display-6 fw-bold mt-4">{{ profile.username }}</h1>
           <p class="text-muted fs-5">{{ profile.email }}</p>
           <p class="text-muted small">Member since {{ profile.created_at | date:'MMMM yyyy' }}</p>
         </div>
+
+        <!-- Loading -->
         <div *ngIf="loading" class="text-center py-5">
           <div class="spinner"></div>
           <p class="mt-4 text-muted fs-5">Loading profile...</p>
         </div>
 
+        <!-- Profile Card -->
         <div *ngIf="!loading" class="profile-card">
 
+          <!-- Edit Form (no picture field here anymore) -->
           <form *ngIf="isEditing" (ngSubmit)="save()" class="edit-form">
             <div class="row g-4">
               <div class="col-md-6">
@@ -27,18 +66,11 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label fw-semibold">Email</label>
-                <input class="form-control form-control-lg" type="email" [(ngModel)]="profile.email" name="email"
-                  required>
+                <input class="form-control form-control-lg" type="email" [(ngModel)]="profile.email" name="email" required>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold">Phone Number <small class="text-muted">(optional)</small></label>
                 <input class="form-control form-control-lg" [(ngModel)]="profile.phone_number" name="phone_number">
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold">Profile Picture</label>
-                <input type="file" class="form-control form-control-lg" (change)="onFileSelected($event)"
-                  accept="image/*">
-                <small *ngIf="previewUrl" class="text-success d-block mt-2">New image selected</small>
               </div>
             </div>
 
@@ -53,24 +85,13 @@
             </div>
           </form>
 
+          <!-- View Mode -->
           <div *ngIf="!isEditing">
             <div class="info-grid">
-              <div class="info-item">
-                <span class="label">Username</span>
-                <strong>{{ profile.username }}</strong>
-              </div>
-              <div class="info-item">
-                <span class="label">Email</span>
-                <strong>{{ profile.email }}</strong>
-              </div>
-              <div class="info-item">
-                <span class="label">Phone</span>
-                <strong>{{ profile.phone_number || 'Not provided' }}</strong>
-              </div>
-              <div class="info-item">
-                <span class="label">Member Since</span>
-                <strong>{{ profile.created_at | date:'mediumDate' }}</strong>
-              </div>
+              <div class="info-item"><span class="label">Username</span><strong>{{ profile.username }}</strong></div>
+              <div class="info-item"><span class="label">Email</span><strong>{{ profile.email }}</strong></div>
+              <div class="info-item"><span class="label">Phone</span><strong>{{ profile.phone_number || 'Not provided' }}</strong></div>
+              <div class="info-item"><span class="label">Member Since</span><strong>{{ profile.created_at | date:'mediumDate' }}</strong></div>
             </div>
 
             <div class="text-center mt-5">
@@ -84,4 +105,5 @@
     </div>
   </div>
 </div>
+
 <app-footer></app-footer>

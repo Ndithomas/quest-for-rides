@@ -9,7 +9,7 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent,FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
@@ -20,16 +20,16 @@ export class ProfileComponent implements OnInit {
     email: '',
     phone_number: '',
     profile_picture: null,
-    created_at: new Date() 
+    created_at: new Date()
   };
 
   isEditing = false;
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   loading = true;
-  saving = false; 
+  saving = false;
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: ProfileService) { }
 
   ngOnInit(): void {
     this.loadProfile();
@@ -76,8 +76,10 @@ export class ProfileComponent implements OnInit {
     formData.append('phone_number', this.profile.phone_number || '');
 
     if (this.selectedFile) {
-      formData.append('profile_picture', this.selectedFile);
-    }
+    formData.append('profile_picture', this.selectedFile);
+  } else if (this.previewUrl === null && this.profile.profile_picture) {
+    formData.append('profile_picture', ''); 
+  }
 
     this.profileService.updateProfile(formData).subscribe({
       next: (updated: any) => {
@@ -101,10 +103,16 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  removePicture(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+
+  }
+
   cancelEdit(): void {
     this.isEditing = false;
     this.selectedFile = null;
     this.previewUrl = this.profile.profile_picture;
-    this.loadProfile(); 
+    
   }
 }

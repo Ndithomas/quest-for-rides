@@ -4,18 +4,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Count, Q, Avg
 from django.utils import timezone
-
 from userAuth.models import User
-from userAuth.serializers import UserSerializer  # ← this was missing!
+from userAuth.serializers import UserSerializer
 from listings.models import Car
 from owner.models import OwnerProfile
-
 from .models import ManagementProfile
-from .serializers import (
-    ManagementProfileSerializer,
-    DashboardStatsSerializer,
-    CarStatsSerializer,
-)
+from .serializers import *
 from userAuth.permissions import IsManagement
 
 
@@ -27,15 +21,11 @@ class ManagementProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user.management_profile
 
-
 class ManagementProfileDetailView(generics.RetrieveAPIView):
     queryset = ManagementProfile.objects.all()
     serializer_class = ManagementProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-
-
-# management/views.py
 
 class ManagementDashboardStatsView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
@@ -57,7 +47,6 @@ class ManagementDashboardStatsView(generics.GenericAPIView):
 
         return Response(DashboardStatsSerializer(stats).data)
 
-
 class AllUsersListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
     serializer_class = UserSerializer
@@ -65,14 +54,12 @@ class AllUsersListView(generics.ListAPIView):
     def get_queryset(self):
         return User.objects.exclude(role='management').select_related('guest_profile', 'owner_profile')
 
-
 class AllCarsListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
     serializer_class = CarStatsSerializer
 
     def get_queryset(self):
         return Car.objects.select_related('owner').all()
-
 
 class UserSearchView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
@@ -89,14 +76,12 @@ class UserSearchView(generics.ListAPIView):
             Q(last_name__icontains=q)
         )
 
-
 class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'user_id'
-
 
 class ChangeUserStatusView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsManagement]
