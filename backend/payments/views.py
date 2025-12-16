@@ -1,169 +1,318 @@
-# payments/views.py
-from rest_framework import generics, permissions, status
-from rest_framework.views import APIView
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from django.utils import timezone
-from django.db import transaction
+from django.db import models as django_models, transaction
+from decimal import Decimal
 
-from bookings.models import BookingPayment, Booking
-from userAuth.permissions import IsManagement
-from .models import *
+from bookings.models import Booking, BookingPayment
+from .models import PaymentTransaction, PaymentInvoice
+from .campay import initiate_collection, get_transaction_status
 from .serializers import *
 
 
-class PaymentMethodListCreateView(generics.ListCreateAPIView):
-    serializer_class = PaymentMethodSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return PaymentMethod.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-
-class PaymentMethodDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = PaymentMethodSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return PaymentMethod.objects.filter(user=self.request.user)
-
-
-class PaymentMethodSetDefaultView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        method = get_object_or_404(PaymentMethod, pk=pk, user=request.user)
-
-        PaymentMethod.objects.filter(user=request.user).update(is_default=False)
-        method.is_default = True
-        method.save()
-
-        return Response({'detail': 'Payment method set as default'}, status=status.HTTP_200_OK)
-
-class BookingPaymentDetailView(generics.RetrieveUpdateAPIView):
+# ==================== Guest/Owner: View Payment Details ====================
+class BookingPaymentDetailView(generics.RetrieveAPIView):
     serializer_class = BookingPaymentDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    lookup_url_kwarg = 'booking_id'
+
+    def get_queryset(self):
+        return BookingPayment.objects.select_related('booking', 'booking__car', 'invoice')
 
     def get_object(self):
-        booking_id = self.kwargs.get('booking_id')
-        payment = get_object_or_404(BookingPayment, booking_id=booking_id)
-        user = self.request.user
+        return get_object_or_404(
+            self.get_queryset(),
+            booking__id=self.kwargs['booking_id']
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        payment = self.get_object()
         booking = payment.booking
 
-        if user not in (booking.guest, booking.owner) and user.role not in ['management', 'staff']:
-            self.permission_denied(self.request)
+        if request.user not in (booking.guest, booking.owner) and not request.user.is_staff:
+            return Response({"detail": "Not authorized."}, status=status.HTTP_403_FORBIDDEN)
 
-        return payment
+        return super().retrieve(request, *args, **kwargs)
 
-
-class PaymentStatusUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class InitiateCamPayPaymentView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CamPayInitiateSerializer
 
     def post(self, request, booking_id):
-        booking = get_object_or_404(Booking, id=booking_id)
-        payment = get_object_or_404(BookingPayment, booking=booking)
+        booking = get_object_or_404(
+            Booking.objects.select_related('car'),
+            id=booking_id,
+            guest=request.user,
+            status='confirmed'
+        )
+        serializer = CamPayInitiateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        phone = serializer.validated_data.get('phone', request.user.phone_number)
 
-        if request.user != booking.guest and request.user.role not in ['management', 'staff']:
-            return Response({'detail': 'You do not have permission to update this payment'}, status=403)
+        payment, created = BookingPayment.objects.get_or_create(
+            booking=booking,
+            defaults={
+                'amount': booking.total_price,
+                'status': 'pending',
+                'customer_phone': phone,
+                'payment_method': 'campay',
+            }
+        )
 
-        serializer = PaymentStatusUpdateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not created and payment.status != 'pending':
+            return Response(
+                {"detail": "Payment is no longer pending."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if payment.customer_phone != phone:
+            payment.customer_phone = phone
+            payment.save()
 
-        with transaction.atomic():
-            payment.status = serializer.validated_data['status']
-            if serializer.validated_data.get('transaction_id'):
-                payment.transaction_id = serializer.validated_data['transaction_id']
+        external_ref = f"booking_{booking.id}"
+
+        try:
+            response = initiate_collection(
+                amount=str(int(booking.total_price)),
+                phone=payment.customer_phone,
+                description=f"Rental: {booking.car.title} ({booking.start_date} - {booking.end_date})",
+                external_ref=external_ref,
+            )
+
+            payment.campay_reference = response['reference']
+            payment.transaction_id = external_ref
             payment.save()
 
             PaymentTransaction.objects.create(
                 booking_payment=payment,
-                transaction_type='booking' if payment.status == 'completed' else 'refund',
+                transaction_type='booking',
                 amount=payment.amount,
-                status=payment.status,
-                payment_method=payment.payment_method,
-                external_transaction_id=serializer.validated_data.get('transaction_id', '')
+                status='pending',
+                external_transaction_id=response['reference']
             )
 
-            if payment.status == 'completed' and not hasattr(payment, 'invoice'):
-                invoice_number = f"INV-{payment.booking.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
-                PaymentInvoice.objects.create(
-                    booking_payment=payment,
-                    invoice_number=invoice_number,
-                    subtotal=payment.amount,
-                    tax=0,
-                    total=payment.amount,
-                    paid_date=timezone.now()
+            return Response({
+                "detail": "Payment initiated. Complete on your phone.",
+                "campay_reference": response['reference'],
+                "check_status_url": request.build_absolute_uri(
+                    f"/api/payments/booking/{booking_id}/check-status/"
                 )
+            })
 
-        return Response(BookingPaymentDetailSerializer(payment).data)
-
-
-class PaymentListView(generics.ListAPIView):
-    serializer_class = BookingPaymentDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        bookings = Booking.objects.filter(Q(guest=user) | Q(owner=user))
-        return BookingPayment.objects.filter(booking__in=bookings).select_related('booking')
+        except Exception as e:
+            return Response(
+                {"detail": f"Failed to initiate payment: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-class PaymentAnalyticsView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsManagement]
+class CheckCamPayStatusView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        from django.db.models import Sum, Count
-        from datetime import timedelta
+    def get(self, request, booking_id):
+        payment = get_object_or_404(
+            BookingPayment,
+            booking__id=booking_id,
+            booking__in=Booking.objects.filter(
+                models.Q(guest=request.user) | models.Q(car__owner=request.user)
+            )
+       )
 
-        period = request.query_params.get('period', '30d')
-        days = 7 if period == '7d' else 90 if period == '90d' else 30
-        start_date = timezone.now() - timedelta(days=days)
-        payments = BookingPayment.objects.filter(created_at__gte=start_date)
+        if not payment.campay_reference:
+            return Response(
+                {"detail": "No active CamPay transaction."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        analytics = {
-            'total_revenue': payments.filter(status='completed').aggregate(Sum('amount'))['amount__sum'] or 0,
-            'total_pending': payments.filter(status='pending').aggregate(Sum('amount'))['amount__sum'] or 0,
-            'total_refunded': payments.filter(status='refunded').aggregate(Sum('amount'))['amount__sum'] or 0,
-            'completed_payments': payments.filter(status='completed').count(),
-            'pending_payments': payments.filter(status='pending').count(),
-            'failed_payments': payments.filter(status='failed').count(),
-            'period': period,
-        }
+        try:
+            status_data = get_transaction_status(payment.campay_reference)
+            campay_status = status_data.get('status', '').upper()
 
-        return Response(analytics)
+            mapping = {
+                "SUCCESSFUL": "completed",
+                "FAILED": "failed",
+            }
+            new_status = mapping.get(campay_status, "pending")
+
+            if payment.status != new_status:
+                with transaction.atomic():
+                    payment.status = new_status
+                    payment.save()
+
+                    PaymentTransaction.objects.create(
+                        booking_payment=payment,
+                        transaction_type='booking',
+                        amount=payment.amount if new_status == 'completed' else Decimal('0'),
+                        status=new_status,
+                        external_transaction_id=payment.campay_reference
+                    )
+
+            return Response({
+                "status": payment.status,
+                "campay_status": campay_status,
+                "reference": payment.campay_reference,
+            })
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Status check failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
-class PaymentRefundView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+class PaymentStatusUpdateView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = PaymentStatusUpdateSerializer
 
-    def post(self, request, booking_id):
-        booking = get_object_or_404(Booking, id=booking_id)
-        payment = get_object_or_404(BookingPayment, booking=booking)
+    def post(self, request, booking_id):  # Better as POST than PUT/PATCH
+        payment = get_object_or_404(BookingPayment, booking__id=booking_id)
+        
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        if request.user != booking.owner and request.user.role not in ['management', 'staff']:
-            return Response({'detail': 'Only the owner or management can process refunds'}, status=403)
+        new_status = serializer.validated_data['status']
+        external_id = serializer.validated_data.get('external_transaction_id', '')
+        notes = serializer.validated_data.get('notes', '')
 
-        if payment.status != 'completed':
-            return Response({'detail': 'Only completed payments can be refunded'}, status=400)
+        if payment.status == new_status:
+            return Response({"detail": "Status already set."})
 
         with transaction.atomic():
-            payment.status = 'refunded'
+            old_status = payment.status
+            payment.status = new_status
+            payment.save()
+
+            PaymentTransaction.objects.create(
+                booking_payment=payment,
+                transaction_type='status_update',
+                amount=Decimal('0'),
+                status=new_status,
+                external_transaction_id=external_id or payment.campay_reference or '',
+                notes=notes or f"Manual update from {old_status} to {new_status}"
+            )
+
+        return Response({
+            "detail": "Payment status updated successfully.",
+            "new_status": new_status
+        })
+
+class PaymentRefundView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+    serializer_class = RefundSerializer
+
+    def post(self, request, booking_id):
+        payment = get_object_or_404(BookingPayment, booking__id=booking_id, status='completed')
+        
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        reason = serializer.validated_data.get('reason', 'Refund requested by admin')
+        refund_amount = serializer.validated_data.get('amount')
+
+        if refund_amount is None:
+            refund_amount = payment.amount
+        elif refund_amount > payment.amount:
+            return Response({"detail": "Refund amount cannot exceed paid amount."}, 
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            payment.status = 'refunded' if refund_amount == payment.amount else 'partially_refunded'
             payment.save()
 
             PaymentTransaction.objects.create(
                 booking_payment=payment,
                 transaction_type='refund',
-                amount=payment.amount,
-                status='refunded',
-                payment_method=payment.payment_method
+                amount=-refund_amount,
+                status='completed',
+                notes=reason,
+                external_transaction_id=payment.campay_reference or '',
             )
 
+        # TODO: Call CamPay refund API with amount
+
         return Response({
-            'detail': 'Refund processed successfully',
-            'payment': BookingPaymentDetailSerializer(payment).data
+            "detail": "Refund processed successfully.",
+            "refunded_amount": float(refund_amount),
+            "new_status": payment.status
         })
+
+class PaymentListView(generics.ListAPIView):
+    serializer_class = BookingPaymentDetailSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return BookingPayment.objects.select_related(
+            'booking', 'booking__car', 'booking__guest', 'booking__owner'
+        ).order_by('-created_at')
+
+
+# ==================== Admin: Platform Analytics ====================
+class PaymentAnalyticsView(generics.GenericAPIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        completed = BookingPayment.objects.filter(status='completed')
+        total_revenue = completed.aggregate(
+            total=django_models.Sum('amount')
+        )['total'] or Decimal('0')
+
+        platform_commission = total_revenue * Decimal('0.10')
+        owner_earnings = total_revenue * Decimal('0.90')
+
+        return Response({
+            "total_transactions": completed.count(),
+            "total_revenue": float(total_revenue),
+            "platform_commission_10%": float(platform_commission),
+            "owner_payouts": float(owner_earnings),
+            "currency": "XAF",
+        })
+
+
+# payments/views.py - Update the OwnerPaymentsListView
+class OwnerPaymentsListView(generics.ListAPIView):
+    serializer_class = BookingPaymentDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only return COMPLETED payments for earnings display
+        return BookingPayment.objects.filter(
+            booking__car__owner=self.request.user,
+            status='completed'  # Only show actual paid transactions
+        ).select_related('booking', 'booking__car').order_by('-created_at')
+
+
+# ==================== Owner: View Earnings ====================
+class OwnerEarningsView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        completed = BookingPayment.objects.filter(
+            booking__car__owner=request.user,
+            status='completed'
+        )
+        total = completed.aggregate(
+            total=django_models.Sum('amount')
+        )['total'] or Decimal('0')
+
+        owner_share = total * Decimal('0.90')
+
+        return Response({
+            "total_earnings": float(owner_share),
+            "available_balance": float(owner_share),  # Extend with Payout model later
+            "currency": "XAF",
+        })
+    
+
+class GuestPaymentsListView(generics.ListAPIView):
+    serializer_class = BookingPaymentDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BookingPayment.objects.filter(
+            booking__guest=self.request.user,
+            status='completed'  
+        ).select_related('booking', 'booking__car').order_by('-created_at')  

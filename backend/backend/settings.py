@@ -178,3 +178,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 ALLOWED_HOSTS = ['*']
+
+CAMPAY_USERNAME = "your_app_username"
+CAMPAY_PASSWORD = "your_app_password"

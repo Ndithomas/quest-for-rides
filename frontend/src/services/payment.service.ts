@@ -1,20 +1,17 @@
-// src/app/services/payment.service.ts
+// src/services/payment.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
+import { Booking } from './booking.service';
 
-export interface PaymentMethod {
+
+export interface Car {
   id: number;
-  payment_type: string;
-  payment_type_display: string;
-  is_default: boolean;
-  last_four: string;
-  holder_name: string;
-  expiry_month: number;
-  expiry_year: number;
-  is_active: boolean;
-  created_at: string;
+  make: string;
+  model: string; // <-- 'model' is here
+  // Add other car properties if needed (e.g., year, license_plate)
 }
 
 export interface PaymentTransaction {
@@ -25,7 +22,6 @@ export interface PaymentTransaction {
   amount: number;
   status: string;
   status_display: string;
-  payment_method: PaymentMethod;
   external_transaction_id: string;
   created_at: string;
   updated_at: string;
@@ -33,6 +29,7 @@ export interface PaymentTransaction {
 
 export interface PaymentInvoice {
   id: number;
+  booking_payment: number;
   invoice_number: string;
   issued_date: string;
   due_date: string;
@@ -45,16 +42,36 @@ export interface PaymentInvoice {
 
 export interface BookingPayment {
   id: number;
-  booking: number;
+  booking: Booking; // <--- The correct type is imported
   amount: number;
   status: string;
   status_display: string;
-  payment_method: PaymentMethod;
-  transaction_id: string;
+  campay_reference: string;
+  customer_phone: string;
   transactions: PaymentTransaction[];
   invoice: PaymentInvoice;
   created_at: string;
   updated_at: string;
+  payment_method?: string; 
+  transaction_id?: string;
+}
+
+export interface CamPayInitiateData {
+  phone: string; // Format: 2376xxxxxxxx
+}
+
+export interface PaymentAnalytics {
+  total_transactions: number;
+  total_revenue: number;
+  platform_commission_10_percent: number;
+  owner_payouts: number;
+  currency: string;
+}
+
+export interface OwnerEarnings {
+  total_earnings: number;
+  available_balance: number;
+  currency: string;
 }
 
 @Injectable({
@@ -63,66 +80,52 @@ export interface BookingPayment {
 export class PaymentService {
   private apiUrl = `${environment.apiBaseUrl}/api/payments`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Get payment details for a booking
+  // ============ Guest Payment Endpoints ============
   getBookingPayment(bookingId: number): Observable<BookingPayment> {
     return this.http.get<BookingPayment>(`${this.apiUrl}/booking/${bookingId}/`);
   }
 
-  // Update payment status (admin/management)
-  updatePaymentStatus(bookingId: number, data: { status: string; transaction_id?: string; notes?: string }): Observable<any> {
+  initiateCamPayPayment(bookingId: number, data: CamPayInitiateData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/booking/${bookingId}/initiate/`, data);
+  }
+
+  checkCamPayStatus(bookingId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/booking/${bookingId}/check-status/`);
+  }
+
+  // ============ Admin Endpoints ============
+  updatePaymentStatus(bookingId: number, data: {
+    status: string;
+    external_transaction_id?: string;
+    notes?: string;
+  }): Observable<any> {
     return this.http.post(`${this.apiUrl}/booking/${bookingId}/status-update/`, data);
   }
 
-  // Initiate refund
-  initiateRefund(bookingId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${bookingId}/refund/`, {});
+  initiateRefund(bookingId: number, data?: { reason?: string; amount?: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/booking/${bookingId}/refund/`, data || {});
   }
 
-  // Get all payments (admin/management)
-  getAllPayments(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/list/`);
+  getAllPayments(): Observable<BookingPayment[]> {
+    return this.http.get<BookingPayment[]>(`${this.apiUrl}/list/`);
   }
 
-  // Get payment analytics (admin/management)
-  getPaymentAnalytics(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/analytics/`);
+  getPaymentAnalytics(): Observable<PaymentAnalytics> {
+    return this.http.get<PaymentAnalytics>(`${this.apiUrl}/analytics/`);
   }
 
-  // Process payment (for guest) - you'll implement this endpoint later
-  processPayment(bookingId: number, paymentData: {
-    payment_method_id?: number;
-    card_number?: string;
-    expiry_month?: number;
-    expiry_year?: number;
-    cvv?: string;
-    save_card?: boolean;
-  }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${bookingId}/process/`, paymentData);
+  // ============ Owner Endpoints ============
+  getOwnerPayments(): Observable<BookingPayment[]> {
+    return this.http.get<BookingPayment[]>(`${this.apiUrl}/owner/payments/`);
   }
 
-  getPaymentMethods(): Observable<PaymentMethod[]> {
-    return this.http.get<PaymentMethod[]>(`${this.apiUrl}/methods/`);
+  getOwnerEarnings(): Observable<OwnerEarnings> {
+    return this.http.get<OwnerEarnings>(`${this.apiUrl}/owner/earnings/`);
   }
-
-  addPaymentMethod(data: {
-    payment_type: string;
-    card_number: string;
-    expiry_month: number;
-    expiry_year: number;
-    cvv: string;
-    holder_name: string;
-    is_default?: boolean;
-  }): Observable<PaymentMethod> {
-    return this.http.post<PaymentMethod>(`${this.apiUrl}/methods/`, data);
-  }
-
-  setDefaultPaymentMethod(methodId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/methods/${methodId}/set-default/`, {});
-  }
-
-  removePaymentMethod(methodId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/methods/${methodId}/`);
+  
+  getGuestPayments(): Observable<BookingPayment[]> {
+    return this.http.get<BookingPayment[]>(`${this.apiUrl}/guest/payments/`);
   }
 }

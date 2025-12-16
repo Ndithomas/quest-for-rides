@@ -7,22 +7,17 @@
       <div class="row align-items-center">
         <div class="col-lg-8">
           <h1 class="display-5 fw-bold mb-3">
-            Welcome back, <span class="text-success">{{ username() }}!</span>
+            Welcome <span class="text-warning">{{ username() }}</span>
           </h1>
-          <p class="lead text-muted">Your next adventure starts here</p>
-        </div>
+          <p class="lead">Your next adventure starts here</p>
 
-        <div class="col-lg-4 text-lg-end mt-4 mt-lg-0 position-relative">
-          <i class="bi bi-car-front-fill text-success position-absolute end-0 top-50 translate-middle-y"
-            style="font-size: 13rem; opacity: 0.11; transform: translateY(-50%) rotate(8deg); pointer-events: none;">
-          </i>
         </div>
       </div>
     </div>
   </div>
 
   <div class="container py-5">
- 
+
     <div class="row g-4 mb-5">
       <div class="col-md-4">
         <div class="stat-card pending">
@@ -82,9 +77,8 @@
           </a>
         </div>
         <div class="col-6 col-md-3">
-          <a routerLink="/history" class="action-card">
-            <i class="bi bi-clock-history"></i>
-            <span>History</span>
+          <a [routerLink]="['/guest-payment-history']" class="action-card">
+            <i class="bi bi-receipt"></i> Payment History
           </a>
         </div>
       </div>

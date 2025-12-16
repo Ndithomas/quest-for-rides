@@ -12,4 +12,5 @@ urlpatterns = [
     path('all-bookings/', views.AllBookingsAPIView.as_view()),
     path('<int:pk>/owner-cancel-unpaid/', views.OwnerCancelUnpaidBookingAPIView.as_view()),
     path('stats/', views.BookingStatsAPIView.as_view()),
+    path('owner-bookings/', views.OwnerBookingsListView.as_view()),
 ]

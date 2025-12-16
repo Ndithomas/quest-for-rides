@@ -43,7 +43,7 @@
               <th>User</th>
               <th>Role</th>
               <th>Status</th>
-              <th class="text-end">Actions</th>
+              <th class="text-end">View</th>
             </tr>
           </thead>
           <tbody>
@@ -81,15 +81,7 @@
               <td class="actions-cell">
                 <a [routerLink]="['/user-detail', user.id]" class="btn-view">View</a>
 
-                <select class="status-select" [(ngModel)]="user.status" (change)="changeStatus(user)">
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="suspended">Suspended</option>
-                </select>
-
-                <button class="btn-update" (click)="changeStatus(user)" [disabled]="loading">
-                  Update
-                </button>
+                
               </td>
             </tr>
             <tr *ngIf="filteredUsers.length === 0">

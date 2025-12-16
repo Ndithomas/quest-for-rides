@@ -12,23 +12,23 @@
       <span>Quest4Rides</span>
     </div>
 
-    <button class="user-btn"
-            (click)="toggleSidebar()"
-            [class.active]="isSidebarOpen()"
-            [attr.aria-expanded]="isSidebarOpen()">
+    <button class="user-btn" (click)="toggleSidebar()" [class.active]="isSidebarOpen()"
+      [attr.aria-expanded]="isSidebarOpen()">
       @if (isLoggedIn()) {
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" 
-                fill="none" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="7" r="4" fill="none" 
-                  stroke="currentColor" stroke-width="2"/>
-        </svg>
+      <svg width="24" height="24" viewBox="0 0 24 24">
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" />
+        <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
       } @else {
-        <svg width="28" height="24" viewBox="0 0 34 26">
-          <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="3"/>
-          <circle cx="26" cy="7.5" r="4.8" fill="none" stroke="currentColor" stroke-width="3"/>
-          <path d="M18 16c0-4 16-4 16-8" fill="none" stroke="currentColor" stroke-width="2.8"/>
-        </svg>
+      <svg width="40" height="28" viewBox="0 0 40 28">
+        <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="6" x2="16" y2="6" />
+          <line x1="4" y1="14" x2="16" y2="14" />
+          <line x1="4" y1="22" x2="16" y2="22" />
+          <circle cx="28" cy="8" r="4" fill="none" />
+          <path d="M20 22v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" fill="none" />
+        </g>
+      </svg>
       }
     </button>
   </div>
@@ -40,21 +40,54 @@
     </div>
 
     @if (isLoggedIn()) {
-      <div class="dropdown-items">
-        <a routerLink="/profile" (click)="closeSidebar()" class="dropdown-item">My Profile</a>
-        <a [routerLink]="getBookingsRoute()" 
-           (click)="closeSidebar()" class="dropdown-item">
-          {{ getBookingsLabel() }}
+    <div class="dropdown-items">
+      <!-- Profile -->
+      <a routerLink="/profile" (click)="closeSidebar()" class="dropdown-item">
+        <i class="bi bi-person-circle me-2"></i>My Profile
+      </a>
+      
+      <!-- Bookings -->
+      <a [routerLink]="getBookingsRoute()" (click)="closeSidebar()" class="dropdown-item">
+        <i class="bi bi-calendar-check me-2"></i>{{ getBookingsLabel() }}
+      </a>
+      
+      <!-- Owner-Specific Links -->
+      @if (currentUserRole === 'owner') {
+        <a routerLink="/owner/earnings" (click)="closeSidebar()" class="dropdown-item">
+          <i class="bi bi-wallet2 me-2"></i>Earnings
         </a>
-        <a routerLink="/notifications" (click)="closeSidebar()" class="dropdown-item">Notifications</a>
-        <div class="dropdown-divider"></div>
-        <a (click)="logout()" class="dropdown-item logout">Logout</a>
-      </div>
+        <a routerLink="/owner/payments" (click)="closeSidebar()" class="dropdown-item">
+          <i class="bi bi-credit-card me-2"></i>Payments
+        </a>
+        <a routerLink="/owner/payouts" (click)="closeSidebar()" class="dropdown-item">
+          <i class="bi bi-cash-stack me-2"></i>Payouts
+        </a>
+      }
+      
+      <!-- Guest Payment History -->
+      @if (currentUserRole === 'guest') {
+        <a routerLink="/guest-payment-history" (click)="closeSidebar()" class="dropdown-item">
+          <i class="bi bi-receipt me-2"></i>Payment History
+        </a>
+      }
+      
+      <!-- Notifications (for all logged-in users) -->
+      <a routerLink="/notifications" (click)="closeSidebar()" class="dropdown-item">
+        <i class="bi bi-bell me-2"></i>Notifications
+      </a>
+      
+      <div class="dropdown-divider"></div>
+      
+      <!-- Logout -->
+      <a (click)="logout()" class="dropdown-item logout">
+        <i class="bi bi-box-arrow-right me-2"></i>Logout
+      </a>
+    </div>
     } @else {
-      <div class="dropdown-items">
-        <a routerLink="/login" (click)="closeSidebar()" class="btn btn-outline">Login</a>
-        <a routerLink="/register" (click)="closeSidebar()" class="btn btn-primary">Sign Up</a>
-      </div>
+    <div class="dropdown-items">
+      <a routerLink="/login" (click)="closeSidebar()" class="btn btn-outline">Login</a>
+      <a routerLink="/register" (click)="closeSidebar()" class="btn btn-primary">Sign Up</a>
+    </div>
     }
 
     <div class="dropdown-footer">
@@ -62,11 +95,8 @@
       <a routerLink="/how-it-works" (click)="closeSidebar()">How It Works</a>
     </div>
   </div>
-
 </nav>
 
-<div class="dropdown-overlay" 
-     [class.show]="isSidebarOpen()" 
-     (click)="closeSidebar()"></div>
+<div class="dropdown-overlay" [class.show]="isSidebarOpen()" (click)="closeSidebar()"></div>
 
 <div class="nav-spacer"></div>

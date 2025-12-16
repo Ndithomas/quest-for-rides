@@ -265,3 +265,13 @@ class BookingStatsAPIView(generics.GenericAPIView):
             stats['total_revenue'] = revenue['total'] or 0
         
         return Response(stats)
+
+class OwnerBookingsListView(generics.ListAPIView):
+    serializer_class = BookingListSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Get all bookings where user is the car owner
+        return Booking.objects.filter(
+            car__owner=self.request.user
+        ).select_related('car', 'guest', 'payment').order_by('-created_at')

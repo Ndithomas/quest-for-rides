@@ -1,0 +1,65 @@
+:host {
+  display: block;
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+}
+
+.empty-state {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+  
+  i {
+    opacity: 0.5;
+  }
+}
+
+.table {
+  th {
+    font-weight: 600;
+    border-top: none;
+    padding: 1rem;
+  }
+  
+  td {
+    padding: 1rem;
+    vertical-align: middle;
+  }
+  
+  tbody tr {
+    transition: background-color 0.15s ease;
+    
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.05);
+    }
+  }
+}
+
+.badge {
+  padding: 0.375em 0.75em;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+  }
+  
+  .card-hover {
+    margin-bottom: 1rem;
+  }
+}

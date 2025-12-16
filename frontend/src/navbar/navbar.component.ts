@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 interface TokenUser {
   username?: string;
   role?: 'guest' | 'owner' | 'management';
+  email?: string;
+  user_id?: number;
 }
 
 @Component({
@@ -145,6 +147,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
         return 'Bookings';
     }
   }
+
+// CORRECT - This is a getter
+get currentUserRole(): string | null {
+  const user = this.authService.decodeUserFromToken();
+  return user?.role || null;
+}
 
   ngOnDestroy(): void { }
 }

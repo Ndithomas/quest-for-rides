@@ -101,8 +101,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Status Banner
@@ -117,12 +122,29 @@
   align-items: center;
   border-left: 4px solid #3498db;
 
-  &.status-pending { border-left-color: #f39c12; }
-  &.status-confirmed { border-left-color: #3498db; }
-  &.status-active { border-left-color: #2ecc71; }
-  &.status-completed { border-left-color: #27ae60; }
-  &.status-cancelled { border-left-color: #e74c3c; }
-  &.status-refunded { border-left-color: #9b59b6; }
+  &.status-pending {
+    border-left-color: #f39c12;
+  }
+
+  &.status-confirmed {
+    border-left-color: #3498db;
+  }
+
+  &.status-active {
+    border-left-color: #2ecc71;
+  }
+
+  &.status-completed {
+    border-left-color: #27ae60;
+  }
+
+  &.status-cancelled {
+    border-left-color: #e74c3c;
+  }
+
+  &.status-refunded {
+    border-left-color: #9b59b6;
+  }
 
   .status-content {
     display: flex;
@@ -131,13 +153,30 @@
 
     i {
       font-size: 2rem;
-      
-      &.fa-clock { color: #f39c12; }
-      &.fa-check-circle { color: #3498db; }
-      &.fa-car { color: #2ecc71; }
-      &.fa-check-square { color: #27ae60; }
-      &.fa-times-circle { color: #e74c3c; }
-      &.fa-exchange-alt { color: #9b59b6; }
+
+      &.fa-clock {
+        color: #f39c12;
+      }
+
+      &.fa-check-circle {
+        color: #3498db;
+      }
+
+      &.fa-car {
+        color: #2ecc71;
+      }
+
+      &.fa-check-square {
+        color: #27ae60;
+      }
+
+      &.fa-times-circle {
+        color: #e74c3c;
+      }
+
+      &.fa-exchange-alt {
+        color: #9b59b6;
+      }
     }
 
     h3 {
@@ -336,8 +375,6 @@
     }
   }
 }
-
-// Booking Summary
 .booking-summary {
   .summary-item {
     display: flex;
@@ -506,4 +543,3 @@
     }
   }
 }
-

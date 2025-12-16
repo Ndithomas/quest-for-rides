@@ -36,10 +36,9 @@ export class BookingsComponent implements OnInit, OnDestroy {
   }
 
   startTimer(): void {
-    // Update timers every minute
     this.timerInterval = setInterval(() => {
       this.updateAllTimers();
-    }, 60000); // Update every minute
+    }, 60000);
   }
 
   stopTimer(): void {
@@ -63,7 +62,7 @@ export class BookingsComponent implements OnInit, OnDestroy {
 
   getTimeLeft(booking: Booking): string {
     const created = new Date(booking.created_at);
-    const deadline = new Date(created.getTime() + 24 * 60 * 60 * 1000); // 24 hours from creation
+    const deadline = new Date(created.getTime() + 24 * 60 * 60 * 1000);
     const now = new Date();
     
     if (deadline < now) return 'Expired';
@@ -86,7 +85,7 @@ export class BookingsComponent implements OnInit, OnDestroy {
       next: (bookings: Booking[]) => {
         this.bookings.set(bookings);
         this.loading.set(false);
-        this.updateAllTimers(); // Initialize timers after loading bookings
+        this.updateAllTimers();
       },
       error: (err) => {
         console.error('Error loading bookings:', err);
@@ -140,9 +139,7 @@ export class BookingsComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.bookingService.guestCancelBooking(booking.id).subscribe({
       next: (response) => {
-        // Reload bookings to get updated status
         this.loadBookings();
-        // Show success message
         alert('Booking cancelled successfully!');
       },
       error: (err) => {
@@ -153,8 +150,9 @@ export class BookingsComponent implements OnInit, OnDestroy {
     });
   }
 
+  // FIXED: Changed to use campay-payment route
   goToPayment(bookingId: number): void {
-    this.router.navigate(['/payment-processing', bookingId]);
+    this.router.navigate(['/campay-payment', bookingId]);
   }
 
   formatDate(dateString: string): string {

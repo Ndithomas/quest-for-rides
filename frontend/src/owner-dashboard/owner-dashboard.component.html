@@ -31,12 +31,19 @@
           </div>
         </div>
       </div>
+
       <div class="col-md-4">
-        <div class="stat-card bookings">
-          <div class="icon"><i class="bi bi-calendar-check"></i></div>
+        <div class="stat-card listings">
+          <div class="icon"><i class="bi bi-car-front-fill"></i></div>
           <div>
-            <h3>7</h3>
-            <p>Active Bookings</p>
+            <h3 *ngIf="!isLoading" class="fw-bold">{{ cars.length }}</h3>
+
+            <div *ngIf="isLoading" class="spinner-border text-primary" role="status"
+              style="width: 1.5rem; height: 1.5rem;">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+
+            <p>Total Cars Listed</p>
           </div>
         </div>
       </div>
@@ -67,7 +74,9 @@
           <h5>Earnings & Analytics</h5>
           <p class="text-muted small">Track revenue and performance</p>
           <div class="mt-auto">
-            <a routerLink="/owner/analytics" class="link">View analytics</a>
+            <a [routerLink]="['/owner/earnings']" class="link">
+             Earnings
+            </a>
           </div>
         </div>
       </div>

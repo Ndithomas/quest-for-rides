@@ -76,16 +76,5 @@ export class ManagementUsersComponent implements OnInit {
     // Implement status toggle logic here, e.g. cycle through statuses or provide UI for admin
   }
 
-  changeStatus(user: AdminUser) {
-    this.loading = true;
-    this.userActions.changeUserStatus(user.id, user.status).subscribe({
-      next: () => {
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        alert('Failed to update status.');
-      }
-    });
-  }
+  
 }

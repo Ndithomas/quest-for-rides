@@ -10,8 +10,10 @@ $shadow: 0 25px 70px rgba(0,0,0,0.16);
 }
 /* Header */
 .page-header {
+  /* The linear-gradient stays the same */
   background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
-              url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80') center/cover;
+              /* CHANGE THIS LINE to your local path */
+              url('/bg-image.avif') center/cover; 
   padding: 7rem 0 5rem;
   text-align: center;
   color: white;

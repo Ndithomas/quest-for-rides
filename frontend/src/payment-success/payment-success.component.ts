@@ -9,12 +9,12 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-payment-success',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent,RouterLink],
+  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink],
   templateUrl: './payment-success.component.html',
   styleUrl: './payment-success.component.scss'
 })
 export class PaymentSuccessComponent implements OnInit {
-bookingId: number = 0;
+  bookingId: number = 0;
   booking: any = null;
   payment: any = null;
   loading = true;
@@ -37,6 +37,13 @@ bookingId: number = 0;
     this.paymentService.getBookingPayment(this.bookingId).subscribe({
       next: (payment) => {
         this.payment = payment;
+        
+        // Check if payment was made via CamPay
+        if (payment.campay_reference) {
+          // CamPay specific success handling
+          console.log('CamPay Payment Success:', payment.campay_reference);
+        }
+        
         this.loadBooking();
       },
       error: (error) => {
@@ -60,6 +67,45 @@ bookingId: number = 0;
     });
   }
 
+  // CamPay specific methods
+  getPaymentMethodDisplay(): string {
+    if (!this.payment) return 'CamPay';
+    
+    // Check for CamPay reference
+    if (this.payment.campay_reference) {
+      return 'CamPay (Mobile Money)';
+    }
+    
+    // Fallback to payment method if available
+    if (this.payment.payment_method) {
+      return this.payment.payment_method.replace('_', ' ').toUpperCase();
+    }
+    
+    return 'CamPay';
+  }
+
+  getPaymentStatusDisplay(): string {
+    if (!this.payment?.status) return 'Unknown';
+    
+    const statusMap: {[key: string]: string} = {
+      'completed': 'Completed',
+      'pending': 'Pending',
+      'failed': 'Failed',
+      'refunded': 'Refunded',
+      'cancelled': 'Cancelled'
+    };
+    
+    return statusMap[this.payment.status] || this.payment.status.charAt(0).toUpperCase() + this.payment.status.slice(1);
+  }
+
+  getCamPayReference(): string {
+    return this.payment?.campay_reference || 'N/A';
+  }
+
+  getCustomerPhone(): string {
+    return this.payment?.customer_phone || 'Not provided';
+  }
+
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -77,34 +123,15 @@ bookingId: number = 0;
     });
   }
 
-  getPaymentMethodDisplay(): string {
-    if (!this.payment?.payment_method) return 'Credit Card';
-    return this.payment.payment_method.payment_type_display || 
-           this.payment.payment_method.payment_type?.replace('_', ' ') || 
-           'Credit Card';
+  calculateDays(): number {
+    if (!this.booking?.start_date || !this.booking?.end_date) return 0;
+    const start = new Date(this.booking.start_date);
+    const end = new Date(this.booking.end_date);
+    const diffMs = end.getTime() - start.getTime();
+    return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
   }
 
-  getPaymentStatusDisplay(): string {
-    if (!this.payment?.status) return 'Unknown';
-    return this.payment.status.charAt(0).toUpperCase() + this.payment.status.slice(1);
-  }
-
-  downloadReceipt() {
-    // Create receipt content
-    const receiptContent = this.generateReceiptContent();
-    
-    // Create and download file
-    const blob = new Blob([receiptContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `payment-receipt-booking-${this.bookingId}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }
-
+  // CamPay specific receipt generation
   generateReceiptContent(): string {
     const now = new Date();
     const formattedDate = now.toLocaleDateString('en-US', {
@@ -119,36 +146,58 @@ bookingId: number = 0;
 
     return `
 ========================================
-          PAYMENT RECEIPT
+        CAMPAY PAYMENT RECEIPT
 ========================================
 
 Booking ID: ${this.bookingId}
-Receipt Date: ${formattedDate}
-Receipt Time: ${formattedTime}
+Transaction Date: ${formattedDate}
+Transaction Time: ${formattedTime}
 
 ----------------------------------------
-PAYMENT DETAILS:
+PAYMENT DETAILS (CamPay):
 ----------------------------------------
-Transaction ID: ${this.payment?.transaction_id || 'N/A'}
-Amount: R${this.payment?.amount?.toFixed(2) || '0.00'}
+CamPay Reference: ${this.getCamPayReference()}
+Customer Phone: ${this.getCustomerPhone()}
 Payment Method: ${this.getPaymentMethodDisplay()}
 Payment Status: ${this.getPaymentStatusDisplay()}
-Payment Date: ${this.formatDate(this.payment?.created_at)}
+Amount: R${this.payment?.amount?.toFixed(2) || '0.00'}
+Transaction ID: ${this.payment?.transaction_id || 'N/A'}
 
 ----------------------------------------
 BOOKING DETAILS:
 ----------------------------------------
-Car: ${this.booking?.car_make || ''} ${this.booking?.car_model || ''}
+Car: ${this.booking?.car?.make || ''} ${this.booking?.car?.model || ''}
+License Plate: ${this.booking?.car?.license_plate || 'N/A'}
 Start Date: ${this.formatDate(this.booking?.start_date)}
 End Date: ${this.formatDate(this.booking?.end_date)}
+Duration: ${this.calculateDays()} days
 Daily Rate: R${this.booking?.daily_rate?.toFixed(2) || '0.00'}
 Total Price: R${this.booking?.total_price?.toFixed(2) || '0.00'}
 
 ----------------------------------------
-Thank you for your payment!
-For any questions, contact support@quest4res.com
+NOTES:
+----------------------------------------
+• This is a mobile money payment via CamPay
+• Keep this receipt for your records
+• Contact support if you have any questions
+
+Support: support@quest4rides.com
+Phone: +237 XXX XXX XXX
 ========================================
     `.trim();
+  }
+
+  downloadReceipt() {
+    const receiptContent = this.generateReceiptContent();
+    const blob = new Blob([receiptContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `campay-receipt-booking-${this.bookingId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 
   goToDashboard() {
@@ -162,13 +211,4 @@ For any questions, contact support@quest4res.com
   printReceipt() {
     window.print();
   }
-  calculateDays(): number {
-  if (!this.booking?.start_date || !this.booking?.end_date) return 0;
-  const start = new Date(this.booking.start_date);
-  const end = new Date(this.booking.end_date);
-  const diffMs = end.getTime() - start.getTime();
-  return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
-}
-
-

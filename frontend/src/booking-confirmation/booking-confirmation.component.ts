@@ -59,31 +59,32 @@ export class BookingConfirmationComponent implements OnInit {
   }
 
   getStatusLabel(): string {
-    const b = this.booking();
-    if (!b) return '';
-    if (b.status === 'confirmed' && (!b.payment || b.payment.status !== 'completed')) {
-      return 'Confirmed – Payment Required';
-    }
-
-    switch (b.status) {
-      case 'pending': return 'Awaiting Owner Confirmation';
-      case 'confirmed': return 'Confirmed & Paid';
-      case 'rejected': return 'Rejected by Owner';
-      default: return b.status.charAt(0).toUpperCase() + b.status.slice(1);
-    }
+  const b = this.booking();
+  if (!b) return '';
+  
+  if (b.status === 'confirmed' && (!b.payment || b.payment?.status !== 'completed')) {
+    return 'Confirmed – Payment Required';
   }
+
+  switch (b.status) {
+    case 'pending': return 'Awaiting Owner Confirmation';
+    case 'confirmed': return 'Confirmed & Paid';
+    case 'rejected': return 'Rejected by Owner';
+    default: return b.status.charAt(0).toUpperCase() + b.status.slice(1);
+  }
+}
 
   getStatusColor(): string {
     const b = this.booking();
     if (!b) return '';
 
     if (b.status === 'confirmed' && (!b.payment || b.payment.status !== 'completed')) {
-      return 'status-payment-required'; 
+      return 'status-payment-required';
     }
 
     switch (b.status) {
       case 'pending': return 'status-pending';
-      case 'confirmed': return 'status-confirmed'; 
+      case 'confirmed': return 'status-confirmed';
       case 'rejected': return 'status-rejected';
       default: return 'status-default';
     }
@@ -116,8 +117,12 @@ export class BookingConfirmationComponent implements OnInit {
     this.router.navigate(['/bookings']);
   }
 
+
   initiatePayment(): void {
-    this.router.navigate(['/payment-processing', this.booking().id]);
+    const bookingId = this.booking()?.id;
+    if (bookingId) {
+      this.router.navigate(['/campay-payment', bookingId]);
+    }
   }
 
   goBack(): void {

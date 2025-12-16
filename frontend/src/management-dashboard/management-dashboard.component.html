@@ -219,7 +219,7 @@
                       {{ booking.status | titlecase }}
                     </span>
                   </td>
-                  
+
                 </tr>
                 <tr *ngIf="!recentBookings.length">
                   <td colspan="7" class="empty-state">No recent bookings</td>
@@ -233,6 +233,15 @@
         </div>
       </div>
     </div>
+    <a [routerLink]="['/payment-management']" class="nav-link">
+      <i class="bi bi-credit-card"></i> Payment Management
+    </a>
+    <a [routerLink]="['/management/earnings']" class="nav-link">
+      <i class="bi bi-graph-up"></i> Platform Earnings
+    </a>
+    <a [routerLink]="['/management/refunds']" class="nav-link">
+      <i class="bi bi-arrow-counterclockwise"></i> Refund Management
+    </a>
   </div>
 </div>
 

@@ -61,7 +61,8 @@ class BookingPayment(models.Model):
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     payment_method = models.CharField(max_length=50, blank=True)
     transaction_id = models.CharField(max_length=100, blank=True, null=True, unique=True)
-    
+    customer_phone = models.CharField(max_length=20, blank=True, null=True)  # e.g. 2376xxxxxxxx
+    campay_reference = models.CharField(max_length=100, blank=True, null=True, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

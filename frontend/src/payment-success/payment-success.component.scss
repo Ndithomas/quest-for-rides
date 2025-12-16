@@ -66,3 +66,30 @@
     display: none !important;
   }
 }
+/* Add these styles to your SCSS file */
+.campay-badge {
+  background: linear-gradient(135deg, #4CAF50, #8BC34A);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.mobile-money-icon {
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+/* Update the success header for CamPay */
+.success-icon {
+  .bi-check-circle-fill {
+    color: #4CAF50 !important; /* CamPay green */
+  }
+}
+
+/* CamPay specific styling */
+.payment-details {
+  background: #f1f8e9; /* Light green background for CamPay */
+  border-left: 4px solid #4CAF50;
+}

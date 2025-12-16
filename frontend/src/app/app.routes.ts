@@ -149,13 +149,44 @@ export const routes: Routes = [
         data: { roles: ['management'] }
       },
 
+       {
+        path: 'payment-management',
+        loadComponent: () => import('../payment-management/payment-management.component')
+          .then(m => m.PaymentManagementComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
+      // {
+      //   path: 'management/earnings',
+      //   loadComponent: () => import('../platform-earnings/platform-earnings.component')
+      //     .then(m => m.PlatformEarningsComponent),
+      //   canActivate: [roleAuthGuard],
+      //   data: { roles: ['management'] }
+      // },
+      // {
+      //   path: 'management/refunds',
+      //   loadComponent: () => import('../refund-management/refund-management.component')
+      //     .then(m => m.RefundManagementComponent),
+      //   canActivate: [roleAuthGuard],
+      //   data: { roles: ['management'] }
+      // },
+
+      // Guest Payment Routes
       {
-        path: 'payment-processing/:bookingId',
-        loadComponent: () => import('../payment-processing/payment-processing.component')
-          .then(m => m.PaymentProcessingComponent),
+        path: 'campay-payment/:bookingId',
+        loadComponent: () => import('../campay-payment/campay-payment.component')
+          .then(m => m.CampayPaymentComponent),
         canActivate: [roleAuthGuard],
         data: { roles: ['guest'] }
       },
+      {
+        path: 'guest-payment-history',
+        loadComponent: () => import('../guest-payment-history/guest-payment-history.component')
+          .then(m => m.GuestPaymentHistoryComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['guest'] }
+      },
+
       {
         path: 'payment-success/:bookingId',
         loadComponent: () => import('../payment-success/payment-success.component')
@@ -163,12 +194,28 @@ export const routes: Routes = [
         canActivate: [roleAuthGuard],
         data: { roles: ['guest'] }
       },
+
+      // Owner Payment Routes
       {
-        path: 'payment-management',
-        loadComponent: () => import('../payment-management/payment-management.component')
-          .then(m => m.PaymentManagementComponent),
+        path: 'owner/payments',
+        loadComponent: () => import('../owner-payments/owner-payments.component')
+          .then(m => m.OwnerPaymentsComponent),
         canActivate: [roleAuthGuard],
-        data: { roles: ['management'] }
+        data: { roles: ['owner'] }
+      },
+      {
+        path: 'owner/earnings',
+        loadComponent: () => import('../owner-earnings/owner-earnings.component')
+          .then(m => m.OwnerEarningsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['owner'] }
+      },
+      {
+        path: 'owner/payouts',
+        loadComponent: () => import('../owner-payouts/owner-payouts.component')
+          .then(m => m.OwnerPayoutsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['owner'] }
       },
     ],
   },

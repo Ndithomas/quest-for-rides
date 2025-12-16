@@ -25,16 +25,18 @@
           <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
         </svg>
       </div>
-      <h1 class="mb-3">Payment Successful!</h1>
-      <p class="text-muted lead">Your payment has been processed successfully</p>
+      <h1 class="mb-3">CamPay Payment Successful!</h1>
+      <p class="text-muted lead">Your mobile money payment has been processed successfully</p>
     </div>
 
     <!-- Receipt Card -->
     <div class="card shadow-lg border-success mb-5">
       <div class="card-header bg-success text-white py-3">
         <div class="d-flex justify-content-between align-items-center">
-          <h4 class="mb-0">Payment Receipt</h4>
-          <span class="badge bg-light text-success fs-6">Paid</span>
+          <h4 class="mb-0">CamPay Payment Receipt</h4>
+          <span class="badge bg-light text-success fs-6">
+            <i class="bi bi-phone me-1"></i>Mobile Money
+          </span>
         </div>
       </div>
       <div class="card-body p-4">
@@ -44,14 +46,16 @@
           <div class="col-md-6">
             <h5>Booking Details</h5>
             <p class="mb-1"><strong>Booking ID:</strong> #{{ bookingId }}</p>
-            <p class="mb-1"><strong>Car:</strong> {{ booking.car_make }} {{ booking.car_model }}</p>
+            <p class="mb-1"><strong>Car:</strong> {{ booking.car?.make }} {{ booking.car?.model }}</p>
+            <p class="mb-1"><strong>License Plate:</strong> {{ booking.car?.license_plate }}</p>
             <p class="mb-1"><strong>Dates:</strong> {{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}</p>
             <p><strong>Guest:</strong> {{ booking.guest?.first_name }} {{ booking.guest?.last_name }}</p>
           </div>
           <div class="col-md-6 text-md-end">
-            <h5>Receipt</h5>
+            <h5>Payment Receipt</h5>
             <p class="mb-1"><strong>Receipt Date:</strong> {{ formatDate(payment.created_at) }}</p>
             <p class="mb-1"><strong>Time:</strong> {{ formatTime(payment.created_at) }}</p>
+            <p class="mb-1"><strong>CamPay Reference:</strong> {{ getCamPayReference() }}</p>
             <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
           </div>
         </div>
@@ -61,11 +65,21 @@
         <!-- Payment Summary -->
         <div class="row mb-4">
           <div class="col-md-6">
-            <h5>Payment Information</h5>
+            <h5>CamPay Payment Information</h5>
             <div class="payment-details">
               <div class="row mb-2">
                 <div class="col-6"><strong>Payment Method:</strong></div>
-                <div class="col-6">{{ getPaymentMethodDisplay() }}</div>
+                <div class="col-6">
+                  <span class="badge bg-info">{{ getPaymentMethodDisplay() }}</span>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-6"><strong>CamPay Reference:</strong></div>
+                <div class="col-6 text-monospace small">{{ getCamPayReference() }}</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-6"><strong>Customer Phone:</strong></div>
+                <div class="col-6">{{ getCustomerPhone() }}</div>
               </div>
               <div class="row mb-2">
                 <div class="col-6"><strong>Payment Status:</strong></div>
@@ -106,7 +120,7 @@
 
         <!-- Transaction Details -->
         <div *ngIf="payment.transactions && payment.transactions.length > 0" class="mt-4">
-          <h5>Transaction History</h5>
+          <h5>CamPay Transaction History</h5>
           <div class="table-responsive">
             <table class="table table-sm">
               <thead>
@@ -129,8 +143,22 @@
           </div>
         </div>
 
+        <!-- CamPay Success Message -->
+        <div class="alert alert-success mt-4">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill fs-4 me-3"></i>
+            <div>
+              <h6 class="mb-1"><strong>CamPay Payment Complete!</strong></h6>
+              <p class="mb-0">
+                Your mobile money payment was successful. 
+                <strong>CamPay Reference:</strong> {{ getCamPayReference() }}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <!-- Next Steps -->
-        <div class="alert alert-info mt-4">
+        <div class="alert alert-info mt-3">
           <h6><i class="bi bi-info-circle me-2"></i>Next Steps</h6>
           <p class="mb-0">Your booking is now confirmed. The car owner has been notified and will contact you soon with pickup details.</p>
         </div>
@@ -139,15 +167,15 @@
       <div class="card-footer bg-light">
         <div class="d-flex justify-content-between align-items-center">
           <div class="text-muted small">
-            <i class="bi bi-shield-check me-1"></i>
-            Secured Payment • Receipt #{{ payment.id }}
+            <i class="bi bi-phone me-1"></i>
+            CamPay Mobile Money • Receipt #{{ payment.id }}
           </div>
           <div>
             <button class="btn btn-outline-primary me-2" (click)="printReceipt()">
-              <i class="bi bi-printer me-1"></i>Print
+              <i class="bi bi-printer me-1"></i>Print Receipt
             </button>
             <button class="btn btn-outline-success" (click)="downloadReceipt()">
-              <i class="bi bi-download me-1"></i>Download Receipt
+              <i class="bi bi-download me-1"></i>Download CamPay Receipt
             </button>
           </div>
         </div>
@@ -173,8 +201,8 @@
     <div class="text-center">
       <p class="text-muted">
         Need help? Contact our support team at 
-        <a href="mailto:support@quest4res.com" class="text-decoration-none">support&#64;quest4res.com</a>
-        or call <strong>(123) 456-7890</strong>
+        <a href="mailto:support@quest4rides.com" class="text-decoration-none">support&#64;quest4rides.com</a>
+        or call <strong>+237 XXX XXX XXX</strong>
       </p>
     </div>
   </div>
