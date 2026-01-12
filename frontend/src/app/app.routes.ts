@@ -149,29 +149,35 @@ export const routes: Routes = [
         data: { roles: ['management'] }
       },
 
-       {
+      {
         path: 'payment-management',
         loadComponent: () => import('../payment-management/payment-management.component')
           .then(m => m.PaymentManagementComponent),
         canActivate: [roleAuthGuard],
         data: { roles: ['management'] }
       },
-      // {
-      //   path: 'management/earnings',
-      //   loadComponent: () => import('../platform-earnings/platform-earnings.component')
-      //     .then(m => m.PlatformEarningsComponent),
-      //   canActivate: [roleAuthGuard],
-      //   data: { roles: ['management'] }
-      // },
-      // {
-      //   path: 'management/refunds',
-      //   loadComponent: () => import('../refund-management/refund-management.component')
-      //     .then(m => m.RefundManagementComponent),
-      //   canActivate: [roleAuthGuard],
-      //   data: { roles: ['management'] }
-      // },
+      {
+        path: 'management/earnings',
+        loadComponent: () => import('../platform-earnings/platform-earnings.component')
+          .then(m => m.PlatformEarningsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
+      {
+        path: 'management/refunds',
+        loadComponent: () => import('../refund-management/refund-management.component')
+          .then(m => m.RefundManagementComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
+      {
+        path: 'management/payouts',
+        loadComponent: () => import('../payout-management/payout-management.component')
+          .then(m => m.PayoutManagementComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['management'] }
+      },
 
-      // Guest Payment Routes
       {
         path: 'campay-payment/:bookingId',
         loadComponent: () => import('../campay-payment/campay-payment.component')

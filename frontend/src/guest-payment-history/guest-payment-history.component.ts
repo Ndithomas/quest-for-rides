@@ -49,13 +49,21 @@ export class GuestPaymentHistoryComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-CM', {
-    style: 'currency',
-    currency: 'XAF',
-    minimumFractionDigits: 0
-  }).format(amount);
-  // Outputs: 150,000 XAF
-}
+    return new Intl.NumberFormat('en-CM', {
+      style: 'currency',
+      currency: 'XAF',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  getRefundedAmount(payment: BookingPayment): number {
+    if (!payment.commission) return 0;
+    return (payment.commission.refunded_platform || 0) + (payment.commission.refunded_owner || 0);
+  }
+
+  getNetAmount(payment: BookingPayment): number {
+    return payment.amount - this.getRefundedAmount(payment);
+  }
 
   formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-US', {

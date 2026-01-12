@@ -128,7 +128,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       case 'owner':
         return '/owner/bookings';
       case 'management':
-        return '/bookings';
+        return '/management/bookings';
       default:
         return '/bookings';
     }

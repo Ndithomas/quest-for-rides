@@ -1,24 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService, OwnerEarnings } from '../services/payment.service';
+import { PaymentService, OwnerEarnings, Payout } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
-
-interface PayoutHistoryItem {
-  id?: number;
-  amount: number;
-  phone_number: string;
-  status: string;
-  status_display?: string;
-  external_transaction_id?: string;
-  created_at: string;
-  // Add more fields if backend provides them
-}
+import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-owner-payouts',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, DatePipe, CurrencyPipe],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DatePipe, CurrencyPipe],
   templateUrl: './owner-payouts.component.html'
 })
 export class OwnerPayoutsComponent implements OnInit {
@@ -36,10 +26,11 @@ export class OwnerPayoutsComponent implements OnInit {
   payoutAmount: number = 0;
   paymentMethod: string = 'campay';
   phoneNumber: string = '';
-  minimumPayout = 5000; // Matches backend minimum and UI
+  notes: string = '';
+  minimumPayout = 5000;
 
   // Payout history
-  payoutHistory: PayoutHistoryItem[] = [];
+  payoutHistory: Payout[] = [];
 
   constructor(private paymentService: PaymentService) {}
 
@@ -69,19 +60,13 @@ export class OwnerPayoutsComponent implements OnInit {
     this.loadingHistory = true;
     this.error = '';
 
-    // Reusing getOwnerPayments() as it returns the list of BookingPayment objects
-    // Each BookingPayment likely represents a completed payout to the owner (platform commission deducted)
-    this.paymentService.getOwnerPayments().subscribe({
-      next: (payments) => {
-        // Map to a simpler history format
-        this.payoutHistory = payments.map(payment => ({
-          amount: payment.amount,
-          phone_number: payment.customer_phone, // Assuming payout uses same phone field; adjust if needed
-          status: payment.status,
-          status_display: payment.status_display,
-          external_transaction_id: payment.campay_reference,
-          created_at: payment.created_at
-        })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    this.paymentService.getOwnerPayouts().subscribe({
+      next: (payouts) => {
+        this.payoutHistory = payouts.sort((a, b) => {
+          const dateA = new Date(b.requested_at || '').getTime();
+          const dateB = new Date(a.requested_at || '').getTime();
+          return dateA - dateB;
+        });
         this.loadingHistory = false;
       },
       error: (err) => {
@@ -122,21 +107,34 @@ export class OwnerPayoutsComponent implements OnInit {
 
     this.requesting = true;
 
-    // TODO: Implement actual backend endpoint when available, e.g.:
-    // this.paymentService.requestOwnerPayout({ amount: this.payoutAmount, phone: this.phoneNumber }).subscribe({ ... })
+    const payoutRequest = {
+      amount: this.payoutAmount,
+      payment_method: this.paymentMethod,
+      phone_number: this.phoneNumber,
+      notes: this.notes
+    };
 
-    // Temporary mock success (remove when real endpoint exists)
-    setTimeout(() => {
-      this.success = `Payout request for ${this.formatCurrency(this.payoutAmount)} to ${this.phoneNumber} submitted successfully!`;
-      this.showRequestForm = false;
-      this.requesting = false;
+    this.paymentService.requestPayout(payoutRequest).subscribe({
+      next: () => {
+        this.success = `Payout request for ${this.formatCurrency(this.payoutAmount)} to ${this.phoneNumber} submitted successfully!`;
+        this.showRequestForm = false;
+        this.requesting = false;
+        this.phoneNumber = '';
+        this.payoutAmount = 0;
+        this.notes = '';
 
-      // Reload data
-      this.loadOwnerEarnings();
-      this.loadPayoutHistory();
+        // Reload data
+        this.loadOwnerEarnings();
+        this.loadPayoutHistory();
 
-      setTimeout(() => this.success = '', 8000);
-    }, 1500);
+        setTimeout(() => this.success = '', 8000);
+      },
+      error: (err) => {
+        console.error('Error requesting payout:', err);
+        this.error = err?.error?.detail || 'Failed to submit payout request. Please try again.';
+        this.requesting = false;
+      }
+    });
   }
 
   formatCurrency(amount: number): string {

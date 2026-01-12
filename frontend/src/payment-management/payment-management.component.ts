@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService } from '../services/payment.service';
+import { PaymentService, BookingPayment } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -13,106 +13,175 @@ import { FooterComponent } from '../footer/footer.component';
   styleUrl: './payment-management.component.scss'
 })
 export class PaymentManagementComponent implements OnInit {
-payments: any[] = [];
-  filteredPayments: any[] = [];
-  loading = false;
+  payments: BookingPayment[] = [];
+  filteredPayments: BookingPayment[] = [];
+
+  loading = true;
   error = '';
   success = '';
-  
+
   // Filters
   statusFilter = 'all';
   searchTerm = '';
-  startDate = '';
-  endDate = '';
+  startDate: string | null = null;   // yyyy-MM-dd
+  endDate: string | null = null;
 
   // Analytics
-  analytics: any = null;
+  analytics: any = null;  // PaymentAnalytics from your service
   showAnalytics = false;
 
-  constructor(private paymentService: PaymentService) {}
+  get startIndex(): number {
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.page * this.pageSize, this.filteredPayments.length);
+  }
+
+  // Simple client-side pagination
+  page = 1;
+  pageSize = 10;
+  get totalPages(): number {
+    return Math.ceil(this.filteredPayments.length / this.pageSize);
+  }
+
+  constructor(private paymentService: PaymentService) { }
 
   ngOnInit() {
     this.loadPayments();
+    this.loadAnalytics();
   }
 
   loadPayments() {
     this.loading = true;
     this.paymentService.getAllPayments().subscribe({
-      next: (response: any) => {
-        this.payments = response.results || response;
+      next: (data: BookingPayment[]) => {  // assuming no paginated response {results, ...}
+        this.payments = data;
         this.applyFilters();
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Failed to load payments';
+      error: (err) => {
+        console.error(err);
+        this.error = 'Failed to load payment history';
         this.loading = false;
       }
     });
-  }
-
-  applyFilters() {
-    this.filteredPayments = this.payments.filter(payment => {
-      let matches = true;
-      
-      if (this.statusFilter !== 'all') {
-        matches = matches && payment.status === this.statusFilter;
-      }
-      
-      if (this.searchTerm) {
-        const term = this.searchTerm.toLowerCase();
-        matches = matches && (
-          payment.transaction_id?.toLowerCase().includes(term) ||
-          payment.booking?.toString().includes(term) ||
-          payment.amount?.toString().includes(term)
-        );
-      }
-      
-      if (this.startDate) {
-        matches = matches && new Date(payment.created_at) >= new Date(this.startDate);
-      }
-      
-      if (this.endDate) {
-        matches = matches && new Date(payment.created_at) <= new Date(this.endDate);
-      }
-      
-      return matches;
-    });
-  }
-
-  updatePaymentStatus(paymentId: number, status: string) {
-    if (confirm(`Change payment status to ${status}?`)) {
-      this.paymentService.updatePaymentStatus(paymentId, { status }).subscribe({
-        next: () => {
-          this.success = 'Payment status updated';
-          this.loadPayments();
-          setTimeout(() => this.success = '', 3000);
-        },
-        error: () => {
-          this.error = 'Failed to update payment status';
-        }
-      });
-    }
   }
 
   loadAnalytics() {
     this.paymentService.getPaymentAnalytics().subscribe({
       next: (data) => {
         this.analytics = data;
-        this.showAnalytics = true;
       },
       error: () => {
-        this.error = 'Failed to load analytics';
+        console.warn('Analytics failed to load');
+      }
+    });
+  }
+
+  applyFilters() {
+    let result = [...this.payments];
+
+    // Status
+    if (this.statusFilter !== 'all') {
+      result = result.filter(p => p.status.toLowerCase() === this.statusFilter.toLowerCase());
+    }
+
+    // Search
+   if (this.searchTerm) {
+  const term = this.searchTerm.toLowerCase().trim();
+  result = result.filter(p => {
+    return (
+      p.id.toString().includes(term) ||
+      p.booking?.id?.toString().includes(term) ||
+      `${p.booking?.car_make || ''} ${p.booking?.car_model || ''}`.toLowerCase().includes(term) ||
+      p.booking?.guest?.username?.toLowerCase().includes(term) ||
+      p.booking?.owner?.username?.toLowerCase().includes(term) ||
+      p.customer_phone?.includes(term) ||
+      p.transaction_id?.toLowerCase().includes(term) ||
+      p.campay_reference?.toLowerCase().includes(term) ||
+      p.amount.toString().includes(term)
+    );
+  });
+}
+
+    // Date range
+    if (this.startDate) {
+      const start = new Date(this.startDate);
+      start.setHours(0, 0, 0, 0);
+      result = result.filter(p => new Date(p.created_at) >= start);
+    }
+
+    if (this.endDate) {
+      const end = new Date(this.endDate);
+      end.setHours(23, 59, 59, 999);
+      result = result.filter(p => new Date(p.created_at) <= end);
+    }
+
+    this.filteredPayments = result;
+    this.page = 1; // Reset to first page after filter
+  }
+
+  clearFilters() {
+    this.statusFilter = 'all';
+    this.searchTerm = '';
+    this.startDate = null;
+    this.endDate = null;
+    this.applyFilters();
+  }
+
+  // Pagination helpers
+  get paginatedPayments(): BookingPayment[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredPayments.slice(start, start + this.pageSize);
+  }
+
+  previousPage() {
+    if (this.page > 1) this.page--;
+  }
+
+  nextPage() {
+    if (this.page < this.totalPages) this.page++;
+  }
+
+  // Actions
+  updatePaymentStatus(payment: BookingPayment, newStatus: string) {
+    if (!confirm(`Change status to "${newStatus}"?`)) return;
+
+    this.paymentService.updatePaymentStatus(payment.id, { status: newStatus }).subscribe({
+      next: () => {
+        this.success = `Payment #${payment.id} updated successfully`;
+        payment.status = newStatus;
+        setTimeout(() => this.success = '', 4000);
+      },
+      error: () => {
+        this.error = 'Failed to update status';
+        setTimeout(() => this.error = '', 5000);
       }
     });
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
-      case 'completed': return 'badge bg-success';
-      case 'pending': return 'badge bg-warning';
-      case 'failed': return 'badge bg-danger';
-      case 'refunded': return 'badge bg-info';
-      default: return 'badge bg-secondary';
-    }
+    const s = status?.toLowerCase() || '';
+    if (s.includes('complete')) return 'badge bg-success';
+    if (s.includes('pend')) return 'badge bg-warning';
+    if (s.includes('fail')) return 'badge bg-danger';
+    if (s.includes('refund')) return 'badge bg-info';
+    return 'badge bg-secondary';
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-CM', {
+      style: 'currency',
+      currency: 'XAF',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }
+
+  formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleString('fr-CM', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    });
   }
 }

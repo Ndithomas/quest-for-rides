@@ -23,9 +23,17 @@ class PaymentInvoiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['issued_date']
 
 
+class PlatformCommissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PlatformCommission
+        fields = ['id', 'platform_amount', 'owner_payout', 'refunded_platform', 'refunded_owner', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
 class BookingPaymentDetailSerializer(serializers.ModelSerializer):
     transactions = PaymentTransactionSerializer(many=True, read_only=True)
     invoice = PaymentInvoiceSerializer(read_only=True)
+    commission = PlatformCommissionSerializer(read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     campay_reference = serializers.CharField(read_only=True)
     customer_phone = serializers.CharField(read_only=True)
@@ -33,7 +41,7 @@ class BookingPaymentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookingPayment
         fields = ['id', 'booking', 'amount', 'status', 'status_display', 
-                  'campay_reference', 'customer_phone', 'transactions', 'invoice', 
+                  'campay_reference', 'customer_phone', 'transactions', 'invoice', 'commission',
                   'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
@@ -78,6 +86,33 @@ class RefundSerializer(serializers.Serializer):
         max_length=500,
         help_text="Reason for refund"
     )
+    amount = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        help_text="Amount to refund (if partial refund)"
+    )
+
+
+class PayoutSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    payment_method_display = serializers.CharField(source='get_payment_method_display', read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True)
+    owner_email = serializers.CharField(source='owner.email', read_only=True)
+    
+    class Meta:
+        model = Payout
+        fields = ['id', 'owner', 'owner_username', 'owner_email', 'amount', 'status', 'status_display',
+                  'payment_method', 'payment_method_display', 'phone_number', 'external_reference',
+                  'notes', 'requested_at', 'approved_at', 'completed_at', 'created_at', 'updated_at']
+        read_only_fields = ['requested_at', 'approved_at', 'completed_at', 'created_at', 'updated_at']
+
+
+class PayoutRequestSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = serializers.ChoiceField(choices=['campay', 'bank_transfer', 'mtn_momo', 'orange_money'])
+    phone_number = serializers.CharField(max_length=20)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=500)
     amount = serializers.DecimalField(
         max_digits=10, 
         decimal_places=2, 

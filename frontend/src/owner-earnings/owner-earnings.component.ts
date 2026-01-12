@@ -63,8 +63,20 @@ export class OwnerEarningsComponent implements OnInit {
     return this.getCompletedPayments().reduce((sum, payment) => sum + payment.amount, 0);
   }
 
+  getGrossEarnings(): number {
+    return this.getCompletedPayments().reduce((sum, payment) => sum + (payment.commission?.owner_payout || 0), 0);
+  }
+
+  getRefundedAmount(): number {
+    return this.getCompletedPayments().reduce((sum, payment) => sum + (payment.commission?.refunded_owner || 0), 0);
+  }
+
+  getNetEarnings(): number {
+    return this.getGrossEarnings() - this.getRefundedAmount();
+  }
+
   getPlatformCommission(): number {
-    return this.getTotalRevenue() * 0.1; // 10% commission
+    return this.getCompletedPayments().reduce((sum, payment) => sum + (payment.commission?.platform_amount || 0), 0);
   }
 
   formatCurrency(amount: number): string {

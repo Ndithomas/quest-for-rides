@@ -117,6 +117,11 @@
                                 <div class="form-text">Enter your Cameroon mobile money number starting with 237 (9
                                     digits after)</div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Additional Notes (Optional)</label>
+                                <input type="text" class="form-control" [(ngModel)]="notes" name="notes"
+                                    placeholder="e.g., reference or notes">
+                            </div>
                         </div>
                     </div>
 
@@ -165,19 +170,21 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let payout of payoutHistory">
-                                <td>{{ payout.created_at | date:'mediumDate' }}</td>
+                                <td>{{ payout.requested_at | date:'mediumDate' }}</td>
                                 <td>{{ formatCurrency(payout.amount) }}</td>
-                                <td>Mobile Money ({{ payout.phone_number }})</td>
+                                <td>{{ payout.payment_method_display }}</td>
                                 <td>
                                     <span class="badge" [ngClass]="{
-                    'bg-success': payout.status === 'success',
-                    'bg-warning': payout.status === 'pending',
+                    'bg-warning text-dark': payout.status === 'pending',
+                    'bg-info': payout.status === 'approved',
+                    'bg-primary': payout.status === 'processing',
+                    'bg-success': payout.status === 'completed',
                     'bg-danger': payout.status === 'failed'
                   }">
                                         {{ payout.status_display || payout.status }}
                                     </span>
                                 </td>
-                                <td>{{ payout.external_transaction_id || '-' }}</td>
+                                <td>{{ payout.external_reference || '-' }}</td>
                             </tr>
                         </tbody>
                     </table>

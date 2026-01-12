@@ -1,12 +1,15 @@
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import models as django_models, transaction
+from userAuth.permissions import IsManagement
 from decimal import Decimal
+from django.utils import timezone
 
 from bookings.models import Booking, BookingPayment
-from .models import PaymentTransaction, PaymentInvoice
+from userAuth.models import User
+from .models import PaymentTransaction, PaymentInvoice, PlatformCommission, Payout
 from .campay import initiate_collection, get_transaction_status
 from .serializers import *
 
@@ -149,6 +152,15 @@ class CheckCamPayStatusView(generics.GenericAPIView):
                         external_transaction_id=payment.campay_reference
                     )
 
+                    if new_status == 'completed' and not hasattr(payment, 'commission'):
+                        platform_amount = payment.amount * Decimal('0.10')
+                        owner_payout = payment.amount * Decimal('0.90')
+                        PlatformCommission.objects.create(
+                            booking_payment=payment,
+                            platform_amount=platform_amount,
+                            owner_payout=owner_payout
+                        )
+
             return Response({
                 "status": payment.status,
                 "campay_status": campay_status,
@@ -163,7 +175,7 @@ class CheckCamPayStatusView(generics.GenericAPIView):
 
 
 class PaymentStatusUpdateView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsManagement]
     serializer_class = PaymentStatusUpdateSerializer
 
     def post(self, request, booking_id):  # Better as POST than PUT/PATCH
@@ -194,13 +206,22 @@ class PaymentStatusUpdateView(generics.GenericAPIView):
                 notes=notes or f"Manual update from {old_status} to {new_status}"
             )
 
+            if new_status == 'completed' and not hasattr(payment, 'commission'):
+                platform_amount = payment.amount * Decimal('0.10')
+                owner_payout = payment.amount * Decimal('0.90')
+                PlatformCommission.objects.create(
+                    booking_payment=payment,
+                    platform_amount=platform_amount,
+                    owner_payout=owner_payout
+                )
+
         return Response({
             "detail": "Payment status updated successfully.",
             "new_status": new_status
         })
 
 class PaymentRefundView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsManagement]
     serializer_class = RefundSerializer
 
     def post(self, request, booking_id):
@@ -220,6 +241,14 @@ class PaymentRefundView(generics.GenericAPIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
+            commission = get_object_or_404(PlatformCommission, booking_payment=payment)
+            refunded_owner = refund_amount * Decimal('0.90')
+            refunded_platform = refund_amount * Decimal('0.10')
+            
+            commission.refunded_owner += refunded_owner
+            commission.refunded_platform += refunded_platform
+            commission.save()
+            
             payment.status = 'refunded' if refund_amount == payment.amount else 'partially_refunded'
             payment.save()
 
@@ -228,8 +257,7 @@ class PaymentRefundView(generics.GenericAPIView):
                 transaction_type='refund',
                 amount=-refund_amount,
                 status='completed',
-                notes=reason,
-                external_transaction_id=payment.campay_reference or '',
+                external_transaction_id=payment.campay_reference or ''
             )
 
         # TODO: Call CamPay refund API with amount
@@ -237,37 +265,48 @@ class PaymentRefundView(generics.GenericAPIView):
         return Response({
             "detail": "Refund processed successfully.",
             "refunded_amount": float(refund_amount),
+            "refunded_to_owner": float(refunded_owner),
+            "refunded_to_platform": float(refunded_platform),
             "new_status": payment.status
         })
 
 class PaymentListView(generics.ListAPIView):
     serializer_class = BookingPaymentDetailSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsManagement]
 
     def get_queryset(self):
         return BookingPayment.objects.select_related(
             'booking', 'booking__car', 'booking__guest', 'booking__owner'
-        ).order_by('-created_at')
+        ).filter(status='completed').order_by('-created_at')
 
 
 # ==================== Admin: Platform Analytics ====================
 class PaymentAnalyticsView(generics.GenericAPIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsManagement]
 
     def get(self, request):
-        completed = BookingPayment.objects.filter(status='completed')
-        total_revenue = completed.aggregate(
-            total=django_models.Sum('amount')
+        commissions = PlatformCommission.objects.all()
+        total_platform = commissions.aggregate(
+            total=django_models.Sum('platform_amount')
         )['total'] or Decimal('0')
-
-        platform_commission = total_revenue * Decimal('0.10')
-        owner_earnings = total_revenue * Decimal('0.90')
+        total_owner = commissions.aggregate(
+            total=django_models.Sum('owner_payout')
+        )['total'] or Decimal('0')
+        total_refunded_platform = commissions.aggregate(
+            total=django_models.Sum('refunded_platform')
+        )['total'] or Decimal('0')
+        total_refunded_owner = commissions.aggregate(
+            total=django_models.Sum('refunded_owner')
+        )['total'] or Decimal('0')
+        
+        total_revenue = total_platform + total_owner
 
         return Response({
-            "total_transactions": completed.count(),
+            "total_transactions": commissions.count(),
             "total_revenue": float(total_revenue),
-            "platform_commission_10%": float(platform_commission),
-            "owner_payouts": float(owner_earnings),
+            "platform_commission": float(total_platform - total_refunded_platform),
+            "owner_payouts": float(total_owner - total_refunded_owner),
+            "total_refunded": float(total_refunded_platform + total_refunded_owner),
             "currency": "XAF",
         })
 
@@ -290,19 +329,21 @@ class OwnerEarningsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        completed = BookingPayment.objects.filter(
-            booking__car__owner=request.user,
-            status='completed'
+        commissions = PlatformCommission.objects.filter(
+            booking_payment__booking__car__owner=request.user
         )
-        total = completed.aggregate(
-            total=django_models.Sum('amount')
+        gross_earnings = commissions.aggregate(
+            total=django_models.Sum('owner_payout')
         )['total'] or Decimal('0')
-
-        owner_share = total * Decimal('0.90')
+        refunded = commissions.aggregate(
+            total=django_models.Sum('refunded_owner')
+        )['total'] or Decimal('0')
+        
+        available_balance = gross_earnings - refunded
 
         return Response({
-            "total_earnings": float(owner_share),
-            "available_balance": float(owner_share),  # Extend with Payout model later
+            "total_earnings": float(gross_earnings),
+            "available_balance": float(available_balance),
             "currency": "XAF",
         })
     
@@ -315,4 +356,143 @@ class GuestPaymentsListView(generics.ListAPIView):
         return BookingPayment.objects.filter(
             booking__guest=self.request.user,
             status='completed'  
-        ).select_related('booking', 'booking__car').order_by('-created_at')  
+        ).select_related('booking', 'booking__car').order_by('-created_at')
+
+
+# ==================== Owner: Payout Management ====================
+class PayoutRequestView(generics.CreateAPIView):
+    serializer_class = PayoutRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        amount = serializer.validated_data['amount']
+        
+        # Check if owner has enough available balance
+        commissions = PlatformCommission.objects.filter(
+            booking_payment__booking__car__owner=request.user
+        )
+        gross_earnings = commissions.aggregate(
+            total=django_models.Sum('owner_payout')
+        )['total'] or Decimal('0')
+        refunded = commissions.aggregate(
+            total=django_models.Sum('refunded_owner')
+        )['total'] or Decimal('0')
+        
+        available_balance = gross_earnings - refunded
+        
+        # Deduct already requested/approved/processing payouts
+        pending_payouts = Payout.objects.filter(
+            owner=request.user,
+            status__in=['pending', 'approved', 'processing']
+        ).aggregate(total=django_models.Sum('amount'))['total'] or Decimal('0')
+        
+        available_for_withdrawal = available_balance - pending_payouts
+        
+        if amount > available_for_withdrawal:
+            return Response(
+                {"detail": f"Insufficient balance. Available: {float(available_for_withdrawal)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if amount <= 0:
+            return Response(
+                {"detail": "Amount must be greater than zero"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        payout = Payout.objects.create(
+            owner=request.user,
+            amount=amount,
+            payment_method=serializer.validated_data['payment_method'],
+            phone_number=serializer.validated_data['phone_number'],
+            notes=serializer.validated_data.get('notes', '')
+        )
+
+        return Response(
+            PayoutSerializer(payout).data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+class OwnerPayoutListView(generics.ListAPIView):
+    serializer_class = PayoutSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Payout.objects.filter(owner=self.request.user).order_by('-requested_at')
+
+
+class ManagementPayoutListView(generics.ListAPIView):
+    serializer_class = PayoutSerializer
+    permission_classes = [IsManagement]
+
+    def get_queryset(self):
+        status_filter = self.request.query_params.get('status')
+        queryset = Payout.objects.all().order_by('-requested_at')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        return queryset
+
+
+class PayoutApproveView(generics.GenericAPIView):
+    permission_classes = [IsManagement]
+    serializer_class = PayoutSerializer
+
+    def post(self, request, payout_id):
+        payout = get_object_or_404(Payout, id=payout_id, status='pending')
+
+        with transaction.atomic():
+            payout.status = 'approved'
+            payout.approved_at = timezone.now()
+            payout.save()
+
+        return Response({
+            "detail": "Payout approved",
+            "payout": PayoutSerializer(payout).data
+        })
+
+
+class PayoutProcessView(generics.GenericAPIView):
+    permission_classes = [IsManagement]
+
+    def post(self, request, payout_id):
+        payout = get_object_or_404(Payout, id=payout_id, status='approved')
+
+        with transaction.atomic():
+            payout.status = 'processing'
+            payout.save()
+
+            # TODO: Integrate with actual payment gateway (CamPay, bank transfer, etc.)
+            # For now, mark as completed immediately
+            payout.status = 'completed'
+            payout.completed_at = timezone.now()
+            payout.external_reference = f"payout_{payout.id}_{payout.created_at.timestamp()}"
+            payout.save()
+
+        return Response({
+            "detail": "Payout processed successfully",
+            "payout": PayoutSerializer(payout).data
+        })
+
+
+class PayoutRejectView(generics.GenericAPIView):
+    permission_classes = [IsManagement]
+
+    def post(self, request, payout_id):
+        payout = get_object_or_404(Payout, id=payout_id, status__in=['pending', 'approved'])
+        
+        reason = request.data.get('reason', 'Rejected by admin')
+
+        with transaction.atomic():
+            payout.status = 'failed'
+            payout.notes = f"Rejected: {reason}"
+            payout.save()
+
+        return Response({
+            "detail": "Payout rejected",
+            "payout": PayoutSerializer(payout).data
+        })
