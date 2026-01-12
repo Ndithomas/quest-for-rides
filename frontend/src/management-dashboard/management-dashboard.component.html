@@ -1,247 +1,100 @@
-<!-- management-dashboard.component.html -->
 <app-navbar></app-navbar>
 
 <div class="dashboard-page">
-  <!-- Hero Header -->
   <div class="dashboard-header">
     <div class="container">
-      <h1 class="dashboard-title">Management Dashboard</h1>
-      <p class="dashboard-subtitle">Real-time overview of your luxury fleet empire</p>
+      <h1>Management Dashboard</h1>
+      <p class="subtitle">Platform control center</p>
     </div>
   </div>
 
   <div class="container py-5">
-
-    <div class="stats-grid">
-      <div class="stat-card total-users">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
+    <!-- Stats Cards -->
+    <div class="stats-grid mb-5">
+      <div class="stat-card">
+        <div class="stat-header">
+          <i class="bi bi-people"></i>
+          <h3>Users</h3>
         </div>
         <div class="stat-value">{{ stats.total_users || 0 }}</div>
-        <div class="stat-label">Total Users</div>
       </div>
 
-      <div class="stat-card total-cars">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
-            <path d="M21 16v-2a4 4 0 0 0-4-4 4 4 0 0 0-4 4"></path>
-            <path d="M4 12h16"></path>
-            <circle cx="7" cy="17" r="3"></circle>
-            <circle cx="17" cy="17" r="3"></circle>
-          </svg>
+      <div class="stat-card">
+        <div class="stat-header">
+          <i class="bi bi-car-front"></i>
+          <h3>Vehicles</h3>
         </div>
         <div class="stat-value">{{ stats.total_cars || 0 }}</div>
-        <div class="stat-label">Total Cars</div>
       </div>
 
-      <div class="stat-card total-bookings">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
+      <div class="stat-card">
+        <div class="stat-header">
+          <i class="bi bi-calendar-check"></i>
+          <h3>Bookings</h3>
         </div>
         <div class="stat-value">{{ stats.total_bookings || 0 }}</div>
-        <div class="stat-label">Total Bookings</div>
       </div>
 
-      <div class="stat-card active-bookings">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
+      <div class="stat-card">
+        <div class="stat-header">
+          <i class="bi bi-check-circle"></i>
+          <h3>Active</h3>
         </div>
         <div class="stat-value">{{ stats.active_bookings || 0 }}</div>
-        <div class="stat-label">Active</div>
       </div>
 
-      <div class="stat-card pending-bookings">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-        <div class="stat-value">{{ stats.pending_bookings || 0 }}</div>
-        <div class="stat-label">Pending</div>
-      </div>
-
-      <div class="stat-card revenue">
-        <div class="stat-icon">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <line x1="12" y1="1" x2="12" y2="23"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
+      <div class="stat-card highlight">
+        <div class="stat-header">
+          <i class="bi bi-currency-rand"></i>
+          <h3>Revenue</h3>
         </div>
         <div class="stat-value">{{ formatCurrency(stats.total_revenue || 0) }}</div>
-        <div class="stat-label">Revenue</div>
       </div>
     </div>
 
-    <div class="row g-5 mt-4">
-      <!-- Recent Users -->
-      <div class="col-lg-6">
-        <div class="data-card">
-          <div class="card-header">
-            <h3>Recent Users</h3>
-            <span class="badge">{{ recentUsers.length }}</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let u of recentUsers">
-                  <td class="user-name">{{ u.first_name }} {{ u.last_name }}</td>
-                  <td>
-                    <span class="role-badge" [class.owner]="u.role === 'owner'" [class.guest]="u.role === 'guest'"
-                      [class.management]="u.role === 'management'">
-                      {{ u.role | titlecase }}
-                    </span>
-                  </td>
-                  <td class="email">{{ u.email }}</td>
-                  <td>
-                    <span class="status-badge" [class.active]="u.status === 'active'"
-                      [class.inactive]="u.status === 'inactive'" [class.suspended]="u.status === 'suspended'">
-                      {{ u.status | titlecase }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="!recentUsers.length">
-                  <td colspan="4" class="empty-state">No recent users</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="card-footer">
-            <a routerLink="/management/users" class="view-all-btn">View All Users</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Latest Cars -->
-      <div class="col-lg-6">
-        <div class="data-card">
-          <div class="card-header">
-            <h3>Latest Cars</h3>
-            <span class="badge success">{{ recentCars.length }}</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Car</th>
-                  <th>Owner</th>
-                  <th>Price/Day</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let c of recentCars">
-                  <td class="car-name">{{ c.brand }} {{ c.model }} <span class="year">({{ c.year }})</span></td>
-                  <td class="owner">{{ c.owner_name || c.owner_username }}</td>
-                  <td class="price">R{{ c.price_per_day | number:'1.0-0' }}</td>
-                  <td>
-                    <span class="status-badge car-status" [class.active]="c.status === 'active'"
-                      [class.booked]="c.status === 'booked'" [class.maintenance]="c.status === 'maintenance'"
-                      [class.suspended]="c.status === 'suspended'">
-                      {{ c.status | titlecase }}
-                    </span>
-                  </td>
-                </tr>
-                <tr *ngIf="!recentCars.length">
-                  <td colspan="4" class="empty-state">No cars listed yet</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="card-footer">
-            <a routerLink="/management/cars" class="view-all-btn success">View All Cars</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Bookings -->
-      <div class="col-lg-12">
-        <div class="data-card">
-          <div class="card-header">
-            <h3>Recent Bookings</h3>
-            <span class="badge info">{{ recentBookings.length }}</span>
-          </div>
-          <div class="table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Car</th>
-                  <th>Guest</th>
-                  <th>Dates</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let booking of recentBookings">
-                  <td class="booking-id">{{ booking.id }}</td>
-                  <td class="car-name">
-                    {{ booking.car_make }} {{ booking.car_model }}
-                    <div class="small text-muted">{{ booking.car_title }}</div>
-                  </td>
-                  <td class="user-name">
-                    {{ booking.guest?.username || 'N/A' }}
-                    <div class="small text-muted">{{ booking.guest?.email || '' }}</div>
-                  </td>
-                  <td class="dates">
-                    {{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}
-                    <div class="small text-muted">{{ getDaysBetween(booking.start_date, booking.end_date) }} days</div>
-                  </td>
-                  <td class="price">R{{ booking.total_price | number:'1.0-0' }}</td>
-                  <td>
-                    <span class="status-badge booking-status" [class.pending]="booking.status === 'pending'"
-                      [class.confirmed]="booking.status === 'confirmed'" [class.active]="booking.status === 'active'"
-                      [class.completed]="booking.status === 'completed'"
-                      [class.cancelled]="booking.status === 'cancelled'">
-                      {{ booking.status | titlecase }}
-                    </span>
-                  </td>
-
-                </tr>
-                <tr *ngIf="!recentBookings.length">
-                  <td colspan="7" class="empty-state">No recent bookings</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="card-footer">
-            <a routerLink="/management/bookings" class="view-all-btn info">View All Bookings</a>
-          </div>
-        </div>
-      </div>
+    <!-- Quick Actions -->
+    <div class="section-title mb-4">
+      <h2>Quick Actions</h2>
+      <p>Manage platform operations</p>
     </div>
-    <a [routerLink]="['/payment-management']" class="nav-link">
-      <i class="bi bi-credit-card"></i> Payment Management
-    </a>
-    <a [routerLink]="['/management/earnings']" class="nav-link">
-      <i class="bi bi-graph-up"></i> Platform Earnings
-    </a>
-    <a [routerLink]="['/management/refunds']" class="nav-link">
-      <i class="bi bi-arrow-counterclockwise"></i> Refund Management
-    </a>
+    
+    <div class="actions-grid">
+      <a routerLink="/management/users" class="action-card">
+        <i class="bi bi-people-fill"></i>
+        <h3>Users</h3>
+        <p>Manage user accounts</p>
+      </a>
+
+      <a routerLink="/management/cars" class="action-card">
+        <i class="bi bi-car-front-fill"></i>
+        <h3>Vehicles</h3>
+        <p>Manage fleet</p>
+      </a>
+
+      <a routerLink="/management/bookings" class="action-card">
+        <i class="bi bi-calendar-check-fill"></i>
+        <h3>Bookings</h3>
+        <p>View reservations</p>
+      </a>
+
+      <a routerLink="/payment-management" class="action-card">
+        <i class="bi bi-credit-card-2-front-fill"></i>
+        <h3>Payments</h3>
+        <p>Monitor transactions</p>
+      </a>
+
+      <a routerLink="/management/earnings" class="action-card">
+        <i class="bi bi-graph-up"></i>
+        <h3>Earnings</h3>
+        <p>Financial reports</p>
+      </a>
+
+      <a routerLink="/management/refunds" class="action-card">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        <h3>Refunds</h3>
+        <p>Process refunds</p>
+      </a>
+    </div>
   </div>
 </div>
 

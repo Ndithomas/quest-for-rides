@@ -104,42 +104,9 @@
   }
 }
 
-// Recent Activity
-.activity-card {
-  background: white;
-  border-radius: 1.5rem;
-  padding: 2rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  border-left: 5px solid #27ae60;
-}
 
-.activity-list {
-  display: grid;
-  gap: 1rem;
-}
 
-.activity-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.8rem 0;
 
-  i {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(39,174,96,0.1);
-    display: grid;
-    place-items: center;
-    font-size: 1.3rem;
-    color: #27ae60;
-  }
-
-  p { margin: 0; font-weight: 500; }
-  small { color: #888; font-size: 0.9rem; }
-}
-
-// Responsive
 @media (max-width: 768px) {
   .action-btn { font-size: 1rem; padding: 1.2rem; }
   .stat-card { padding: 1.5rem; }

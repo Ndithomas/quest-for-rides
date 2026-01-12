@@ -5,3 +5,4 @@ from .models import *
 admin.site.register(PaymentTransaction)
 admin.site.register(PaymentInvoice)
 admin.site.register(Payout)
+admin.site.register(PlatformCommission)

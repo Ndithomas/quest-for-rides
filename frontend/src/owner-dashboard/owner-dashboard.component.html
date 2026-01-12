@@ -60,11 +60,11 @@
     <div class="row g-4">
       <div class="col-md-4">
         <div class="feature-card">
-          <i class="bi bi-car-front-fill mb-3"></i>
-          <h5>Manage Fleet</h5>
-          <p class="text-muted small">Add, edit, or update your vehicles</p>
+          <i class="bi bi-credit-card me-2"></i>
+          <h5>Payments</h5>
+          <p class="text-muted small">Track payments</p>
           <div class="mt-auto">
-            <a routerLink="/owner/cars" class="link">View all cars</a>
+            <a routerLink="/owner/payments" class="link">View payments</a>
           </div>
         </div>
       </div>
@@ -75,7 +75,7 @@
           <p class="text-muted small">Track revenue and performance</p>
           <div class="mt-auto">
             <a [routerLink]="['/owner/earnings']" class="link">
-             Earnings
+              Earnings
             </a>
           </div>
         </div>
@@ -92,32 +92,6 @@
       </div>
     </div>
 
-    <div class="activity-card mt-5">
-      <h4 class="mb-4">Recent Activity</h4>
-      <div class="activity-list">
-        <div class="activity-item">
-          <i class="bi bi-car-front"></i>
-          <div>
-            <p>BMW 3 Series booked for 3 days</p>
-            <small>Today at 14:30 • R 2,400</small>
-          </div>
-        </div>
-        <div class="activity-item">
-          <i class="bi bi-check-circle"></i>
-          <div>
-            <p>Payment received for Mercedes rental</p>
-            <small>Yesterday • R 1,800</small>
-          </div>
-        </div>
-        <div class="activity-item">
-          <i class="bi bi-plus-circle"></i>
-          <div>
-            <p>New car added: Audi A4</p>
-            <small>2 days ago</small>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 <app-footer></app-footer>
