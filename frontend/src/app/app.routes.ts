@@ -104,6 +104,13 @@ export const routes: Routes = [
       },
 
       {
+        path: 'notifications',
+        loadComponent: () => import('../notifications/notifications.component').then(m => m.NotificationsComponent),
+        canActivate: [roleAuthGuard],
+        data: { roles: ['guest', 'owner', 'management'] }
+      },
+
+      {
         path: 'bookings',
         loadComponent: () => import('../bookings/bookings.component').then(m => m.BookingsComponent),
         canActivate: [roleAuthGuard],

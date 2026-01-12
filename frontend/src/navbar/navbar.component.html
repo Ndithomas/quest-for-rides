@@ -15,10 +15,12 @@
     <button class="user-btn" (click)="toggleSidebar()" [class.active]="isSidebarOpen()"
       [attr.aria-expanded]="isSidebarOpen()">
       @if (isLoggedIn()) {
-      <svg width="24" height="24" viewBox="0 0 24 24">
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" />
-        <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2" />
-      </svg>
+      <div class="notification-icon-wrapper">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" fill="none" stroke="currentColor" stroke-width="2" />
+          <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </div>
       } @else {
       <svg width="40" height="28" viewBox="0 0 40 28">
         <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -49,6 +51,14 @@
       <!-- Bookings -->
       <a [routerLink]="getBookingsRoute()" (click)="closeSidebar()" class="dropdown-item">
         <i class="bi bi-calendar-check me-2"></i>{{ getBookingsLabel() }}
+      </a>
+
+      <!-- Notifications -->
+      <a routerLink="/notifications" (click)="closeSidebar()" class="dropdown-item">
+        <i class="bi bi-bell me-2"></i>Notifications
+        @if (unreadNotificationCount() > 0) {
+        <span class="badge bg-danger ms-2">{{ unreadNotificationCount() }}</span>
+        }
       </a>
 
       <!-- Owner-Specific Links -->

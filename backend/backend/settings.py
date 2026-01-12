@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'listings',
     'bookings',
     'payments',
+    'notifications',
     'django_cleanup.apps.CleanupConfig',
     
 ]

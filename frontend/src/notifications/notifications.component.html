@@ -1,0 +1,119 @@
+<div class="notifications-container">
+  <!-- Navbar -->
+  <app-navbar></app-navbar>
+
+  <!-- Main Content -->
+  <main class="notifications-main">
+    <div class="container py-5">
+      <!-- Header -->
+      <div class="notifications-header mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="mb-0">
+            <i class="bi bi-bell-fill me-2"></i>Notifications
+          </h1>
+          @if (getUnreadCount() > 0) {
+          <button class="btn btn-sm btn-outline-primary" (click)="markAllAsRead()">
+            Mark all as read
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs mb-4">
+        <button 
+          [class.active]="filterType() === 'all'"
+          (click)="filterType.set('all')"
+          class="filter-tab">
+          All ({{ notifications().length }})
+        </button>
+        <button 
+          [class.active]="filterType() === 'unread'"
+          (click)="filterType.set('unread')"
+          class="filter-tab">
+          Unread ({{ getUnreadCount() }})
+        </button>
+        <button 
+          [class.active]="filterType() === 'read'"
+          (click)="filterType.set('read')"
+          class="filter-tab">
+          Read ({{ notifications().length - getUnreadCount() }})
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      }
+
+      <!-- Error State -->
+      @if (error()) {
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error() }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      }
+
+      <!-- Notifications List -->
+      @if (!loading() && getReadyNotifications().length > 0) {
+      <div class="notifications-list">
+        @for (notification of getReadyNotifications(); track notification.id) {
+        <div 
+          class="notification-item"
+          [class.unread]="!notification.is_read"
+          (click)="markAsRead(notification)">
+          
+          <!-- Icon -->
+          <div class="notification-icon" [class]="'text-' + getNotificationColor(notification.notification_type)">
+            <i [class]="'bi ' + getNotificationIcon(notification.notification_type)"></i>
+          </div>
+
+          <!-- Content -->
+          <div class="notification-content">
+            <h6 class="notification-title">{{ notification.title }}</h6>
+            <p class="notification-message">{{ notification.message }}</p>
+            <span class="notification-time">
+              {{ notification.created_at | date:'short' }}
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="notification-actions">
+            @if (!notification.is_read) {
+            <span class="unread-badge">New</span>
+            }
+            <button 
+              class="btn btn-sm btn-link text-danger"
+              (click)="deleteNotification(notification.id); $event.stopPropagation()">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- Empty State -->
+      @if (!loading() && getReadyNotifications().length === 0) {
+      <div class="empty-state text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: #ccc;"></i>
+        <h5 class="mt-3 text-muted">No notifications</h5>
+        <p class="text-muted small">
+          @switch (filterType()) {
+            @case ('unread') { You're all caught up! }
+            @case ('read') { You have no read notifications yet }
+            @default { Check back later for updates }
+          }
+        </p>
+      </div>
+      }
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <app-footer></app-footer>
+</div>

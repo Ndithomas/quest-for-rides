@@ -12,9 +12,8 @@ from userAuth.models import User
 from .models import PaymentTransaction, PaymentInvoice, PlatformCommission, Payout
 from .campay import initiate_collection, get_transaction_status
 from .serializers import *
+from .notification_handlers import *
 
-
-# ==================== Guest/Owner: View Payment Details ====================
 class BookingPaymentDetailView(generics.RetrieveAPIView):
     serializer_class = BookingPaymentDetailSerializer
     permission_classes = [IsAuthenticated]
@@ -119,7 +118,7 @@ class CheckCamPayStatusView(generics.GenericAPIView):
             BookingPayment,
             booking__id=booking_id,
             booking__in=Booking.objects.filter(
-                models.Q(guest=request.user) | models.Q(car__owner=request.user)
+                django_models.Q(guest=request.user) | django_models.Q(car__owner=request.user)
             )
        )
 
@@ -160,6 +159,9 @@ class CheckCamPayStatusView(generics.GenericAPIView):
                             platform_amount=platform_amount,
                             owner_payout=owner_payout
                         )
+                    
+                    # Use notification helper
+                    notify_payment_status_change(payment, new_status)
 
             return Response({
                 "status": payment.status,
@@ -172,7 +174,6 @@ class CheckCamPayStatusView(generics.GenericAPIView):
                 {"detail": f"Status check failed: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 
 class PaymentStatusUpdateView(generics.GenericAPIView):
     permission_classes = [IsManagement]
@@ -214,6 +215,9 @@ class PaymentStatusUpdateView(generics.GenericAPIView):
                     platform_amount=platform_amount,
                     owner_payout=owner_payout
                 )
+            
+            # Use notification helper
+            notify_payment_status_change(payment, new_status, old_status)
 
         return Response({
             "detail": "Payment status updated successfully.",
@@ -259,6 +263,9 @@ class PaymentRefundView(generics.GenericAPIView):
                 status='completed',
                 external_transaction_id=payment.campay_reference or ''
             )
+            
+            # Use notification helper
+            notify_payment_status_change(payment, payment.status)
 
         # TODO: Call CamPay refund API with amount
 
@@ -279,8 +286,6 @@ class PaymentListView(generics.ListAPIView):
             'booking', 'booking__car', 'booking__guest', 'booking__owner'
         ).filter(status='completed').order_by('-created_at')
 
-
-# ==================== Admin: Platform Analytics ====================
 class PaymentAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsManagement]
 
@@ -411,6 +416,9 @@ class PayoutRequestView(generics.CreateAPIView):
             phone_number=serializer.validated_data['phone_number'],
             notes=serializer.validated_data.get('notes', '')
         )
+        
+        # Use notification helper
+        notify_payout_requested(payout, request.user)
 
         return Response(
             PayoutSerializer(payout).data,
@@ -449,6 +457,9 @@ class PayoutApproveView(generics.GenericAPIView):
             payout.status = 'approved'
             payout.approved_at = timezone.now()
             payout.save()
+            
+            # Use notification helper
+            notify_payout_approved(payout)
 
         return Response({
             "detail": "Payout approved",
@@ -472,6 +483,9 @@ class PayoutProcessView(generics.GenericAPIView):
             payout.completed_at = timezone.now()
             payout.external_reference = f"payout_{payout.id}_{payout.created_at.timestamp()}"
             payout.save()
+            
+            # Use notification helper
+            notify_payout_completed(payout)
 
         return Response({
             "detail": "Payout processed successfully",
@@ -491,6 +505,9 @@ class PayoutRejectView(generics.GenericAPIView):
             payout.status = 'failed'
             payout.notes = f"Rejected: {reason}"
             payout.save()
+            
+            # Use notification helper
+            notify_payout_rejected(payout, reason)
 
         return Response({
             "detail": "Payout rejected",

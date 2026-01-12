@@ -3,7 +3,9 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { RoleRedirectService } from '../services/role-redirect.service';
 import { ProfileService } from '../services/profile.service';
+import { NotificationService } from '../services/notification.service';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 
 interface TokenUser {
   username?: string;
@@ -23,12 +25,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private roleRedirect = inject(RoleRedirectService);
   private profileService = inject(ProfileService);
+  private notificationService = inject(NotificationService);
   private router = inject(Router);
 
   isLoggedIn = signal(false);
   username = signal<string>('Guest');
+  unreadNotificationCount = signal(0);
   isScrolled = false;
   isSidebarOpen = signal(false);
+  private notificationSubscription: Subscription | null = null;
 
   toggleSidebar(): void {
     this.isSidebarOpen.update(open => !open);
@@ -40,6 +45,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.updateAuthStatus();
+    this.subscribeToNotifications();
+  }
+
+  private subscribeToNotifications(): void {
+    if (this.isLoggedIn()) {
+      this.notificationSubscription = this.notificationService.unreadCount$.subscribe(count => {
+        this.unreadNotificationCount.set(count);
+      });
+      // Initial load
+      this.notificationService.refreshUnreadCount();
+    }
   }
 
   private updateAuthStatus(): void {
@@ -154,5 +170,9 @@ get currentUserRole(): string | null {
   return user?.role || null;
 }
 
-  ngOnDestroy(): void { }
+  ngOnDestroy(): void {
+    if (this.notificationSubscription) {
+      this.notificationSubscription.unsubscribe();
+    }
+  }
 }
