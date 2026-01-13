@@ -41,7 +41,7 @@
               {{ c.is_verified ? 'Yes' : 'No' }}
             </span>
           </div>
-          <div><strong>Daily Rate</strong> <span>R{{ c.daily_rate }}</span></div>
+          <div><strong>Daily Rate</strong> <span>XAF {{ c.daily_rate }}</span></div>
         </div>
 
         <p class="description">{{ c.description || 'No description provided.' }}</p>
@@ -76,8 +76,8 @@
 
               <div class="price-box" *ngIf="numDays() > 0">
                 <div class="days">{{ numDays() }} day{{ numDays() > 1 ? 's' : '' }}</div>
-                <div class="total">R {{ totalPrice() | number:'1.0-0' }}</div>
-                <small>&#64; R{{ c.daily_rate }}/day</small>
+                <div class="total">XAF {{ totalPrice() | number:'1.0-0' }}</div>
+                <small>&#64; XAF{{ c.daily_rate }}/day</small>
               </div>
 
               <button type="submit" class="book-btn" [disabled]="bookingLoading()">

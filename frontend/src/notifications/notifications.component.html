@@ -62,7 +62,8 @@
         <div 
           class="notification-item"
           [class.unread]="!notification.is_read"
-          (click)="markAsRead(notification)">
+          (click)="navigateToActivity(notification)"
+          style="cursor: pointer;">
           
           <!-- Icon -->
           <div class="notification-icon" [class]="'text-' + getNotificationColor(notification.notification_type)">

@@ -80,12 +80,18 @@
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.15);
+    transform: translateX(4px);
+    border-left-color: #27ae60;
   }
 
   &.unread {
     background: #f0fdf4;
     border-left-color: #27ae60;
+  }
+
+  &.unread:hover {
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
   }
 
   .notification-icon {

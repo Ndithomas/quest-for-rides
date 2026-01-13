@@ -54,7 +54,7 @@
       <p>Complete payment within 24 hours to lock in your reservation.</p>
       <div class="payment-actions">
         <button (click)="initiatePayment()" class="btn btn-success btn-lg">
-          Proceed to Payment (R{{ booking()?.total_price | number:'1.0-0' }})
+          Proceed to Payment (XAF{{ booking()?.total_price | number:'1.0-0' }})
         </button>
         <p class="small text-muted mt-3">
           <strong>Secure payment powered by Stripe</strong><br>
@@ -103,7 +103,7 @@
           <div class="pricing-info">
             <div class="price-row">
               <span>Daily Rate:</span>
-              <strong>R{{ booking().daily_rate | number: '1.2-2' }}</strong>
+              <strong>XAF{{ booking().daily_rate | number: '1.2-2' }}</strong>
             </div>
             <div class="price-row">
               <span>Number of Days:</span>
@@ -111,7 +111,7 @@
             </div>
             <div class="price-row total">
               <span>Total Price:</span>
-              <strong>R{{ booking().total_price | number: '1.2-2' }}</strong>
+              <strong>XAF{{ booking().total_price | number: '1.2-2' }}</strong>
             </div>
           </div>
         </div>

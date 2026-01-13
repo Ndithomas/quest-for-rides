@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { NotificationService, Notification } from '../services/notification.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
+import { AuthService } from '../services/auth.service'; // <-- import
 
 @Component({
   selector: 'app-notifications',
@@ -20,11 +21,14 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   filterType = signal<'all' | 'unread' | 'read'>('all');
   private pollSubscription: Subscription | null = null;
 
-  constructor(private notificationService: NotificationService) {}
+  constructor(
+    private notificationService: NotificationService,
+    private router: Router,
+    private authService: AuthService // <-- inject
+  ) {}
 
   ngOnInit(): void {
     this.loadNotifications();
-    // Auto-refresh notifications every 10 seconds
     this.startAutoRefresh();
   }
 
@@ -50,8 +54,8 @@ export class NotificationsComponent implements OnInit, OnDestroy {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Failed to load notifications');
         console.error('Error loading notifications:', err);
+        this.error.set('Failed to load notifications');
         this.loading.set(false);
       }
     });
@@ -65,25 +69,6 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       return this.notifications().filter(n => n.is_read);
     }
     return this.notifications();
-  }
-
-  markAsRead(notification: Notification): void {
-    if (notification.is_read) return;
-
-    this.notificationService.markAsRead(notification.id).subscribe({
-      next: (updated) => {
-        const index = this.notifications().findIndex(n => n.id === notification.id);
-        if (index !== -1) {
-          const updated_notifications = [...this.notifications()];
-          updated_notifications[index] = updated;
-          this.notifications.set(updated_notifications);
-        }
-        this.notificationService.refreshUnreadCount();
-      },
-      error: (err) => {
-        console.error('Error marking notification as read:', err);
-      }
-    });
   }
 
   markAllAsRead(): void {
@@ -102,7 +87,11 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteNotification(id: number): void {
+  deleteNotification(id: number, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
     this.notificationService.deleteNotification(id).subscribe({
       next: () => {
         const updated_notifications = this.notifications().filter(n => n.id !== id);
@@ -163,5 +152,70 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   getUnreadCount(): number {
     return this.notifications().filter(n => !n.is_read).length;
+  }
+
+  navigateToActivity(notification: Notification): void {
+    // Mark as read when clicked (don't wait for response)
+    if (!notification.is_read) {
+      this.notificationService.markAsRead(notification.id).subscribe({
+        next: (updated) => {
+          const index = this.notifications().findIndex(n => n.id === notification.id);
+          if (index !== -1) {
+            const updated_notifications = [...this.notifications()];
+            updated_notifications[index] = updated;
+            this.notifications.set(updated_notifications);
+          }
+          this.notificationService.refreshUnreadCount();
+          this.performNavigation(notification);
+        },
+        error: (err) => {
+          console.error('Error marking notification as read:', err);
+          this.performNavigation(notification);
+        }
+      });
+    } else {
+      this.performNavigation(notification);
+    }
+  }
+
+  private performNavigation(notification: Notification): void {
+    if (notification.object_id) {
+      let routeSegments: any[] | null = null;
+      let queryParams = {};
+
+      // Determine route based on notification type
+      if (notification.notification_type.includes('booking')) {
+        const user = this.authService.getUser();
+        if (user) {
+          if (user.role === 'guest') {
+            routeSegments = ['/booking-confirmation', notification.object_id];
+          } else if (user.role === 'owner') {
+            routeSegments = ['/owner/bookings'];
+            queryParams = { highlight: notification.object_id };
+          } else if (user.role === 'management') {
+            routeSegments = ['/booking-details', notification.object_id];
+          }
+        } else {
+          console.warn('User not found, cannot determine route for booking notification');
+          return;
+        }
+      } else if (notification.notification_type.includes('payment')) {
+        routeSegments = ['/payment', notification.object_id];
+      } else if (notification.notification_type.includes('payout')) {
+        routeSegments = ['/owner', 'payouts', notification.object_id];
+      } else if (notification.notification_type.includes('car')) {
+        routeSegments = ['/cars', notification.object_id];
+      } else if (notification.notification_type.includes('review')) {
+        routeSegments = ['/reviews', notification.object_id];
+      }
+
+      if (routeSegments) {
+        this.router.navigate(routeSegments, { queryParams });
+      } else {
+        console.warn('No route defined for notification type:', notification.notification_type);
+      }
+    } else {
+      console.warn('Notification has no object_id');
+    }
   }
 }

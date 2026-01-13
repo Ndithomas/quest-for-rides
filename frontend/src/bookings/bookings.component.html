@@ -68,11 +68,11 @@
           </div>
           <div class="summary-item">
             <span class="label">Daily Rate</span>
-            <strong>R{{ booking.daily_rate | number:'1.0-0' }}</strong>
+            <strong>XAF {{ booking.daily_rate | number:'1.0-0' }}</strong>
           </div>
           <div class="summary-item total">
             <span class="label">Total</span>
-            <strong class="text-success fs-4">R{{ booking.total_price | number:'1.0-0' }}</strong>
+            <strong class="text-success fs-4">XAF{{ booking.total_price | number:'1.0-0' }}</strong>
           </div>
         </div>
         <div *ngIf="booking.special_requirements" class="note info">
@@ -92,7 +92,7 @@
           <button *ngIf="booking.status === 'confirmed' && booking.payment_status !== 'completed'"
             (click)="goToPayment(booking.id)" class="btn btn-success rounded-pill flex-grow-1">
             <i class="bi bi-credit-card me-2"></i>
-            Pay with CamPay • R{{ booking.total_price | number:'1.0-0' }}
+            Pay with CamPay • XAF{{ booking.total_price | number:'1.0-0' }}
           </button>
           <a [routerLink]="['/booking-confirmation', booking.id]" class="btn btn-primary rounded-pill ms-2">
             View Details

@@ -4,6 +4,7 @@ import { Observable, interval, BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
 import { switchMap, catchError, debounceTime } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
+import { AuthService } from './auth.service';
 
 export interface Notification {
   id: number;
@@ -26,8 +27,11 @@ export class NotificationService {
   private refreshSubject = new Subject<void>();
   private platformId = inject(PLATFORM_ID);
 
-  constructor(private http: HttpClient) {
-    if (isPlatformBrowser(this.platformId)) {
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
+    if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()) {
       this.startPolling();
       this.setupRefreshListener();
     }

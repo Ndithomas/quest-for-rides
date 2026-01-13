@@ -18,7 +18,7 @@ export class OwnerBookingsComponent implements OnInit {
   loading = signal(true);
   error = signal('');
   success = signal('');
-  filter = signal<'pending' | 'confirmed-unpaid' | 'confirmed-paid' | 'active' | 'completed' | 'rejected' | 'cancelled' | 'all'>('pending');
+  filter = signal<'pending' | 'confirmed-unpaid' | 'confirmed-paid' | 'active' | 'completed' | 'rejected' | 'cancelled' | 'all'>('all');
   cancellingId = signal<number | null>(null);
   showCancelModal = signal(false);
   bookingToCancel = signal<Booking | null>(null);  

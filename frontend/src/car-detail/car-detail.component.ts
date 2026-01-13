@@ -16,27 +16,21 @@ import { NavbarComponent } from '../navbar/navbar.component';
   styleUrl: './car-detail.component.scss'
 })
 export class CarDetailComponent implements OnInit {
-
-  // Data
   car = signal<any>(null);
   photos = signal<any[]>([]);
   currentPhoto = signal(0);
 
-  // UI state
   loading = signal(true);
   error = signal<string>('');
 
-  // Form fields — startDate & endDate as signals for instant price update
   startDate = signal<string>('');
   endDate = signal<string>('');
-  specialRequirements = ''; // ← normal string (perfect for [(ngModel)])
+  specialRequirements = ''; 
 
-  // Booking state
   bookingLoading = signal(false);
   bookingSuccess = signal(false);
   bookingError = signal<string>('');
 
-  // Live calculations
   numDays = computed(() => {
     const start = this.startDate();
     const end = this.endDate();
@@ -135,7 +129,6 @@ export class CarDetailComponent implements OnInit {
     }
   }
 
-  // Helpers
   today(): string {
     return new Date().toISOString().split('T')[0];
   }

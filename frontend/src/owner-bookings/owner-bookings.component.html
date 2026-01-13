@@ -21,7 +21,7 @@
     <div class="filter-tabs mb-5">
       <div class="btn-group-modern">
         <button
-          *ngFor="let s of ['pending','confirmed-unpaid','confirmed-paid','active','completed','rejected','cancelled','all']"
+          *ngFor="let s of ['all','pending','confirmed-unpaid','confirmed-paid','active','completed','rejected','cancelled']"
           class="filter-btn"
           [class.active]="filter() === s"
           (click)="setFilter(s)">

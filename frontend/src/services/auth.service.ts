@@ -203,6 +203,7 @@ export class AuthService {
     window.removeEventListener('popstate', this.onBrowserBack);
   }
 
+  
   // === Error Handling ===
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unexpected error occurred. Please try again.';

@@ -76,7 +76,6 @@ export class ListingsComponent implements OnInit {
     this.search();
   }
 
-  // ONLY CHANGE: removed login check — now anyone can view car details
   view(carId: number): void {
     this.router.navigate(['/car', carId]);
   }
@@ -99,13 +98,12 @@ export class ListingsComponent implements OnInit {
   }
 
   getCarImage(car: any): string | null {
-    // Return primary photo if exists, otherwise first photo, otherwise null
     if (car.photos && car.photos.length > 0) {
       const primaryPhoto = car.photos.find((p: any) => p.is_primary);
       if (primaryPhoto && primaryPhoto.image) {
         return primaryPhoto.image;
       }
-      // Fallback to first photo if no primary
+      
       if (car.photos[0] && car.photos[0].image) {
         return car.photos[0].image;
       }
