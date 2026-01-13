@@ -81,7 +81,7 @@ ngOnInit(): void {
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-ZA', {
       style: 'currency',
-      currency: 'ZAR',
+      currency: 'XAF',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);
