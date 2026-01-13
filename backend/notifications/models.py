@@ -12,10 +12,15 @@ class Notification(models.Model):
         ('booking_cancelled', 'Booking Cancelled'),
         ('payment_completed', 'Payment Completed'),
         ('payment_failed', 'Payment Failed'),
+        ('payment_refunded', 'Payment Refunded'),
         ('car_verified', 'Car Verified'),
         ('car_rejected', 'Car Rejected'),
         ('booking_completed', 'Booking Completed'),
         ('review_received', 'Review Received'),
+        ('payout_requested', 'Payout Requested'),
+        ('payout_approved', 'Payout Approved'),
+        ('payout_completed', 'Payout Completed'),
+        ('payout_rejected', 'Payout Rejected'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

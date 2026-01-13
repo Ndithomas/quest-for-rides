@@ -4,6 +4,7 @@ import { NotificationService, Notification } from '../services/notification.serv
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { RouterLink } from '@angular/router';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notifications',
@@ -17,14 +18,27 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal('');
   filterType = signal<'all' | 'unread' | 'read'>('all');
+  private pollSubscription: Subscription | null = null;
 
   constructor(private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.loadNotifications();
+    // Auto-refresh notifications every 10 seconds
+    this.startAutoRefresh();
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    if (this.pollSubscription) {
+      this.pollSubscription.unsubscribe();
+    }
+  }
+
+  private startAutoRefresh(): void {
+    this.pollSubscription = interval(10000).subscribe(() => {
+      this.loadNotifications();
+    });
+  }
 
   loadNotifications(): void {
     this.loading.set(true);
@@ -107,12 +121,17 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       'booking_confirmed': 'bi-check-circle',
       'booking_rejected': 'bi-x-circle',
       'booking_cancelled': 'bi-dash-circle',
+      'booking_completed': 'bi-flag-fill',
       'payment_completed': 'bi-check-lg',
       'payment_failed': 'bi-exclamation-lg',
+      'payment_refunded': 'bi-arrow-counterclockwise',
       'car_verified': 'bi-shield-check',
       'car_rejected': 'bi-shield-x',
-      'booking_completed': 'bi-flag-fill',
-      'review_received': 'bi-star-fill'
+      'review_received': 'bi-star-fill',
+      'payout_requested': 'bi-cash-coin',
+      'payout_approved': 'bi-check-circle',
+      'payout_completed': 'bi-check-lg',
+      'payout_rejected': 'bi-x-circle',
     };
     return iconMap[type] || 'bi-bell';
   }
@@ -123,12 +142,17 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       'booking_confirmed': 'success',
       'booking_rejected': 'danger',
       'booking_cancelled': 'warning',
+      'booking_completed': 'success',
       'payment_completed': 'success',
       'payment_failed': 'danger',
+      'payment_refunded': 'warning',
       'car_verified': 'success',
       'car_rejected': 'danger',
-      'booking_completed': 'success',
-      'review_received': 'warning'
+      'review_received': 'warning',
+      'payout_requested': 'info',
+      'payout_approved': 'success',
+      'payout_completed': 'success',
+      'payout_rejected': 'danger',
     };
     return colorMap[type] || 'secondary';
   }

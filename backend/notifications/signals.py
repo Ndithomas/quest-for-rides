@@ -4,16 +4,14 @@ from django.contrib.contenttypes.models import ContentType
 from bookings.models import Booking, BookingPayment, BookingReview
 from listings.models import Car
 from payments.models import Payout
+from userAuth.models import User
 from .models import Notification
-
-
-# ==================== BOOKING SIGNALS ====================
 
 @receiver(post_save, sender=Booking)
 def booking_created_notification(sender, instance, created, **kwargs):
     """Send notification when a booking is created"""
     if created:
-        # Notify owner
+        # Notify owner about new booking request
         Notification.objects.create(
             user=instance.owner,
             notification_type='booking_created',
@@ -22,12 +20,21 @@ def booking_created_notification(sender, instance, created, **kwargs):
             content_type=ContentType.objects.get_for_model(Booking),
             object_id=instance.id
         )
-
+        
+        # Notify guest that booking request was sent
+        Notification.objects.create(
+            user=instance.guest,
+            notification_type='booking_created',
+            title='Booking Request Sent',
+            message=f'Your booking request for {instance.car.title} from {instance.start_date} to {instance.end_date} has been sent to {instance.owner.username}',
+            content_type=ContentType.objects.get_for_model(Booking),
+            object_id=instance.id
+        )
 
 @receiver(post_save, sender=Booking)
 def booking_status_notification(sender, instance, created, update_fields, **kwargs):
     """Send notification when booking status changes"""
-    if not created and update_fields:
+    if not created and update_fields is not None:
         if 'status' in update_fields:
             if instance.status == 'confirmed':
                 # Notify guest
@@ -126,15 +133,12 @@ def booking_status_notification(sender, instance, created, update_fields, **kwar
                     object_id=instance.id
                 )
 
-
-# ==================== PAYMENT SIGNALS ====================
-
 @receiver(post_save, sender=BookingPayment)
 def payment_notification(sender, instance, created, update_fields, **kwargs):
     """Send notification when payment status changes"""
     booking = instance.booking
     
-    if not created and update_fields:
+    if not created and update_fields is not None:
         if 'status' in update_fields:
             if instance.status == 'completed':
                 # Notify both parties
@@ -179,7 +183,7 @@ def payment_notification(sender, instance, created, update_fields, **kwargs):
                 # Notify both parties
                 Notification.objects.create(
                     user=booking.guest,
-                    notification_type='payment_failed',
+                    notification_type='payment_refunded',
                     title='Payment Refunded',
                     message=f'Your payment of {instance.amount} for {booking.car.title} has been refunded',
                     content_type=ContentType.objects.get_for_model(BookingPayment),
@@ -187,7 +191,7 @@ def payment_notification(sender, instance, created, update_fields, **kwargs):
                 )
                 Notification.objects.create(
                     user=booking.owner,
-                    notification_type='payment_failed',
+                    notification_type='payment_refunded',
                     title='Refund Processed',
                     message=f'Refund of {instance.amount} to {booking.guest.username} for {booking.car.title} has been processed',
                     content_type=ContentType.objects.get_for_model(BookingPayment),
@@ -200,7 +204,7 @@ def payment_notification(sender, instance, created, update_fields, **kwargs):
 @receiver(post_save, sender=Car)
 def car_verification_notification(sender, instance, created, update_fields, **kwargs):
     """Send notification when car verification status changes"""
-    if not created and update_fields:
+    if not created and update_fields is not None:
         if 'is_verified' in update_fields:
             if instance.is_verified:
                 Notification.objects.create(
@@ -211,9 +215,6 @@ def car_verification_notification(sender, instance, created, update_fields, **kw
                     content_type=ContentType.objects.get_for_model(Car),
                     object_id=instance.id
                 )
-
-
-# ==================== REVIEW SIGNALS ====================
 
 @receiver(post_save, sender=BookingReview)
 def review_notification(sender, instance, created, **kwargs):
@@ -242,9 +243,6 @@ def review_notification(sender, instance, created, **kwargs):
                 object_id=instance.id
             )
 
-
-# ==================== PAYOUT/WITHDRAWAL SIGNALS ====================
-
 @receiver(post_save, sender=Payout)
 def payout_notification(sender, instance, created, update_fields, **kwargs):
     """Send notifications for payout requests and status changes"""
@@ -252,13 +250,12 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
     # New payout request from owner
     if created:
         # Get management users
-        from userAuth.models import User
         management_users = User.objects.filter(role='management')
         
         for mgmt_user in management_users:
             Notification.objects.create(
                 user=mgmt_user,
-                notification_type='booking_created',  # Reusing type, or could add new type
+                notification_type='payout_requested',
                 title='New Payout Request',
                 message=f'{instance.owner.username} has requested a payout of {instance.amount} via {instance.get_payment_method_display()}',
                 content_type=ContentType.objects.get_for_model(Payout),
@@ -268,7 +265,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
         # Notify owner of submission
         Notification.objects.create(
             user=instance.owner,
-            notification_type='booking_created',
+            notification_type='payout_requested',
             title='Payout Request Submitted',
             message=f'Your payout request of {instance.amount} has been submitted and is pending approval',
             content_type=ContentType.objects.get_for_model(Payout),
@@ -276,13 +273,13 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
         )
     
     # Payout status changes
-    elif not created and update_fields:
+    elif not created and update_fields is not None:
         if 'status' in update_fields:
             if instance.status == 'approved':
                 # Notify owner
                 Notification.objects.create(
                     user=instance.owner,
-                    notification_type='payment_completed',
+                    notification_type='payout_approved',
                     title='Payout Approved',
                     message=f'Your payout request of {instance.amount} has been approved and is being processed',
                     content_type=ContentType.objects.get_for_model(Payout),
@@ -294,7 +291,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 for mgmt_user in management_users:
                     Notification.objects.create(
                         user=mgmt_user,
-                        notification_type='booking_confirmed',
+                        notification_type='payout_approved',
                         title='Payout Approved',
                         message=f'Payout of {instance.amount} to {instance.owner.username} has been approved',
                         content_type=ContentType.objects.get_for_model(Payout),
@@ -305,7 +302,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 # Notify owner
                 Notification.objects.create(
                     user=instance.owner,
-                    notification_type='payment_completed',
+                    notification_type='payout_approved',
                     title='Payout Processing',
                     message=f'Your payout of {instance.amount} is now being processed. You will receive it shortly',
                     content_type=ContentType.objects.get_for_model(Payout),
@@ -317,7 +314,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 for mgmt_user in management_users:
                     Notification.objects.create(
                         user=mgmt_user,
-                        notification_type='booking_confirmed',
+                        notification_type='payout_approved',
                         title='Payout Processing',
                         message=f'Payout of {instance.amount} to {instance.owner.username} is being processed',
                         content_type=ContentType.objects.get_for_model(Payout),
@@ -328,7 +325,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 # Notify owner - payment sent
                 Notification.objects.create(
                     user=instance.owner,
-                    notification_type='payment_completed',
+                    notification_type='payout_completed',
                     title='Payout Completed',
                     message=f'Your payout of {instance.amount} has been successfully sent to {instance.get_payment_method_display()}',
                     content_type=ContentType.objects.get_for_model(Payout),
@@ -340,7 +337,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 for mgmt_user in management_users:
                     Notification.objects.create(
                         user=mgmt_user,
-                        notification_type='payment_completed',
+                        notification_type='payout_completed',
                         title='Payout Completed',
                         message=f'Payout of {instance.amount} to {instance.owner.username} has been completed',
                         content_type=ContentType.objects.get_for_model(Payout),
@@ -351,7 +348,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 # Notify owner - payment failed
                 Notification.objects.create(
                     user=instance.owner,
-                    notification_type='payment_failed',
+                    notification_type='payout_rejected',
                     title='Payout Failed',
                     message=f'Your payout of {instance.amount} has failed. Please contact support for assistance',
                     content_type=ContentType.objects.get_for_model(Payout),
@@ -363,7 +360,7 @@ def payout_notification(sender, instance, created, update_fields, **kwargs):
                 for mgmt_user in management_users:
                     Notification.objects.create(
                         user=mgmt_user,
-                        notification_type='payment_failed',
+                        notification_type='payout_rejected',
                         title='Payout Failed',
                         message=f'Payout of {instance.amount} to {instance.owner.username} has failed',
                         content_type=ContentType.objects.get_for_model(Payout),

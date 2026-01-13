@@ -1,9 +1,8 @@
-// services/notification.service.ts
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, BehaviorSubject } from 'rxjs';
+import { Observable, interval, BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
-import { switchMap, catchError } from 'rxjs/operators';
+import { switchMap, catchError, debounceTime } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 
 export interface Notification {
@@ -24,12 +23,13 @@ export class NotificationService {
   private apiUrl = `${environment.apiBaseUrl}/api/notifications`;
   private unreadCountSubject = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCountSubject.asObservable();
+  private refreshSubject = new Subject<void>();
   private platformId = inject(PLATFORM_ID);
 
   constructor(private http: HttpClient) {
-    // Only start polling in browser environment, not during SSR
     if (isPlatformBrowser(this.platformId)) {
       this.startPolling();
+      this.setupRefreshListener();
     }
   }
 
@@ -58,8 +58,8 @@ export class NotificationService {
   }
 
   private startPolling(): void {
-    // Poll every 30 seconds for unread count
-    interval(30000)
+    // Poll every 15 seconds for unread count
+    interval(15000)
       .pipe(
         switchMap(() => this.getUnreadCount()),
         catchError(() => {
@@ -71,9 +71,18 @@ export class NotificationService {
       });
   }
 
-  refreshUnreadCount(): void {
-    this.getUnreadCount().subscribe(data => {
-      this.unreadCountSubject.next(data.unread_count);
+  private setupRefreshListener(): void {
+    // When refreshUnreadCount is called multiple times, debounce it
+    this.refreshSubject.pipe(
+      debounceTime(500)
+    ).subscribe(() => {
+      this.getUnreadCount().subscribe(data => {
+        this.unreadCountSubject.next(data.unread_count);
+      });
     });
+  }
+
+  refreshUnreadCount(): void {
+    this.refreshSubject.next();
   }
 }

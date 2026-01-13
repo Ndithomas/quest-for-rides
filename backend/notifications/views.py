@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Notification
-from .serializers import NotificationSerializer, NotificationListSerializer, NotificationMarkReadSerializer
+from .serializers import *
 
 
 class NotificationListAPIView(generics.ListAPIView):

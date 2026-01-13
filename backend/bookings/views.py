@@ -11,7 +11,6 @@ from django.utils import timezone
 from django.db.models import Count, Sum, Q
 from listings.models import Car
 from userAuth.models import User
-from django.contrib.contenttypes.models import ContentType
 
 
 class BookingListCreateAPIView(generics.ListCreateAPIView):
@@ -55,28 +54,6 @@ class BookingListCreateAPIView(generics.ListCreateAPIView):
             amount=total_price,
             status='pending'
         )
-        
-        # Create notification for owner
-        from notifications.models import Notification
-        Notification.objects.create(
-            user=booking.owner,
-            notification_type='booking_created',
-            title=f'New Booking Request! 🎉',
-            message=f'{user.username} wants to book your {car.title} from {start_date} to {end_date}. Please confirm or reject.',
-            content_type=ContentType.objects.get_for_model(Booking),
-            object_id=booking.id
-        )
-        
-        # Create notification for guest
-        Notification.objects.create(
-            user=user,
-            notification_type='booking_created',
-            title='Booking Request Sent',
-            message=f'Your booking request for {car.title} has been sent to {car.owner.username}. Awaiting confirmation.',
-            content_type=ContentType.objects.get_for_model(Booking),
-            object_id=booking.id
-        )
-        
         serializer.instance = booking
 
 class BookingDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
@@ -113,58 +90,19 @@ class BookingConfirmAPIView(generics.UpdateAPIView):
 
         new_status = serializer.validated_data['status']
         booking.status = new_status
+        update_fields = ['status']
 
         if new_status == 'confirmed':
             booking.confirmed_at = timezone.now()
             booking.car.status = 'booked'
+            update_fields.append('confirmed_at')
         elif new_status == 'rejected':
             booking.rejection_reason = serializer.validated_data.get('rejection_reason', '')
             booking.car.status = 'available'
+            update_fields.append('rejection_reason')
 
         booking.car.save(update_fields=['status'])
-        booking.save(update_fields=['status', 'confirmed_at', 'rejection_reason'])
-        
-        # Create notifications manually to ensure they're sent
-        from notifications.models import Notification
-        
-        if new_status == 'confirmed':
-            # Notify guest
-            Notification.objects.create(
-                user=booking.guest,
-                notification_type='booking_confirmed',
-                title='Booking Confirmed! ✅',
-                message=f'{booking.owner.username} has confirmed your booking for {booking.car.title} from {booking.start_date} to {booking.end_date}',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
-            # Notify owner
-            Notification.objects.create(
-                user=booking.owner,
-                notification_type='booking_confirmed',
-                title='Booking Confirmed',
-                message=f'You have confirmed booking from {booking.guest.username} for {booking.car.title}',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
-        elif new_status == 'rejected':
-            # Notify guest
-            Notification.objects.create(
-                user=booking.guest,
-                notification_type='booking_rejected',
-                title='Booking Rejected ❌',
-                message=f'{booking.owner.username} has rejected your booking for {booking.car.title}. Reason: {booking.rejection_reason}',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
-            # Notify owner
-            Notification.objects.create(
-                user=booking.owner,
-                notification_type='booking_rejected',
-                title='Booking Rejected',
-                message=f'You have rejected booking from {booking.guest.username} for {booking.car.title}',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
+        booking.save(update_fields=update_fields)
 
         return Response({
             "message": f"Booking has been {new_status}.",
@@ -181,35 +119,8 @@ class BookingUpdateStatusAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        old_status = booking.status
         booking.status = serializer.validated_data['status']
-        booking.save()
-        
-        # Create notifications for management status updates
-        from notifications.models import Notification
-        
-        new_status = booking.status
-        status_text = new_status.replace('_', ' ').title()
-        
-        # Notify guest about status change
-        Notification.objects.create(
-            user=booking.guest,
-            notification_type=f'booking_{new_status}',
-            title=f'Booking Status Updated: {status_text}',
-            message=f'Your booking for {booking.car.title} status has been updated to {status_text}.',
-            content_type=ContentType.objects.get_for_model(Booking),
-            object_id=booking.id
-        )
-        
-        # Notify owner about status change
-        Notification.objects.create(
-            user=booking.owner,
-            notification_type=f'booking_{new_status}',
-            title=f'Booking Status Updated: {status_text}',
-            message=f'Booking from {booking.guest.username} for {booking.car.title} status has been updated to {status_text}.',
-            content_type=ContentType.objects.get_for_model(Booking),
-            object_id=booking.id
-        )
+        booking.save(update_fields=['status'])
 
         return Response(BookingDetailSerializer(booking, context={'request': request}).data)
 
@@ -227,37 +138,14 @@ class GuestCancelBookingAPIView(generics.GenericAPIView):
 
         with transaction.atomic():
             booking.status = 'cancelled'
-            booking.save()
+            booking.save(update_fields=['status'])
             if booking.payment:
                 booking.payment.status = 'cancelled'
-                booking.payment.save()
+                booking.payment.save(update_fields=['status'])
         
             if booking.car.status == 'booked':
                 booking.car.status = 'available'
                 booking.car.save(update_fields=['status'])
-            
-            # Create notifications for both guest and owner
-            from notifications.models import Notification
-            
-            # Notify guest
-            Notification.objects.create(
-                user=booking.guest,
-                notification_type='booking_cancelled',
-                title='Booking Cancelled',
-                message=f'You have cancelled your booking for {booking.car.title}.',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
-            
-            # Notify owner
-            Notification.objects.create(
-                user=booking.owner,
-                notification_type='booking_cancelled',
-                title='Booking Cancelled 🔔',
-                message=f'{booking.guest.username} has cancelled their booking for {booking.car.title}. Your car is now available.',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
 
         return Response({
             "detail": "Booking cancelled successfully and car is now available."
@@ -278,7 +166,7 @@ class MyBookingsAPIView(generics.ListAPIView):
         for booking in expired:
             booking.status = 'cancelled'
             booking.rejection_reason = "Expired: Owner did not respond in time."
-            booking.save()
+            booking.save(update_fields=['status', 'rejection_reason'])
             booking.car.status = 'available'
             booking.car.save(update_fields=['status'])
 
@@ -323,37 +211,14 @@ class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
         with transaction.atomic():
             booking.status = 'cancelled'
             booking.rejection_reason = "Cancelled by owner: Payment not received in time."
-            booking.save()
+            booking.save(update_fields=['status', 'rejection_reason'])
             
             booking.car.status = 'available'
             booking.car.save(update_fields=['status'])
             
             if booking.payment:
                 booking.payment.status = 'cancelled'
-                booking.payment.save()
-            
-            # Create notifications for both guest and owner
-            from notifications.models import Notification
-            
-            # Notify guest
-            Notification.objects.create(
-                user=booking.guest,
-                notification_type='booking_cancelled',
-                title='Booking Cancelled ❌',
-                message=f'{booking.owner.username} has cancelled the booking for {booking.car.title}. Reason: Payment not received in time.',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
-            
-            # Notify owner
-            Notification.objects.create(
-                user=booking.owner,
-                notification_type='booking_cancelled',
-                title='Booking Cancelled',
-                message=f'You have cancelled the booking from {booking.guest.username} for {booking.car.title}. Car is now available.',
-                content_type=ContentType.objects.get_for_model(Booking),
-                object_id=booking.id
-            )
+                booking.payment.save(update_fields=['status'])
 
         return Response({
             "detail": "Booking cancelled. Car is now available again."
