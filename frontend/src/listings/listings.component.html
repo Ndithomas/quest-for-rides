@@ -16,7 +16,7 @@
       </div>
 
       <div class="filter-actions">
-        <button (click)="search()" class="search-btn">Search Cars</button>
+        <button (click)="search(1)" class="search-btn">Search Cars</button>
         <button (click)="clear()" class="clear-btn">Clear Filters</button>
       </div>
     </div>
@@ -61,6 +61,11 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="text-center mt-5" *ngIf="hasNext() && !loading() && !searchError() && cars().length > 0">
+      <button (click)="search(currentPage() + 1)" class="btn btn-primary rounded-pill px-5">
+        Load More Cars
+      </button>
     </div>
     <div *ngIf="!loading() && !searchError() && cars().length === 0" class="empty-state">
       <i class="bi bi-car-front fs-1 text-muted mb-4"></i>

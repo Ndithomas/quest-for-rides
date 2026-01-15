@@ -1,4 +1,3 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -41,7 +40,6 @@ export class AuthService {
     );
   }
 
-  // KEEP THIS - It's necessary for getting full user profile
   getUserProfile(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}user-profile/`).pipe(
       map(user => {
@@ -115,13 +113,13 @@ export class AuthService {
   decodeUserFromToken(): any {
     const token = this.getAccessToken();
     if (!token) return null;
-    
+
     try {
       const payload = token.split('.')[1];
-      // Fix base64 decoding
+
       const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
       const decoded = JSON.parse(atob(base64));
-      
+
       return {
         id: decoded.user_id,
         username: decoded.username || '',
@@ -133,7 +131,6 @@ export class AuthService {
     }
   }
 
-  // === Storage & Auth State ===
   private setToken(access: string, refresh: string): void {
     if (!this.isBrowser()) return;
     localStorage.setItem('access_token', access);
@@ -158,8 +155,7 @@ export class AuthService {
 
   getUser(): any {
     if (!this.isBrowser()) return null;
-    
-    // Try localStorage first
+
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -168,8 +164,6 @@ export class AuthService {
         console.error('Error parsing stored user:', e);
       }
     }
-    
-    // Fallback to token decoding
     return this.decodeUserFromToken();
   }
 
@@ -185,7 +179,6 @@ export class AuthService {
     sessionStorage.clear();
   }
 
-  // === Back Navigation Protection ===
   private preventBackNavigation(): void {
     if (!this.isBrowser()) return;
     history.pushState(null, '', location.href);
@@ -203,8 +196,6 @@ export class AuthService {
     window.removeEventListener('popstate', this.onBrowserBack);
   }
 
-  
-  // === Error Handling ===
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unexpected error occurred. Please try again.';
 

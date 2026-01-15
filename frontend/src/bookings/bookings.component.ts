@@ -1,9 +1,9 @@
 import { Component, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BookingService, Booking } from '../services/booking.service';
 import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 
 @Component({
   selector: 'app-bookings',
@@ -15,11 +15,14 @@ import { FooterComponent } from '../footer/footer.component';
 export class BookingsComponent implements OnInit, OnDestroy {
   bookings = signal<Booking[]>([]);
   loading = signal(true);
+  loadingMore = signal(false);
   error = signal('');
   timeLeftMap = signal<Map<number, string>>(new Map());
   private timerInterval: any;
 
   filterStatus = signal<'all' | 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'>('all');
+  currentPage = signal(1);
+  hasMore = signal(false);
 
   constructor(
     private bookingService: BookingService,
@@ -78,31 +81,53 @@ export class BookingsComponent implements OnInit, OnDestroy {
   }
 
   loadBookings(): void {
-    this.loading.set(true);
+    this.loadPage(1, true);
+  }
+
+  loadPage(page: number, reset: boolean = false): void {
+    if (reset) {
+      this.loading.set(true);
+    } else {
+      this.loadingMore.set(true);
+    }
     this.error.set('');
 
-    this.bookingService.getMyBookings().subscribe({
-      next: (bookings: Booking[]) => {
-        this.bookings.set(bookings);
+    this.bookingService.getMyBookings(page, this.filterStatus()).subscribe({
+      next: (response: PaginatedBookings) => {
+        if (reset) {
+          this.bookings.set(response.results);
+        } else {
+          this.bookings.update(b => [...b, ...response.results]);
+        }
+        this.hasMore.set(!!response.next);
+        this.currentPage.set(page);
         this.loading.set(false);
+        this.loadingMore.set(false);
         this.updateAllTimers();
       },
       error: (err) => {
-        console.error('Error loading bookings:', err);
         this.error.set(err.error?.detail || 'Failed to load bookings. Please try again.');
         this.loading.set(false);
+        this.loadingMore.set(false);
       }
     });
   }
 
   setFilterStatus(status: string): void {
     this.filterStatus.set(status as any);
+    this.currentPage.set(1);
+    this.loadPage(1, true);
   }
 
   getFilteredBookings(): Booking[] {
     const status = this.filterStatus();
     if (status === 'all') return this.bookings();
     return this.bookings().filter(b => b.status === status);
+  }
+
+  loadMore(): void {
+    if (!this.hasMore() || this.loadingMore()) return;
+    this.loadPage(this.currentPage() + 1, false);
   }
 
   getStatusText(booking: Booking): string {

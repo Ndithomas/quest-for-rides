@@ -1,3 +1,4 @@
+<!-- bookings.component.html (updated for load more button) -->
 <app-navbar></app-navbar>
 <div class="bookings-container">
   <div class="page-header text-center text-md-start mb-5">
@@ -18,7 +19,7 @@
     <div class="spinner"></div>
     <p class="mt-3 text-muted fs-5">Loading your bookings...</p>
   </div>
-  <div *ngIf="!loading() && getFilteredBookings().length === 0" class="empty-state">
+  <div *ngIf="!loading() && bookings().length === 0" class="empty-state">
     <div class="empty-box">
       <i class="bi bi-car-front" style="font-size: 4.5rem; opacity: 0.4;"></i>
       <h3 class="mt-4 mb-3">No bookings found</h3>
@@ -28,15 +29,16 @@
       </a>
     </div>
   </div>
-  <div *ngIf="!loading() && getFilteredBookings().length > 0" class="bookings-grid">
-    <div *ngFor="let booking of getFilteredBookings()" class="booking-card-wrapper">
+  <div *ngIf="!loading() && bookings().length > 0" class="bookings-grid">
+    <div *ngFor="let booking of bookings()" class="booking-card-wrapper">
       <div class="booking-card" [ngClass]="{
-         'status-pending':    booking.status === 'pending',
-         'status-confirmed':  booking.status === 'confirmed',
-         'status-rejected':   booking.status === 'rejected',
-         'status-cancelled':  booking.status === 'cancelled',
-         'status-completed':  booking.status === 'completed'
+         'status-pending': booking.status === 'pending',
+         'status-confirmed': booking.status === 'confirmed',
+         'status-rejected': booking.status === 'rejected',
+         'status-cancelled': booking.status === 'cancelled',
+         'status-completed': booking.status === 'completed'
        }">
+        <!-- ... card content unchanged ... -->
         <div class="card-header">
           <div>
             <h3 class="car-title mb-1">{{ booking.car_make }} {{ booking.car_model }}</h3>
@@ -100,6 +102,11 @@
         </div>
       </div>
     </div>
+  </div>
+  <div *ngIf="hasMore() && !loading()" class="text-center mt-5">
+    <button class="btn btn-primary rounded-pill px-5" (click)="loadMore()" [disabled]="loadingMore()">
+      {{ loadingMore() ? 'Loading...' : 'Load More' }}
+    </button>
   </div>
 </div>
 <app-footer></app-footer>

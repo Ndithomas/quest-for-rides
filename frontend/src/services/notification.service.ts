@@ -1,8 +1,8 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, interval, BehaviorSubject, Subject } from 'rxjs';
+import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
-import { switchMap, catchError, debounceTime } from 'rxjs/operators';
+import { catchError, debounceTime } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from './auth.service';
 
@@ -32,8 +32,8 @@ export class NotificationService {
     private authService: AuthService
   ) {
     if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()) {
-      this.startPolling();
       this.setupRefreshListener();
+      this.refreshUnreadCount();
     }
   }
 
@@ -61,28 +61,19 @@ export class NotificationService {
     return this.http.get<{ unread_count: number }>(`${this.apiUrl}/unread-count/`);
   }
 
-  private startPolling(): void {
-    // Poll every 15 seconds for unread count
-    interval(15000)
-      .pipe(
-        switchMap(() => this.getUnreadCount()),
-        catchError(() => {
-          return new Observable<{ unread_count: number }>(observer => observer.next({ unread_count: 0 }));
-        })
-      )
-      .subscribe((data: { unread_count: number }) => {
-        this.unreadCountSubject.next(data.unread_count);
-      });
-  }
-
   private setupRefreshListener(): void {
-    // When refreshUnreadCount is called multiple times, debounce it
     this.refreshSubject.pipe(
       debounceTime(500)
     ).subscribe(() => {
-      this.getUnreadCount().subscribe(data => {
-        this.unreadCountSubject.next(data.unread_count);
-      });
+      this.getUnreadCount()
+        .pipe(
+          catchError(() => {
+            return new Observable<{ unread_count: number }>(observer => observer.next({ unread_count: 0 }));
+          })
+        )
+        .subscribe(data => {
+          this.unreadCountSubject.next(data.unread_count);
+        });
     });
   }
 

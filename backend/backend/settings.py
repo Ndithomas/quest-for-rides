@@ -144,11 +144,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Use default Django user
 AUTH_USER_MODEL = 'userAuth.User'
 
+# backend/settings.py
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'PAGE_SIZE_QUERY_PARAM': 'page_size',
+    'MAX_PAGE_SIZE': 30,
 }
 
 from datetime import timedelta
@@ -168,6 +174,7 @@ SIMPLE_JWT = {
     'TOKEN_OBTAIN_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenObtainPairSerializer',
     'TOKEN_REFRESH_SERIALIZER': 'rest_framework_simplejwt.serializers.TokenRefreshSerializer',
 }
+
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",

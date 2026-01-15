@@ -13,17 +13,17 @@ export interface AdminUser {
   last_name: string;
   role: 'guest' | 'owner' | 'management';
   phone_number?: string;
-  status: 'active' | 'inactive' | 'suspended'; // comes from UserSerializer
+  status: 'active' | 'inactive' | 'suspended';
   created_at: string;
 }
 
 export interface AdminCar {
   id: number;
-  brand: string;             // ← from to_representation (make → brand)
+  brand: string;
   model: string;
   year: number;
-  price_per_day: number;     // ← from to_representation (daily_rate → price_per_day)
-  status: 'active' | 'inactive' | 'maintenance' | 'booked' | 'suspended'; // from backend
+  price_per_day: number;
+  status: 'active' | 'inactive' | 'maintenance' | 'booked' | 'suspended';
   is_available: boolean;
   created_at: string;
   owner_name: string;
@@ -37,12 +37,12 @@ export interface AdminCar {
 export class ManagementAuthService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/auth/`;
   private readonly api = `${environment.apiBaseUrl}/api/management/`;
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   createManagementAccount(data: any, secretCode: string): Observable<any> {
     const payload = {
       ...data,
-      secret_code: secretCode  // matches backend exactly
+      secret_code: secretCode
     };
 
     return this.http.post(`${this.apiUrl}create-management/`, payload).pipe(
@@ -69,9 +69,9 @@ export class ManagementAuthService {
       })
     );
   }
-  
 
- getStats(): Observable<any> {
+
+  getStats(): Observable<any> {
     return this.http.get(`${this.api}dashboard/stats/`);
   }
 

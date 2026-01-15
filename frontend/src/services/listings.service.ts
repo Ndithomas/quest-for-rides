@@ -70,20 +70,26 @@ export interface CarList {
   photos: CarPhoto[];
   owner_name: string;
   is_verified: boolean;
-  // Updated type to match backend serializers
-  status_display: 'Available' | 'Booked' | 'Under Maintenance' | 'Unavailable'; 
+  status_display: 'Available' | 'Booked' | 'Under Maintenance' | 'Unavailable';
   status_badge: 'available' | 'booked' | 'maintenance' | 'inactive';
   license_plate: string;
-  // Add the actual car status field from the model
   status: 'available' | 'booked' | 'maintenance' | 'inactive';
 }
 
 export interface CarDetail extends Car {
-   photos: CarPhoto[];
-   pricing_rules: PricingRule[];
-   status_display: string;
-   status_badge: string;
+  photos: CarPhoto[];
+  pricing_rules: PricingRule[];
+  status_display: string;
+  status_badge: string;
 }
+
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 
 @Injectable({
   providedIn: 'root'
@@ -92,19 +98,20 @@ export class ListingsService {
   private apiUrl = `${environment.apiBaseUrl}/api/listings`;
   constructor(private http: HttpClient) { }
 
-  search(filters: any = {}): Observable<CarList[]> {
-    let params = new HttpParams();
+  search(filters: any = {}, page: number = 1) {
+  let params = new HttpParams().set('page', page);
 
-    Object.keys(filters).forEach(key => {
-      const value = filters[key];
-      if (value !== null && value !== undefined && value !== '' && value !== false) {
-        params = params.set(key, String(value));
-      }
-    });
+  Object.keys(filters).forEach(key => {
+    const value = filters[key];
+    if (value !== null && value !== undefined && value !== '') {
+      params = params.set(key, String(value));
+    }
+  });
 
-    return this.http.get<CarList[]>(`${this.apiUrl}/search/`, { params })
-      .pipe(catchError(this.handleError));
-  }
+  return this.http.get<PaginatedResponse<CarList>>(`${this.apiUrl}/search/`, { params })
+    .pipe(catchError(this.handleError));
+}
+
 
   getMyCars(): Observable<Car[]> {
     return this.http.get<Car[]>(`${this.apiUrl}/cars/`).pipe(catchError(this.handleError));
@@ -168,7 +175,7 @@ export class ListingsService {
       .pipe(catchError(this.handleError));
   }
 
- 
+
   toggleStatus(carId: number, status: 'available' | 'maintenance' | 'inactive'): Observable<Car> {
     return this.http.patch<Car>(`${this.apiUrl}/cars/${carId}/toggle-status/`, { status })
       .pipe(catchError(this.handleError));
@@ -178,35 +185,35 @@ export class ListingsService {
     return this.http.get<CarList[]>(`${this.apiUrl}/cars/all/`)
       .pipe(catchError(this.handleError));
   }
-  
+
   verifyCar(id: number, is_verified: boolean) {
     return this.http.patch(`${this.apiUrl}/cars/${id}/verify/`, { is_verified });
   }
-  
- 
-isCarCurrentlyBooked(car: CarList | CarDetail): boolean {
-  return car.status_badge === 'booked' || car.status === 'booked';
-}
 
-markCarAvailable(id: number): Observable<any> {
-  return this.http.post(`${this.apiUrl}/cars/${id}/mark-available/`, {})
-    .pipe(catchError(this.handleError));
-}
 
-getCarStatusDisplay(car: CarList | CarDetail): string {
-  if (this.isCarCurrentlyBooked(car)) {
-    return 'Booked';
+  isCarCurrentlyBooked(car: CarList | CarDetail): boolean {
+    return car.status_badge === 'booked' || car.status === 'booked';
   }
-  
-  const statusMap: Record<string, string> = {
-    'available': 'Available',
-    'booked': 'Booked',
-    'maintenance': 'Under Maintenance',
-    'inactive': 'Unavailable'
-  };
-  
-  return statusMap[car.status] || 'Unavailable';
-}
+
+  markCarAvailable(id: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/cars/${id}/mark-available/`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  getCarStatusDisplay(car: CarList | CarDetail): string {
+    if (this.isCarCurrentlyBooked(car)) {
+      return 'Booked';
+    }
+
+    const statusMap: Record<string, string> = {
+      'available': 'Available',
+      'booked': 'Booked',
+      'maintenance': 'Under Maintenance',
+      'inactive': 'Unavailable'
+    };
+
+    return statusMap[car.status] || 'Unavailable';
+  }
 
   private handleError(error: any) {
     console.error('Listings Service Error:', error);

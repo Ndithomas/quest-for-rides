@@ -9,17 +9,17 @@ export class RoleRedirectService {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   getDashboardRoute(): string {
     const user = this.authService.getUser();
-    
+
     if (!user) {
       return '/login';
     }
 
     const role = user.role?.toLowerCase();
-    
+
     switch (role) {
       case 'guest':
         return '/guest-dashboard';
@@ -31,7 +31,6 @@ export class RoleRedirectService {
         return '/';
     }
   }
-
 
   redirectToDashboard(): void {
     const route = this.getDashboardRoute();

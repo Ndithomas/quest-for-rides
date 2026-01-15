@@ -21,52 +21,47 @@ export class ListingsComponent implements OnInit {
   cars = signal<any[]>([]);
   loading = signal(true);
   searchError = signal('');
+  currentPage = signal(1);
+  hasNext = signal(false);
 
   constructor(
     private listingsService: ListingsService,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.search();
+    this.search();  // first 10 cars
   }
 
-  search(): void {
+  search(page: number = 1): void {
     this.loading.set(true);
     this.searchError.set('');
 
     const filters: any = {};
-    const locationValue = this.location();
-    const makeValue = this.make();
-    const minPriceValue = this.minPrice();
-    const maxPriceValue = this.maxPrice();
+    if (this.location()) filters.location = this.location();
+    if (this.make()) filters.make = this.make();
+    if (this.minPrice()) filters.min_price = this.minPrice();
+    if (this.maxPrice()) filters.max_price = this.maxPrice();
 
-    if (locationValue && locationValue.trim() !== '') {
-      filters.location = locationValue.trim();
-    }
-    if (makeValue && makeValue.trim() !== '') {
-      filters.make = makeValue.trim();
-    }
-    if (minPriceValue !== null && minPriceValue > 0) {
-      filters.min_price = minPriceValue;
-    }
-    if (maxPriceValue !== null && maxPriceValue > 0) {
-      filters.max_price = maxPriceValue;
-    }
-
-    this.listingsService.search(filters).subscribe({
-      next: (data) => {
-        this.cars.set(data || []);
+    this.listingsService.search(filters, page).subscribe({
+      next: (res) => {
+        if (page === 1) {
+          this.cars.set(res.results); // replace first page
+        } else {
+          this.cars.set([...this.cars(), ...res.results]); // append for Load More
+        }
+        this.currentPage.set(page);
+        this.hasNext.set(!!res.next);
         this.loading.set(false);
       },
-      error: (error) => {
-        this.searchError.set('Failed to load cars. Please try again.');
-        this.cars.set([]);
+      error: () => {
+        this.searchError.set('Failed to load cars.');
         this.loading.set(false);
       }
     });
   }
+
 
   clear(): void {
     this.location.set('');
@@ -103,7 +98,7 @@ export class ListingsComponent implements OnInit {
       if (primaryPhoto && primaryPhoto.image) {
         return primaryPhoto.image;
       }
-      
+
       if (car.photos[0] && car.photos[0].image) {
         return car.photos[0].image;
       }

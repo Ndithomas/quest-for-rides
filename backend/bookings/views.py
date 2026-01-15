@@ -13,6 +13,7 @@ from listings.models import Car
 from userAuth.models import User
 
 
+
 class BookingListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]    
     serializer_class = BookingListSerializer
@@ -150,19 +151,16 @@ class GuestCancelBookingAPIView(generics.GenericAPIView):
         return Response({
             "detail": "Booking cancelled successfully and car is now available."
         }, status=status.HTTP_200_OK)
-
 class MyBookingsAPIView(generics.ListAPIView):
     serializer_class = BookingListSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        timeout_hours = 24
-        expiry_threshold = timezone.now() - timezone.timedelta(hours=timeout_hours)
-        expired = Booking.objects.filter(
-            status='pending',
-            created_at__lt=expiry_threshold
-        )
+
+        # Cancel expired pending bookings automatically
+        expiry_threshold = timezone.now() - timezone.timedelta(hours=24)
+        expired = Booking.objects.filter(status='pending', created_at__lt=expiry_threshold)
         for booking in expired:
             booking.status = 'cancelled'
             booking.rejection_reason = "Expired: Owner did not respond in time."
@@ -170,9 +168,15 @@ class MyBookingsAPIView(generics.ListAPIView):
             booking.car.status = 'available'
             booking.car.save(update_fields=['status'])
 
-        return Booking.objects.filter(
+        queryset = Booking.objects.filter(
             models.Q(guest=user) | models.Q(owner=user)
         ).select_related('car', 'guest', 'owner', 'payment').order_by('-created_at')
+
+        status_filter = self.request.query_params.get('status')
+        if status_filter and status_filter != 'all':
+            queryset = queryset.filter(status=status_filter)
+
+        return queryset
 
 class PendingConfirmationsAPIView(generics.ListAPIView):
     serializer_class = BookingListSerializer

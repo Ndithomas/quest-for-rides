@@ -15,6 +15,7 @@ export const roleAuthGuard: CanActivateFn = (route, state) => {
     });
     return false;
   }
+  
 
   const user = authService.getUser();
   const userRole = (user?.role || user?.user_type || 'guest').toLowerCase();

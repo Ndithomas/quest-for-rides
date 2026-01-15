@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
-import { BookingService, Booking } from '../services/booking.service';
+import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -16,17 +16,20 @@ import { AuthService } from '../services/auth.service';
 export class OwnerBookingsComponent implements OnInit {
   bookings = signal<Booking[]>([]);
   loading = signal(true);
+  loadingMore = signal(false);
   error = signal('');
   success = signal('');
   filter = signal<'pending' | 'confirmed-unpaid' | 'confirmed-paid' | 'active' | 'completed' | 'rejected' | 'cancelled' | 'all'>('all');
   cancellingId = signal<number | null>(null);
   showCancelModal = signal(false);
-  bookingToCancel = signal<Booking | null>(null);  
+  bookingToCancel = signal<Booking | null>(null);
   showModal = signal(false);
   modalType = signal<'confirm' | 'reject'>('confirm');
   currentBooking = signal<Booking | null>(null);
   notes = signal('');
   reason = signal('');
+  currentPage = signal(1);
+  hasMore = signal(false);
 
   constructor(
     private bookingService: BookingService,
@@ -38,57 +41,29 @@ export class OwnerBookingsComponent implements OnInit {
   }
 
   loadBookings() {
-    this.loading.set(true);
-    this.error.set('');
-    this.bookingService.getPendingConfirmations().subscribe({
-      next: (bookings: Booking[]) => {
-        this.bookingService.getMyBookings().subscribe({
-          next: (allBookings: Booking[]) => {
-            const currentUser = this.authService.getUser();
-            if (!currentUser) {
-              this.error.set('User not found');
-              this.loading.set(false);
-              return;
-            }
-            const ownerBookings = allBookings.filter(b => {
-              if (b.owner && typeof b.owner === 'object') {
-                return b.owner.id === currentUser.id;
-              }
-              if (typeof b.owner === 'number') {
-                return b.owner === currentUser.id;
-              }
-              return false;
-            });
-
-            this.bookings.set(ownerBookings);
-            this.loading.set(false);
-          },
-          error: (err) => {
-            this.error.set(err.error?.detail || 'Failed to load all bookings');
-            this.loading.set(false);
-          }
-        });
-      },
-      error: (err) => {
-        this.error.set(err.error?.detail || 'Failed to load pending bookings');
-        this.loading.set(false);
-      }
-    });
+    this.loadPage(1, true);
   }
-  loadBookingsSimple() {
-    this.loading.set(true);
+
+  loadPage(page: number, reset: boolean = false): void {
+    if (reset) {
+      this.loading.set(true);
+      this.bookings.set([]);
+    } else {
+      this.loadingMore.set(true);
+    }
     this.error.set('');
 
-    this.bookingService.getMyBookings().subscribe({
-      next: (allBookings: Booking[]) => {
+    this.bookingService.getMyBookings(page, 'all', 10).subscribe({
+      next: (response: PaginatedBookings) => {
         const currentUser = this.authService.getUser();
         if (!currentUser) {
           this.error.set('User not found');
           this.loading.set(false);
+          this.loadingMore.set(false);
           return;
         }
 
-        const ownerBookings = allBookings.filter(b => {
+        const newBookings = response.results.filter(b => {
           if (b.owner && typeof b.owner === 'object') {
             return b.owner.id === currentUser.id;
           }
@@ -98,14 +73,32 @@ export class OwnerBookingsComponent implements OnInit {
           return false;
         });
 
-        this.bookings.set(ownerBookings);
+        if (reset) {
+          this.bookings.set(newBookings);
+        } else {
+          this.bookings.update(existing => [...existing, ...newBookings]);
+        }
+
+        this.hasMore.set(!!response.next);
+        this.currentPage.set(page);
         this.loading.set(false);
+        this.loadingMore.set(false);
       },
       error: (err) => {
         this.error.set(err.error?.detail || 'Failed to load bookings');
         this.loading.set(false);
+        this.loadingMore.set(false);
       }
     });
+  }
+
+  loadMore(): void {
+    if (!this.hasMore() || this.loadingMore()) return;
+    this.loadPage(this.currentPage() + 1);
+  }
+
+  loadBookingsSimple() {
+    this.loadPage(1, true);
   }
 
   setFilter(status: any) {
@@ -263,33 +256,33 @@ export class OwnerBookingsComponent implements OnInit {
     });
   }
   openCancelConfirmModal(booking: Booking): void {
-  this.bookingToCancel.set(booking);
-  this.showCancelModal.set(true);
-}
+    this.bookingToCancel.set(booking);
+    this.showCancelModal.set(true);
+  }
 
-closeCancelModal(): void {
-  this.showCancelModal.set(false);
-  this.bookingToCancel.set(null);
-}
+  closeCancelModal(): void {
+    this.showCancelModal.set(false);
+    this.bookingToCancel.set(null);
+  }
 
-confirmCancelUnpaid(): void {
-  const booking = this.bookingToCancel();
-  if (!booking) return;
+  confirmCancelUnpaid(): void {
+    const booking = this.bookingToCancel();
+    if (!booking) return;
 
-  this.cancellingId.set(booking.id);
+    this.cancellingId.set(booking.id);
 
-  this.bookingService.ownerCancelUnpaidBooking(booking.id).subscribe({
-    next: () => {
-      this.success.set('Booking cancelled successfully. The car is now available again.');
-      this.loadBookingsSimple();
-      this.closeCancelModal();
-      this.cancellingId.set(null);
-      setTimeout(() => this.success.set(''), 5000);
-    },
-    error: (err) => {
-      this.error.set(err.error?.detail || 'Failed to cancel booking. Please try again.');
-      this.cancellingId.set(null);
-    }
-  });
-}
+    this.bookingService.ownerCancelUnpaidBooking(booking.id).subscribe({
+      next: () => {
+        this.success.set('Booking cancelled successfully. The car is now available again.');
+        this.loadBookingsSimple();
+        this.closeCancelModal();
+        this.cancellingId.set(null);
+        setTimeout(() => this.success.set(''), 5000);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || 'Failed to cancel booking. Please try again.');
+        this.cancellingId.set(null);
+      }
+    });
+  }
 }

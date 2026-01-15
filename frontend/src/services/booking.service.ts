@@ -1,6 +1,5 @@
-// services/booking.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
@@ -49,6 +48,12 @@ export interface Booking {
   car_status?: string;
   getPaymentMethod?(): string;
 }
+export interface PaginatedBookings {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Booking[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -66,8 +71,14 @@ export class BookingService {
     return this.http.get<Booking>(`${this.apiUrl}/${id}/`);
   }
 
-  getMyBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/my-bookings/`);
+  getMyBookings(page: number = 1, status: string = 'all', page_size: number = 10): Observable<PaginatedBookings> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', page_size.toString());
+    if (status !== 'all') {
+      params = params.set('status', status);
+    }
+    return this.http.get<PaginatedBookings>(`${this.apiUrl}/my-bookings/`, { params });
   }
 
   getPendingConfirmations(): Observable<Booking[]> {
@@ -77,7 +88,7 @@ export class BookingService {
   getAllBookings(): Observable<Booking[]> {
     return this.http.get<Booking[]>(`${this.apiUrl}/all-bookings/`);
   }
-   // Add this method
+
   getOwnerBookings(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/owner-bookings/`);
   }

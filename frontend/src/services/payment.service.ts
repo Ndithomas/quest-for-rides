@@ -1,17 +1,13 @@
-// src/services/payment.service.ts
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { Booking } from './booking.service';
 
-
 export interface Car {
   id: number;
   make: string;
-  model: string; // <-- 'model' is here
-  // Add other car properties if needed (e.g., year, license_plate)
+  model: string;
 }
 
 export interface PaymentTransaction {
@@ -71,7 +67,7 @@ export interface Payout {
 
 export interface BookingPayment {
   id: number;
-  booking: Booking; 
+  booking: Booking;
   amount: number;
   status: string;
   status_display: string;
@@ -82,12 +78,12 @@ export interface BookingPayment {
   commission: PlatformCommission;
   created_at: string;
   updated_at: string;
-  payment_method?: string; 
+  payment_method?: string;
   transaction_id?: string;
 }
 
 export interface CamPayInitiateData {
-  phone: string; // Format: 2376xxxxxxxx
+  phone: string;
 }
 
 export interface PaymentAnalytics {
@@ -147,7 +143,6 @@ export class PaymentService {
     return this.http.get<PaymentAnalytics>(`${this.apiUrl}/analytics/`);
   }
 
-  // ============ Owner Endpoints ============
   getOwnerPayments(): Observable<BookingPayment[]> {
     return this.http.get<BookingPayment[]>(`${this.apiUrl}/owner/payments/`);
   }
@@ -163,12 +158,11 @@ export class PaymentService {
   requestPayout(data: { amount: number; payment_method: string; phone_number: string; notes?: string }): Observable<Payout> {
     return this.http.post<Payout>(`${this.apiUrl}/owner/payout-request/`, data);
   }
-  
+
   getGuestPayments(): Observable<BookingPayment[]> {
     return this.http.get<BookingPayment[]>(`${this.apiUrl}/guest/payments/`);
   }
 
-  // ============ Management Endpoints ============
   getManagementPayouts(status?: string): Observable<Payout[]> {
     let url = `${this.apiUrl}/management/payouts/`;
     if (status) {

@@ -2,14 +2,23 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Notification
 from .serializers import *
+from datetime import timedelta
+from django.utils import timezone
 
 
 class NotificationListAPIView(generics.ListAPIView):
     serializer_class = NotificationListSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None
 
     def get_queryset(self):
-        return Notification.objects.filter(user=self.request.user)
+        cleanup_threshold = timezone.now() - timedelta(days=30)
+        Notification.objects.filter(
+            user=self.request.user, 
+            is_read=True, 
+            created_at__lt=cleanup_threshold
+        ).delete()
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')[:100]
 
 
 class NotificationDetailAPIView(generics.RetrieveAPIView):

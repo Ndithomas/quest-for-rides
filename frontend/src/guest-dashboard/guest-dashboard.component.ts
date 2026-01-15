@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { ListingsComponent } from '../listings/listings.component';
-import { BookingService, Booking } from '../services/booking.service';
+import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -41,8 +41,9 @@ export class GuestDashboardComponent implements OnInit {
   }
 
   private loadBookingStats(): void {
-    this.bookingService.getMyBookings().subscribe({
-      next: (bookings: Booking[]) => {
+    this.bookingService.getMyBookings(1, 'all', 100).subscribe({
+      next: (response: PaginatedBookings) => {
+        const bookings: Booking[] = response.results;
         this.pendingCount.set(
           bookings.filter(b => b.status === 'pending').length
         );
