@@ -81,7 +81,7 @@
               <td class="actions-cell">
                 <a [routerLink]="['/user-detail', user.id]" class="btn-view">View</a>
 
-                
+
               </td>
             </tr>
             <tr *ngIf="filteredUsers.length === 0">
@@ -97,6 +97,17 @@
             </tr>
           </tbody>
         </table>
+        <div class="header-content">
+  <h1 class="page-title">All Users ({{ totalCount }})</h1>
+  <p class="page-subtitle">Manage and monitor every member of your platform</p>
+</div>
+
+<div class="text-center py-4" *ngIf="nextPageUrl">
+  <button (click)="loadMore()" class="btn btn-primary px-5" [disabled]="loadingMore" style="width: auto; padding: 0.8rem 3rem;">
+    <span *ngIf="loadingMore" class="spinner-small"></span>
+    {{ loadingMore ? 'Loading...' : 'Load More Users' }}
+  </button>
+</div>
       </div>
     </div>
   </div>

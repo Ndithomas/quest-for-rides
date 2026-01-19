@@ -3,7 +3,7 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ListingsService, Car } from '../services/listings.service';
+import { ListingsService, Car, PaginatedResponse } from '../services/listings.service';
 
 
 
@@ -29,12 +29,13 @@ cars: Car[] = [];
     this.isLoading = true;
     this.errorMessage = null;
 
+    // 2. Change the type in subscribe and access .results
     this.listingsService.getMyCars().subscribe({
-      next: (data) => {
-        this.cars = data;
+      next: (data: PaginatedResponse<Car>) => {
+        // Look inside 'data.results' to find the actual array of cars
+        this.cars = data.results; 
         this.isLoading = false;
-        // The number of cars is now available via this.cars.length
-        console.log('Total number of cars loaded:', this.cars.length); 
+        console.log('Total number of cars loaded on this page:', this.cars.length); 
       },
       error: (err: Error) => {
         this.errorMessage = `Failed to load car count: ${err.message}`;

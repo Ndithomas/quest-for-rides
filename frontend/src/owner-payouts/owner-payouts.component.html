@@ -1,7 +1,5 @@
 <app-navbar></app-navbar>
-
 <div class="container py-5">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h2 mb-1">Payout Management</h1>
@@ -13,7 +11,6 @@
         </button>
     </div>
 
-    <!-- Alerts -->
     <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ error }}
         <button type="button" class="btn-close" (click)="error = ''"></button>
@@ -24,7 +21,6 @@
         <button type="button" class="btn-close" (click)="success = ''"></button>
     </div>
 
-    <!-- Loading State -->
     <div *ngIf="loading" class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -32,9 +28,7 @@
         <p class="mt-3">Loading payout information...</p>
     </div>
 
-    <!-- Payout Dashboard -->
     <div *ngIf="!loading && earnings">
-        <!-- Stats Cards -->
         <div class="row mb-4">
             <div class="col-md-4 col-6 mb-3">
                 <div class="card border-success shadow-sm h-100">
@@ -75,15 +69,13 @@
                 </div>
             </div>
         </div>
-
-        <!-- Request Payout Form -->
         <div *ngIf="showRequestForm" class="card shadow-lg mb-4 border-primary">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Request New Payout</h5>
             </div>
             <div class="card-body">
                 <form (ngSubmit)="requestPayout()">
-                    <!-- Amount -->
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Payout Amount</label>
@@ -101,12 +93,10 @@
                             <label class="form-label">Payment Method</label>
                             <select class="form-select" [(ngModel)]="paymentMethod" name="paymentMethod" required>
                                 <option value="campay">CamPay (Mobile Money)</option>
-                                <!-- Add more methods if backend supports them in future -->
                             </select>
                         </div>
                     </div>
 
-                    <!-- Payment Method Details -->
                     <div *ngIf="paymentMethod === 'campay'" class="mb-4">
                         <h6 class="mb-3">Mobile Money Details</h6>
                         <div class="row g-3">
@@ -125,7 +115,6 @@
                         </div>
                     </div>
 
-                    <!-- Form Actions -->
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"
                             [disabled]="requesting || payoutAmount < minimumPayout || payoutAmount > earnings.available_balance || !phoneNumber">
@@ -140,7 +129,6 @@
             </div>
         </div>
 
-        <!-- Payout History -->
         <div class="card shadow">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Payout History</h5>
@@ -188,6 +176,13 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="text-center mt-3" *ngIf="nextPageUrl">
+                    <button class="btn btn-outline-primary btn-sm px-4" (click)="loadMore()"
+                        [disabled]="loadingHistory">
+                        <span *ngIf="loadingHistory" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ loadingHistory ? 'Loading...' : 'View Older Payouts' }}
+                    </button>
                 </div>
             </div>
         </div>

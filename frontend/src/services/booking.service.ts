@@ -85,8 +85,9 @@ export class BookingService {
     return this.http.get<Booking[]>(`${this.apiUrl}/pending-confirmations/`);
   }
 
-  getAllBookings(): Observable<Booking[]> {
-    return this.http.get<Booking[]>(`${this.apiUrl}/all-bookings/`);
+  getAllBookings(url?: string): Observable<PaginatedBookings> {
+    const requestUrl = url || `${this.apiUrl}/all-bookings/`;
+    return this.http.get<PaginatedBookings>(requestUrl);
   }
 
   getOwnerBookings(): Observable<any[]> {

@@ -1,5 +1,4 @@
 <app-navbar></app-navbar>
-
 <div class="container py-5">
   <div class="mb-4">
     <h1 class="h2 mb-1">My Payments</h1>
@@ -10,7 +9,7 @@
     {{ error }}
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
-  
+
   <div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
     {{ success }}
     <button type="button" class="btn-close" (click)="success = ''"></button>
@@ -37,7 +36,7 @@
               <option value="refunded">Refunded</option>
             </select>
           </div>
-          
+
           <div class="col-md-3">
             <label class="form-label">Sort By</label>
             <select class="form-select" [(ngModel)]="sortBy" (change)="applyFilters()">
@@ -47,13 +46,11 @@
               <option value="amount_low">Amount (Low to High)</option>
             </select>
           </div>
-          
+
           <div class="col-md-6">
             <label class="form-label">Search</label>
-            <input type="text" class="form-control" 
-                   [(ngModel)]="searchTerm" 
-                   (input)="applyFilters()"
-                   placeholder="Search by booking ID or transaction reference...">
+            <input type="text" class="form-control" [(ngModel)]="searchTerm" (input)="applyFilters()"
+              placeholder="Search by booking ID or transaction reference...">
           </div>
         </div>
       </div>
@@ -102,8 +99,7 @@
                   <div class="small">{{ formatDate(payment.created_at) }}</div>
                 </td>
                 <td>
-                  <div class="small" style="max-width: 120px;" 
-                       [title]="payment.campay_reference || 'N/A'">
+                  <div class="small" style="max-width: 120px;" [title]="payment.campay_reference || 'N/A'">
                     {{ payment.campay_reference || 'N/A' }}
                   </div>
                 </td>
@@ -113,6 +109,19 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+            </table>
+          </div>
+          <div class="text-center py-3 border-top" *ngIf="nextPageUrl">
+            <button class="btn btn-outline-primary btn-sm px-5" (click)="loadMore()" [disabled]="isLoadingMore">
+
+              <span *ngIf="isLoadingMore" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoadingMore ? 'Loading more records...' : 'Load More' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -124,8 +133,7 @@
         <p class="text-muted mb-4">
           {{ payments.length === 0 ? 'You haven\'t received any payments yet.' : 'No payments match your filters.' }}
         </p>
-        <button *ngIf="statusFilter !== 'all' || searchTerm" 
-                class="btn btn-primary" (click)="clearFilters()">
+        <button *ngIf="statusFilter !== 'all' || searchTerm" class="btn btn-primary" (click)="clearFilters()">
           Clear Filters
         </button>
       </div>
@@ -169,5 +177,4 @@
     </div>
   </div>
 </div>
-
 <app-footer></app-footer>

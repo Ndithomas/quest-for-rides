@@ -46,49 +46,72 @@
   }
 }
 
-/* Search Box – Clean with Icon */
 .search-box {
-  max-width: 640px;
+  max-width: 600px;
   margin: 0 auto 2rem;
   position: relative;
 }
 
 .search-input {
   width: 100%;
-  padding: 1rem 1.5rem 1rem 3.5rem;
-  border: 2px solid #e2e8f0;
+  padding: 1rem 1.5rem 1rem 4rem;
+  border: none;
   border-radius: 50px;
-  font-size: 1.1rem;
-  background-color: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background: white;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
-
-  &::placeholder {
-    color: #94a3b8;
-  }
-
-  &:focus {
-    outline: none;
-    border-color: #27ae60;
-    box-shadow: 0 0 0 5px rgba(39, 174, 96, 0.15);
-  }
 }
 
-/* Search Icon (pure CSS) */
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(39,174,96,0.2);
+  transform: translateY(-1px);
+}
+
+/* Simple magnifying glass icon */
 .search-box::before {
-  content: "Search";
+  content: "";
   position: absolute;
-  left: 1.2rem;
+  left: 1.4rem;
   top: 50%;
   transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  background: center;
-  pointer-events: none;
-  opacity: 0.6;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid #9ca3af;
+  border-radius: 50%;
 }
 
-/* Car Thumbnail */
+.search-box::after {
+  content: "";
+  position: absolute;
+  left: 2.8rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 2.5px;
+  height: 9px;
+  background: #9ca3af;
+  border-radius: 2px;
+}
+
+/* Optional: small modern button inside */
+.search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.6rem 1.2rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background: #219653;
+}
 .car-thumb {
   width: 70px;
   height: 52px;

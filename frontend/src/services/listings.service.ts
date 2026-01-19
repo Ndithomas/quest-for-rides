@@ -84,12 +84,11 @@ export interface CarDetail extends Car {
 }
 
 export interface PaginatedResponse<T> {
-  count: number;
+  count: number;    // Total number of items (Total Vehicles)
   next: string | null;
   previous: string | null;
   results: T[];
 }
-
 
 @Injectable({
   providedIn: 'root'
@@ -99,22 +98,22 @@ export class ListingsService {
   constructor(private http: HttpClient) { }
 
   search(filters: any = {}, page: number = 1) {
-  let params = new HttpParams().set('page', page);
+    let params = new HttpParams().set('page', page);
 
-  Object.keys(filters).forEach(key => {
-    const value = filters[key];
-    if (value !== null && value !== undefined && value !== '') {
-      params = params.set(key, String(value));
-    }
-  });
+    Object.keys(filters).forEach(key => {
+      const value = filters[key];
+      if (value !== null && value !== undefined && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
 
-  return this.http.get<PaginatedResponse<CarList>>(`${this.apiUrl}/search/`, { params })
-    .pipe(catchError(this.handleError));
-}
+    return this.http.get<PaginatedResponse<CarList>>(`${this.apiUrl}/search/`, { params })
+      .pipe(catchError(this.handleError));
+  }
 
-
-  getMyCars(): Observable<Car[]> {
-    return this.http.get<Car[]>(`${this.apiUrl}/cars/`).pipe(catchError(this.handleError));
+  getMyCars(url?: string): Observable<PaginatedResponse<Car>> {
+    const requestUrl = url || `${this.apiUrl}/cars/`;
+    return this.http.get<PaginatedResponse<Car>>(requestUrl).pipe(catchError(this.handleError));
   }
 
   createCar(formData: FormData): Observable<Car> {
@@ -185,11 +184,6 @@ export class ListingsService {
     return this.http.get<CarList[]>(`${this.apiUrl}/cars/all/`)
       .pipe(catchError(this.handleError));
   }
-
-  verifyCar(id: number, is_verified: boolean) {
-    return this.http.patch(`${this.apiUrl}/cars/${id}/verify/`, { is_verified });
-  }
-
 
   isCarCurrentlyBooked(car: CarList | CarDetail): boolean {
     return car.status_badge === 'booked' || car.status === 'booked';

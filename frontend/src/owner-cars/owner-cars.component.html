@@ -1,9 +1,7 @@
 <app-navbar></app-navbar>
-
 <div class="fleet-container">
   <div class="container py-5">
 
-    <!-- Header -->
     <div class="text-center mb-5">
       <h1 class="display-5 fw-bold text-dark mb-3">My Fleet</h1>
       <p class="lead text-muted">Manage your vehicles • Track earnings • Grow your business</p>
@@ -12,7 +10,6 @@
       </a>
     </div>
 
-    <!-- Stats Cards -->
     <div class="row g-4 mb-5 justify-content-center">
       <div class="col-md-3 col-6">
         <div class="stat-card total">
@@ -40,7 +37,7 @@
       </div>
     </div>
 
-    <!-- Cars List -->
+
     <div class="cars-section">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold mb-0">Your Vehicles</h4>
@@ -49,13 +46,12 @@
         </button>
       </div>
 
-      <!-- Loading -->
       <div *ngIf="loading()" class="text-center py-5">
         <div class="spinner"></div>
         <p class="mt-4 text-muted fs-5">Loading your fleet...</p>
       </div>
 
-      <!-- Empty State -->
+
       <div *ngIf="!loading() && cars().length === 0" class="text-center py-5 empty-state">
         <i class="bi bi-car-front-fill text-muted" style="font-size: 5rem;"></i>
         <h3 class="mt-4">Your fleet is empty</h3>
@@ -65,28 +61,25 @@
         </a>
       </div>
 
-      <!-- Cars Grid -->
+
       <div class="row g-4" *ngIf="!loading() && cars().length > 0">
         <div class="col-md-6 col-lg-4" *ngFor="let car of cars(); trackBy: trackByCarId">
           <div class="car-card" [class.inactive]="car.status === 'inactive'">
 
             <div class="image-wrapper">
-              <!-- Status Badge -->
               <span class="status-badge" [ngClass]="getStatusBadgeClass(car)">
                 {{ car.status_display }}
               </span>
 
-              <!-- Verification Badge (only if not booked) -->
               <span class="verify-badge"
-                    *ngIf="car.status_badge !== 'booked' && car.status_badge !== 'recently-returned'"
-                    [class.bg-success]="car.is_verified"
-                    [class.bg-warning]="!car.is_verified">
+                *ngIf="car.status_badge !== 'booked' && car.status_badge !== 'recently-returned'"
+                [class.bg-success]="car.is_verified" [class.bg-warning]="!car.is_verified">
                 <i class="bi" [ngClass]="car.is_verified ? 'bi-shield-check' : 'bi-shield-exclamation'"></i>
                 {{ car.is_verified ? 'Verified' : 'Pending' }}
               </span>
 
-              <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model"
-                   class="car-img" *ngIf="hasPhoto(car); else noPhoto">
+              <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model" class="car-img"
+                *ngIf="hasPhoto(car); else noPhoto">
               <ng-template #noPhoto>
                 <div class="no-photo">
                   <i class="bi bi-car-front-fill"></i>
@@ -117,22 +110,16 @@
                     <i class="bi bi-pencil-square"></i>
                   </button>
                   <button (click)="openDeleteModal(car)" class="btn-action delete" title="Delete"
-                          [disabled]="isDeleting()">
+                    [disabled]="isDeleting()">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </div>
 
-              <!-- STATUS MANAGEMENT BUTTONS -->
               <div class="status-controls mt-3" *ngIf="car.status_badge !== 'booked'">
                 <div class="btn-group w-100" role="group">
-                  <!-- Available Button -->
-                  <button 
-                    type="button" 
-                    class="btn btn-sm"
-                    [class.btn-success]="car.status === 'available'"
-                    [class.btn-outline-success]="car.status !== 'available'"
-                    (click)="changeStatus(car.id, 'available')"
+                  <button type="button" class="btn btn-sm" [class.btn-success]="car.status === 'available'"
+                    [class.btn-outline-success]="car.status !== 'available'" (click)="changeStatus(car.id, 'available')"
                     [disabled]="changingStatusId() === car.id">
                     <span *ngIf="changingStatusId() === car.id">
                       <span class="spinner-border spinner-border-sm me-1"></span>
@@ -143,14 +130,9 @@
                     Available
                   </button>
 
-                  <!-- Maintenance Button -->
-                  <button 
-                    type="button" 
-                    class="btn btn-sm"
-                    [class.btn-warning]="car.status === 'maintenance'"
+                  <button type="button" class="btn btn-sm" [class.btn-warning]="car.status === 'maintenance'"
                     [class.btn-outline-warning]="car.status !== 'maintenance'"
-                    (click)="changeStatus(car.id, 'maintenance')"
-                    [disabled]="changingStatusId() === car.id">
+                    (click)="changeStatus(car.id, 'maintenance')" [disabled]="changingStatusId() === car.id">
                     <span *ngIf="changingStatusId() === car.id">
                       <span class="spinner-border spinner-border-sm me-1"></span>
                     </span>
@@ -161,12 +143,8 @@
                   </button>
 
                   <!-- Inactive Button -->
-                  <button 
-                    type="button" 
-                    class="btn btn-sm"
-                    [class.btn-danger]="car.status === 'inactive'"
-                    [class.btn-outline-danger]="car.status !== 'inactive'"
-                    (click)="changeStatus(car.id, 'inactive')"
+                  <button type="button" class="btn btn-sm" [class.btn-danger]="car.status === 'inactive'"
+                    [class.btn-outline-danger]="car.status !== 'inactive'" (click)="changeStatus(car.id, 'inactive')"
                     [disabled]="changingStatusId() === car.id">
                     <span *ngIf="changingStatusId() === car.id">
                       <span class="spinner-border spinner-border-sm me-1"></span>
@@ -178,12 +156,8 @@
                   </button>
                 </div>
 
-                <!-- MARK AS AVAILABLE BUTTON (for recently returned) -->
-                <button
-                  *ngIf="car.status_badge === 'recently-returned'"
-                  (click)="markAsAvailable(car.id)"
-                  class="btn btn-success btn-sm rounded-pill px-4 mt-2 w-100"
-                  [disabled]="markingId() === car.id">
+                <button *ngIf="car.status_badge === 'recently-returned'" (click)="markAsAvailable(car.id)"
+                  class="btn btn-success btn-sm rounded-pill px-4 mt-2 w-100" [disabled]="markingId() === car.id">
                   <span *ngIf="markingId() === car.id">
                     <span class="spinner-border spinner-border-sm me-2"></span>Saving...
                   </span>
@@ -192,27 +166,35 @@
                   </span>
                 </button>
               </div>
-
-              <!-- Booked Status Notice -->
               <div *ngIf="car.status_badge === 'booked'" class="alert alert-warning mt-3 p-2 text-center">
                 <small><i class="bi bi-info-circle me-1"></i>Car is booked - status cannot be changed</small>
               </div>
             </div>
           </div>
         </div>
+        <div class="text-center mt-5 mb-4" *ngIf="nextPageUrl()">
+          <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm" (click)="loadMore()"
+            [disabled]="isLoadingMore()">
+
+            <span *ngIf="isLoadingMore()">
+              <span class="spinner-border spinner-border-sm me-2"></span>Loading more cars...
+            </span>
+
+            <span *ngIf="!isLoadingMore()">
+              <i class="bi bi-chevron-down me-2"></i>Load More Vehicles
+            </span>
+          </button>
+        </div>
+        <div class="text-center text-muted mt-4" *ngIf="!nextPageUrl() && cars().length > 0">
+          <small><i class="bi bi-check-all me-1"></i> All vehicles loaded</small>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
 @if (showDeleteModal() && selectedCar()) {
-  <app-delete-car
-    [car]="selectedCar()"
-    [deleting]="isDeleting()"
-    (cancel)="closeDeleteModal()"
-    (confirm)="onDeleteCar()">
-  </app-delete-car>
+<app-delete-car [car]="selectedCar()" [deleting]="isDeleting()" (cancel)="closeDeleteModal()" (confirm)="onDeleteCar()">
+</app-delete-car>
 }
-
 <app-footer></app-footer>

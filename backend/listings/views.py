@@ -183,7 +183,7 @@ class PublicCarSearchAPIView(generics.ListAPIView):
         today = timezone.now().date()
         queryset = Car.objects.filter(
             is_verified=True,
-            status__in=['available', 'booked', 'inactive']  # Keep all statuses
+            status__in=['available', 'booked', 'inactive']  
         ).select_related('owner').prefetch_related('photos')
         
         location = self.request.query_params.get('location')
@@ -201,25 +201,6 @@ class PublicCarSearchAPIView(generics.ListAPIView):
             queryset = queryset.filter(daily_rate__lte=max_price)
 
         return queryset.order_by('-created_at')
-
-class CarVerifyAPIView(generics.UpdateAPIView):
-    queryset = Car.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-
-    def patch(self, request, *args, **kwargs):
-        if request.user.role not in ['management', 'staff']:
-            return Response({"detail": "Permission denied."}, status=403)
-
-        car = self.get_object()
-        new_status = request.data.get('is_verified', not car.is_verified)  # toggle if not sent
-
-        car.is_verified = new_status
-        car.save(update_fields=['is_verified'])
-
-        return Response({
-            "message": "Verification status updated.",
-            "is_verified": car.is_verified
-        })
 
 class ManagementAllCarsAPIView(generics.ListAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos')

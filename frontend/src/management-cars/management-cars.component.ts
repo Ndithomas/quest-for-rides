@@ -2,7 +2,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ListingsService } from '../services/listings.service';
+import { ManagementAuthService, PaginatedCars } from '../services/management-auth.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -11,17 +11,23 @@ import { FooterComponent } from '../footer/footer.component';
   standalone: true,
   imports: [CommonModule, RouterLink, NavbarComponent, FooterComponent],
   templateUrl: './management-cars.component.html',
-  styleUrl: './management-cars.component.scss'
+  styleUrls: ['./management-cars.component.scss'] // fixed typo
 })
 export class ManagementCarsComponent implements OnInit {
   cars = signal<any[]>([]);
   loading = signal(true);
+  nextPageUrl = signal<string | null>(null);
+  isLoadingMore = signal(false);
+  totalCountFromServer = signal(0);
 
-  totalCars = computed(() => this.cars().length);
-  verifiedCars = computed(() => this.cars().filter(c => c.is_verified).length);
-  pendingCars = computed(() => this.cars().filter(c => !c.is_verified).length);
+  totalVerifiedCars = signal(0);
+  totalPendingCars = signal(0);
 
-  constructor(private listingsService: ListingsService) {}
+  totalCars = computed(() => this.totalCountFromServer());
+  verifiedCars = computed(() => this.totalVerifiedCars());
+  pendingCars = computed(() => this.totalPendingCars());
+
+  constructor(private managementService: ManagementAuthService) { }
 
   ngOnInit(): void {
     this.loadCars();
@@ -29,12 +35,33 @@ export class ManagementCarsComponent implements OnInit {
 
   loadCars(): void {
     this.loading.set(true);
-    this.listingsService.getAllCars().subscribe({
-      next: (data) => {
-        this.cars.set(data);
+    this.managementService.getAllCars().subscribe({
+      next: (data: PaginatedCars) => {
+        this.cars.set(data.results);
+        this.nextPageUrl.set(data.next);
+        this.totalCountFromServer.set(data.count);
+        this.totalVerifiedCars.set(data.count);
+        this.totalPendingCars.set(0);
         this.loading.set(false);
       },
       error: () => this.loading.set(false)
+    });
+  }
+
+  loadMore(): void {
+    const nextUrl = this.nextPageUrl();
+    if (!nextUrl || this.isLoadingMore()) return;
+
+    this.isLoadingMore.set(true);
+    this.managementService.getAllCars(nextUrl).subscribe({
+      next: (data: PaginatedCars) => {
+        this.cars.update(prev => [...prev, ...data.results]);
+        this.nextPageUrl.set(data.next);
+        this.totalVerifiedCars.set(this.totalVerifiedCars());
+        this.totalPendingCars.set(this.totalPendingCars());
+        this.isLoadingMore.set(false);
+      },
+      error: () => this.isLoadingMore.set(false)
     });
   }
 }

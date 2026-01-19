@@ -103,6 +103,13 @@ export interface OwnerEarnings {
   currency: string;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -143,24 +150,27 @@ export class PaymentService {
     return this.http.get<PaymentAnalytics>(`${this.apiUrl}/analytics/`);
   }
 
-  getOwnerPayments(): Observable<BookingPayment[]> {
-    return this.http.get<BookingPayment[]>(`${this.apiUrl}/owner/payments/`);
+  getOwnerPayments(url?: string): Observable<PaginatedResponse<BookingPayment>> {
+    const requestUrl = url || `${this.apiUrl}/owner/payments/`;
+    return this.http.get<PaginatedResponse<BookingPayment>>(requestUrl);
   }
 
   getOwnerEarnings(): Observable<OwnerEarnings> {
     return this.http.get<OwnerEarnings>(`${this.apiUrl}/owner/earnings/`);
   }
 
-  getOwnerPayouts(): Observable<Payout[]> {
-    return this.http.get<Payout[]>(`${this.apiUrl}/owner/payouts/`);
+  getOwnerPayouts(url?: string): Observable<any> {
+    const requestUrl = url || `${this.apiUrl}/owner/payouts/`;
+    return this.http.get<any>(requestUrl);
   }
 
   requestPayout(data: { amount: number; payment_method: string; phone_number: string; notes?: string }): Observable<Payout> {
     return this.http.post<Payout>(`${this.apiUrl}/owner/payout-request/`, data);
   }
 
-  getGuestPayments(): Observable<BookingPayment[]> {
-    return this.http.get<BookingPayment[]>(`${this.apiUrl}/guest/payments/`);
+  getGuestPayments(url?: string): Observable<PaginatedResponse<BookingPayment>> {
+    const requestUrl = url || `${this.apiUrl}/guest/payments/`;
+    return this.http.get<PaginatedResponse<BookingPayment>>(requestUrl);
   }
 
   getManagementPayouts(status?: string): Observable<Payout[]> {

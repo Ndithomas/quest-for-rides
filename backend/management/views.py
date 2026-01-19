@@ -101,3 +101,23 @@ class ChangeUserStatusView(generics.UpdateAPIView):
         user.status = status_value
         user.save()
         return Response({'message': 'Status updated', 'user': UserSerializer(user).data}, status=200)
+    
+# This endpoint stays here – it's correct
+class CarVerifyAPIView(generics.UpdateAPIView):
+    queryset = Car.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsManagement]   # ← recommend adding IsManagement
+
+    def patch(self, request, *args, **kwargs):
+        car = self.get_object()
+        new_status = request.data.get('is_verified')
+
+        if new_status is None:
+            new_status = not car.is_verified  # toggle if not provided
+
+        car.is_verified = bool(new_status)
+        car.save(update_fields=['is_verified'])
+
+        return Response({
+            "message": "Verification status updated.",
+            "is_verified": car.is_verified
+        })

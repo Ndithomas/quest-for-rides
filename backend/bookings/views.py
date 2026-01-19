@@ -158,7 +158,7 @@ class MyBookingsAPIView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
 
-        # Cancel expired pending bookings automatically
+        
         expiry_threshold = timezone.now() - timezone.timedelta(hours=24)
         expired = Booking.objects.filter(status='pending', created_at__lt=expiry_threshold)
         for booking in expired:

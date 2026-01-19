@@ -9,6 +9,49 @@ $shadow: 0 25px 70px rgba(0,0,0,0.16);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 
   /* Header */
+  /* Add this inside the .management-bookings block */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: $shadow;
+  min-width: 300px;
+  animation: floatIn 0.3s ease;
+
+  &.notification-success { background: #d4edda; color: #155724; border-left: 5px solid $green; }
+  &.notification-error { background: #f8d7da; color: #721c24; border-left: 5px solid #dc3545; }
+  &.notification-info { background: #d1ecf1; color: #0c5460; border-left: 5px solid #17a2b8; }
+
+  div { display: flex; align-items: center; gap: 0.75rem; }
+  button { 
+    background: none !important; 
+    border: none !important; 
+    color: inherit !important; 
+    font-size: 1.5rem; 
+    padding: 0 !important; 
+    min-width: auto !important;
+  }
+}
+
+/* Ensure the View Details button looks like the "Load More" button */
+.view-all-btn.info {
+  background: $green;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  transition: background 0.2s;
+  &:hover { background: $green-dark; color: white; }
+}
   .bookings-header {
     background: $green;
     color: white;

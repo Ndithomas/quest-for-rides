@@ -274,7 +274,6 @@ class PaymentListView(generics.ListAPIView):
         ).filter(status='completed').order_by('-created_at')
 
 
-# ==================== Admin: Platform Analytics ====================
 class PaymentAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsManagement]
 
@@ -304,21 +303,16 @@ class PaymentAnalyticsView(generics.GenericAPIView):
             "currency": "XAF",
         })
 
-
-# payments/views.py - Update the OwnerPaymentsListView
 class OwnerPaymentsListView(generics.ListAPIView):
     serializer_class = BookingPaymentDetailSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Only return COMPLETED payments for earnings display
         return BookingPayment.objects.filter(
             booking__car__owner=self.request.user,
-            status='completed'  # Only show actual paid transactions
+            status='completed'  
         ).select_related('booking', 'booking__car').order_by('-created_at')
 
-
-# ==================== Owner: View Earnings ====================
 class OwnerEarningsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -352,11 +346,10 @@ class GuestPaymentsListView(generics.ListAPIView):
             status='completed'  
         ).select_related('booking', 'booking__car').order_by('-created_at')
 
-
-# ==================== Owner: Payout Management ====================
 class PayoutRequestView(generics.CreateAPIView):
     serializer_class = PayoutRequestSerializer
     permission_classes = [IsAuthenticated]
+
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -365,7 +358,6 @@ class PayoutRequestView(generics.CreateAPIView):
 
         amount = serializer.validated_data['amount']
         
-        # Check if owner has enough available balance
         commissions = PlatformCommission.objects.filter(
             booking_payment__booking__car__owner=request.user
         )
@@ -378,7 +370,6 @@ class PayoutRequestView(generics.CreateAPIView):
         
         available_balance = gross_earnings - refunded
         
-        # Deduct already requested/approved/processing payouts
         pending_payouts = Payout.objects.filter(
             owner=request.user,
             status__in=['pending', 'approved', 'processing']

@@ -14,13 +14,14 @@ import { FooterComponent } from '../footer/footer.component';
 })
 export class OwnerEarningsComponent implements OnInit {
   loading = true;
+  isLoadingMore = false; // For the button spinner
   error = '';
-  
-  // Backend data
+
   earningsData: OwnerEarnings | null = null;
-  payments: BookingPayment[] = []; // Add this property
-  
-  constructor(private paymentService: PaymentService) {}
+  payments: BookingPayment[] = [];
+  nextPageUrl: string | null = null;
+
+  constructor(private paymentService: PaymentService) { }
 
   ngOnInit(): void {
     this.loadOwnerEarnings();
@@ -42,8 +43,10 @@ export class OwnerEarningsComponent implements OnInit {
 
   loadOwnerPayments(): void {
     this.paymentService.getOwnerPayments().subscribe({
-      next: (payments: BookingPayment[]) => {
-        this.payments = payments;
+      next: (response: any) => {
+        // response is now { count, next, previous, results }
+        this.payments = response.results;
+        this.nextPageUrl = response.next; // Store the next page URL
         this.loading = false;
       },
       error: (error) => {
@@ -53,8 +56,22 @@ export class OwnerEarningsComponent implements OnInit {
       }
     });
   }
+  loadMore(): void {
+    if (!this.nextPageUrl || this.isLoadingMore) return;
 
-  // Helper methods
+    this.isLoadingMore = true;
+    this.paymentService.getOwnerPayments(this.nextPageUrl).subscribe({
+      next: (response: any) => {
+        this.payments = [...this.payments, ...response.results];
+        this.nextPageUrl = response.next;
+        this.isLoadingMore = false;
+      },
+      error: (error) => {
+        console.error('Error loading more payments:', error);
+        this.isLoadingMore = false;
+      }
+    });
+  }
   getCompletedPayments(): BookingPayment[] {
     return this.payments.filter(payment => payment.status === 'completed');
   }

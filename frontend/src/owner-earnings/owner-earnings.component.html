@@ -1,6 +1,5 @@
 <app-navbar></app-navbar>
 <div class="container py-5">
-  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h2 mb-1">Owner Earnings</h1>
@@ -8,13 +7,11 @@
     </div>
   </div>
 
-  <!-- Error Alert -->
   <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
     {{ error }}
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
 
-  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
       <span class="visually-hidden">Loading...</span>
@@ -22,9 +19,7 @@
     <p class="mt-3">Loading earnings data...</p>
   </div>
 
-  <!-- Earnings Dashboard -->
   <div *ngIf="!loading && earningsData" class="earnings-dashboard">
-    <!-- Summary Stats -->
     <div class="row mb-4">
       <div class="col-md-4 col-6 mb-3">
         <div class="stats-card card border-success">
@@ -66,13 +61,12 @@
       </div>
     </div>
 
-    <!-- Breakdown Section -->
     <div class="card shadow-sm mb-4">
       <div class="card-header bg-white">
         <h5 class="mb-0">Earnings Breakdown</h5>
       </div>
       <div class="card-body">
-        <!-- Revenue Split -->
+
         <div class="row mb-4">
           <div class="col-md-8">
             <h6 class="mb-3">Revenue Distribution per Booking</h6>
@@ -81,7 +75,8 @@
               <div class="progress-bar bg-info" role="progressbar" style="width: 10%">Platform: 10%</div>
             </div>
             <p class="small text-muted mb-0">
-              For every {{ earningsData.currency }} 100 earned, you receive {{ earningsData.currency }} 90 and the platform keeps {{ earningsData.currency }} 10 as commission.
+              For every {{ earningsData.currency }} 100 earned, you receive {{ earningsData.currency }} 90 and the
+              platform keeps {{ earningsData.currency }} 10 as commission.
             </p>
           </div>
           <div class="col-md-4">
@@ -103,73 +98,76 @@
           </div>
         </div>
 
-       <!-- Change header to reflect actual paid transactions -->
-<div *ngIf="getCompletedPayments().length > 0">
-  <h6 class="mb-3">Recent Completed Payments</h6>
-  <p class="text-muted small mb-3">Actual payments received for your bookings</p>
-  <div class="table-responsive">
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Booking #</th>
-          <th>Amount</th>
-          <th>Net Earnings</th>
-          <th>Date Paid</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let payment of getCompletedPayments().slice(0, 5)">
-          <td>
-            <i class="bi bi-receipt me-1 text-muted"></i>
-            #{{ payment.booking }}
-          </td>
-          <td class="fw-semibold">{{ formatCurrency(payment.amount) }}</td>
-          <td class="text-success fw-semibold">
-            {{ formatCurrency(payment.amount * 0.9) }}
-            <small class="text-muted d-block">(Your 90% share)</small>
-          </td>
-          <td class="text-muted small">{{ formatDate(payment.created_at) }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Show message if no actual payments yet -->
-<div *ngIf="getCompletedPayments().length === 0" class="text-center py-4">
-  <i class="bi bi-cash-coin display-1 text-muted"></i>
-  <p class="mt-3 text-muted">No completed payments yet</p>
-  <p class="small text-muted">Payments will appear here once guests complete their payments</p>
-</div>
-
-    <!-- Information Card -->
-    <div class="card border-primary">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>How It Works</h5>
-      </div>
-      <div class="card-body">
-        <div class="row">
-          <div class="col-md-6">
-            <h6 class="mb-3">Earnings Process</h6>
-            <ol class="mb-0">
-              <li class="mb-2">Guest pays for booking via CamPay</li>
-              <li class="mb-2">Payment is marked as "completed"</li>
-              <li class="mb-2">90% of payment is added to your earnings</li>
-              <li>10% is kept as platform commission</li>
-            </ol>
+        <div *ngIf="getCompletedPayments().length > 0">
+          <h6 class="mb-3">Recent Completed Payments</h6>
+          <p class="text-muted small mb-3">Actual payments received for your bookings</p>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Booking #</th>
+                  <th>Amount</th>
+                  <th>Net Earnings</th>
+                  <th>Date Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of getCompletedPayments().slice(0, 5)">
+                  <td>
+                    <i class="bi bi-receipt me-1 text-muted"></i>
+                    #{{ payment.booking }}
+                  </td>
+                  <td class="fw-semibold">{{ formatCurrency(payment.amount) }}</td>
+                  <td class="text-success fw-semibold">
+                    {{ formatCurrency(payment.amount * 0.9) }}
+                    <small class="text-muted d-block">(Your 90% share)</small>
+                  </td>
+                  <td class="text-muted small">{{ formatDate(payment.created_at) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="col-md-6">
-            <h6 class="mb-3">Payout Information</h6>
-            <ul class="mb-0">
-              <li class="mb-2">Earnings are available for payout immediately</li>
-              <li class="mb-2">Contact support to request payout</li>
-              <li class="mb-2">Payouts processed via CamPay to your phone</li>
-              <li>Minimum payout: {{ formatCurrency(100) }}</li>
-            </ul>
+          <div class="text-center mt-3 mb-4" *ngIf="nextPageUrl">
+            <button class="btn btn-outline-primary btn-sm px-4" (click)="loadMore()" [disabled]="isLoadingMore">
+              <span *ngIf="isLoadingMore" class="spinner-border spinner-border-sm me-2"></span>
+              {{ isLoadingMore ? 'Loading...' : 'Load More Payments' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="getCompletedPayments().length === 0" class="text-center py-4">
+          <i class="bi bi-cash-coin display-1 text-muted"></i>
+          <p class="mt-3 text-muted">No completed payments yet</p>
+          <p class="small text-muted">Payments will appear here once guests complete their payments</p>
+        </div>
+
+        <div class="card border-primary">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>How It Works</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <h6 class="mb-3">Earnings Process</h6>
+                <ol class="mb-0">
+                  <li class="mb-2">Guest pays for booking via CamPay</li>
+                  <li class="mb-2">Payment is marked as "completed"</li>
+                  <li class="mb-2">90% of payment is added to your earnings</li>
+                  <li>10% is kept as platform commission</li>
+                </ol>
+              </div>
+              <div class="col-md-6">
+                <h6 class="mb-3">Payout Information</h6>
+                <ul class="mb-0">
+                  <li class="mb-2">Earnings are available for payout immediately</li>
+                  <li class="mb-2">Contact support to request payout</li>
+                  <li class="mb-2">Payouts processed via CamPay to your phone</li>
+                  <li>Minimum payout: {{ formatCurrency(100) }}</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
-<app-footer></app-footer>
+    <app-footer></app-footer>

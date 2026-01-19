@@ -4,31 +4,45 @@
   <!-- Header -->
   <header class="page-header">
     <div class="container">
-      <a routerLink="/management-dashboard" class="back-btn">Back</a>
-      <h1 class="page-title">Car Verification</h1>
-      <p class="page-subtitle">Review and approve cars before they go live</p>
+      <div class="header-content">
+        <h1 class="page-title">Car Verification</h1>
+        <p class="page-subtitle">Review and approve cars before they go live</p>
+      </div>
+      <a routerLink="/management-dashboard" class="back-btn">Back to Dashboard</a>
     </div>
   </header>
 
   <div class="container py-4 py-md-5">
-    <div class="search-box mb-4">
-      <input
-        type="text"
-        placeholder="      Search make, model, owner, plate... "
-        [(ngModel)]="searchTerm"
-        (input)="filterCars()"
-        class="search-input"
-      />
-    </div>
+    <!-- Search -->
+    <div class="search-box">
+  <form (ngSubmit)="search()" class="search-form">
+    <input 
+      type="text" 
+      placeholder="Search make, model, owner, plate..." 
+      [(ngModel)]="searchTerm" 
+      name="searchTerm"
+      (input)="search()" 
+      class="search-input" 
+    />
+    <button type="submit" class="search-btn">Search</button>
+  </form>
+</div>
 
     <!-- Loading -->
-    <div *ngIf="loading()" class="text-center py-5">
-      <div class="spinner"></div>
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-large"></div>
       <p class="text-muted mt-3">Loading cars...</p>
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive" *ngIf="!loading()">
+    <!-- Table + Content -->
+    <div *ngIf="!loading" class="table-responsive">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">
+          All Cars ({{ totalCount }})
+          <small *ngIf="searchTerm" class="text-muted ms-2">(filtered)</small>
+        </h5>
+      </div>
+
       <table class="table align-middle">
         <thead class="table-light">
           <tr>
@@ -42,65 +56,53 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let car of filteredCars(); let i = index">
+          <tr *ngFor="let car of filteredCars; let i = index">
             <td class="fw-bold">{{ i + 1 }}</td>
-
             <td>
-              <div class="d-flex align-items-center gap-3">
-                <div>
-                  <div class="fw-bold">{{ car.year }} {{ car.make }} {{ car.model }}</div>
-                  <small class="text-muted">{{ car.license_plate }}</small>
-                </div>
-              </div>
+              <div class="fw-bold">{{ car.year }} {{ car.make }} {{ car.model }}</div>
+              <small class="text-muted">{{ car.license_plate }}</small>
             </td>
-
             <td>{{ car.owner_name || '—' }}</td>
-
             <td>
-              <span class="badge rounded-pill px-3" [ngClass]="{
-                'bg-success': car.status === 'active',
-                'bg-warning text-dark': car.status === 'maintenance',
-                'bg-secondary': car.status === 'inactive'
-              }">
+              <span class="badge rounded-pill px-3" [ngClass]="getStatusClass(car.status)">
                 {{ car.status | titlecase }}
               </span>
             </td>
-
             <td>
-              <span class="badge rounded-pill px-3 fs-6 fw-bold"
-                [class.bg-success]="car.is_verified"
+              <span class="badge rounded-pill px-3 fs-6 fw-bold" [class.bg-success]="car.is_verified"
                 [class.bg-danger]="!car.is_verified">
                 {{ car.is_verified ? 'Verified' : 'Pending' }}
               </span>
             </td>
-
-            <!-- View Button -->
             <td class="text-center">
               <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                 View
               </a>
             </td>
-
-            <!-- Verify Button -->
             <td class="text-center">
-              <button
-                class="btn rounded-pill px-4"
-                [class.btn-success]="!car.is_verified"
-                [class.btn-outline-success]="car.is_verified"
-                (click)="toggleVerify(car)"
-              >
+              <button class="btn rounded-pill px-4" [class.btn-success]="!car.is_verified"
+                [class.btn-outline-success]="car.is_verified" (click)="toggleVerify(car)" [disabled]="loadingMore">
                 {{ car.is_verified ? 'Unverify' : 'Verify Now' }}
               </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="filteredCars.length === 0 && !loading">
+            <td colspan="7" class="text-center py-5">
+              <p class="text-success fs-4 fw-bold mb-2">All cars verified!</p>
+              <small class="text-muted" *ngIf="!searchTerm">No pending cars at the moment</small>
+              <small class="text-muted" *ngIf="searchTerm">No cars match your search</small>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Empty State -->
-      <div class="text-center py-5" *ngIf="filteredCars().length === 0">
-        <p class="text-success fs-3 fw-bold mb-0">
-          All cars verified!
-        </p>
+      <!-- Load More Button -->
+      <div class="text-center py-5" *ngIf="nextPageUrl && filteredCars.length > 0">
+        <button class="btn btn-primary px-5 py-2" (click)="loadMore()" [disabled]="loadingMore">
+          <span *ngIf="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loadingMore ? 'Loading...' : 'Load More Cars' }}
+        </button>
       </div>
     </div>
   </div>

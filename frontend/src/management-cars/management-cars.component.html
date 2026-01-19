@@ -1,4 +1,3 @@
-<!-- src/app/management-cars/management-cars.component.html -->
 <app-navbar></app-navbar>
 
 <div class="management-cars-page">
@@ -15,8 +14,6 @@
   </div>
 
   <div class="container py-5">
-
-    <!-- Stats -->
     <div class="row g-4 mb-5 justify-content-center">
       <div class="col-md-4 col-sm-6">
         <div class="stat-card total">
@@ -38,16 +35,19 @@
       </div>
     </div>
 
-    <!-- Urgent Action Button -->
     <div class="text-center my-5" *ngIf="pendingCars() > 0">
       <a routerLink="/verify-cars" class="btn btn-warning btn-lg rounded-pill px-5 shadow-lg fw-bold">
         {{ pendingCars() }} Car{{ pendingCars() > 1 ? 's' : '' }} Need Verification
       </a>
     </div>
 
-    <!-- Cars Table (Read-only) -->
     <div class="table-card">
-      <div class="table-wrapper">
+      <div *ngIf="loading()" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading fleet...</p>
+      </div>
+
+      <div class="table-wrapper" *ngIf="!loading()">
         <table class="cars-table">
           <thead>
             <tr>
@@ -62,19 +62,15 @@
           <tbody>
             <tr *ngFor="let car of cars(); let i = index" class="car-row">
               <td class="index">{{ i + 1 }}</td>
-
               <td class="car-cell">
                 <div class="car-info">
-               
                   <div>
-                    <strong>{{ car.year }} {{ car.make }} {{ car.model }}</strong><br>
-                    <small class="text-muted">{{ car.license_plate }} • {{ car.location_name }}</small>
+                    <strong>{{ car.brand }} {{ car.model }}</strong><br>
+                    <small class="text-muted">{{ car.year }}</small>
                   </div>
                 </div>
               </td>
-
               <td>{{ car.owner_name || '—' }}</td>
-
               <td>
                 <span class="badge status-badge"
                   [ngClass]="{
@@ -85,7 +81,6 @@
                   {{ car.status | titlecase }}
                 </span>
               </td>
-
               <td>
                 <span class="badge"
                   [class.bg-success]="car.is_verified"
@@ -93,25 +88,27 @@
                   {{ car.is_verified ? 'Verified' : 'Pending' }}
                 </span>
               </td>
-
               <td class="text-end">
-                <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary">
-                  View
-                </a>
+                <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary">View</a>
               </td>
             </tr>
-
             <tr *ngIf="cars().length === 0">
-              <td colspan="6" class="empty-state">
-                <p class="text-muted">No cars found</p>
-              </td>
+              <td colspan="6" class="empty-state">No cars found</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Bottom CTA -->
+    <div class="text-center mt-5" *ngIf="nextPageUrl()">
+      <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm" 
+              (click)="loadMore()" 
+              [disabled]="isLoadingMore()">
+        <span *ngIf="isLoadingMore()" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isLoadingMore() ? 'Loading...' : 'Load More Vehicles' }}
+      </button>
+    </div>
+
     <div class="text-center mt-5">
       <a routerLink="/verify-cars" class="btn btn-success rounded-pill px-5">
         Open Car Verification Panel

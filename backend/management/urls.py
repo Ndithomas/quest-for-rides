@@ -10,4 +10,5 @@ urlpatterns = [
     path('cars/', views.AllCarsListView.as_view()),
     path('users/search/', views.UserSearchView.as_view()),
     path('users/<int:user_id>/change-status/', views.ChangeUserStatusView.as_view()),
+    path('cars/<int:pk>/verify/', views.CarVerifyAPIView.as_view()),
 ]

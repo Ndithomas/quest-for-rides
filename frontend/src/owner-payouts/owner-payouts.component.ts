@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PaymentService, OwnerEarnings, Payout } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { PaginatedResponse } from '../services/listings.service';
 
 @Component({
   selector: 'app-owner-payouts',
@@ -12,15 +13,16 @@ import { FooterComponent } from '../footer/footer.component';
   templateUrl: './owner-payouts.component.html'
 })
 export class OwnerPayoutsComponent implements OnInit {
+  nextPageUrl: string | null = null;
   loading = true;
   loadingHistory = false;
   requesting = false;
   error = '';
   success = '';
-  
+
   // Backend data
   earnings: OwnerEarnings | null = null;
-  
+
   // Request payout form
   showRequestForm = false;
   payoutAmount: number = 0;
@@ -29,10 +31,9 @@ export class OwnerPayoutsComponent implements OnInit {
   notes: string = '';
   minimumPayout = 5000;
 
-  // Payout history
   payoutHistory: Payout[] = [];
 
-  constructor(private paymentService: PaymentService) {}
+  constructor(private paymentService: PaymentService) { }
 
   ngOnInit(): void {
     this.loadOwnerEarnings();
@@ -42,7 +43,7 @@ export class OwnerPayoutsComponent implements OnInit {
   loadOwnerEarnings(): void {
     this.loading = true;
     this.error = '';
-    
+
     this.paymentService.getOwnerEarnings().subscribe({
       next: (earnings) => {
         this.earnings = earnings;
@@ -61,17 +62,30 @@ export class OwnerPayoutsComponent implements OnInit {
     this.error = '';
 
     this.paymentService.getOwnerPayouts().subscribe({
-      next: (payouts) => {
-        this.payoutHistory = payouts.sort((a, b) => {
-          const dateA = new Date(b.requested_at || '').getTime();
-          const dateB = new Date(a.requested_at || '').getTime();
-          return dateA - dateB;
-        });
+      next: (response: PaginatedResponse<Payout>) => {
+        this.payoutHistory = response.results;
+        this.nextPageUrl = response.next;
         this.loadingHistory = false;
       },
       error: (err) => {
         console.error('Error loading payout history:', err);
         this.error = 'Failed to load payout history.';
+        this.loadingHistory = false;
+      }
+    });
+  }
+  loadMore(): void {
+    if (!this.nextPageUrl || this.loadingHistory) return;
+
+    this.loadingHistory = true;
+    this.paymentService.getOwnerPayouts(this.nextPageUrl).subscribe({
+      next: (response: PaginatedResponse<Payout>) => {
+        this.payoutHistory = [...this.payoutHistory, ...response.results];
+        this.nextPageUrl = response.next;
+        this.loadingHistory = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load more records.';
         this.loadingHistory = false;
       }
     });
@@ -90,8 +104,7 @@ export class OwnerPayoutsComponent implements OnInit {
     if (!this.earnings) return;
 
     this.error = '';
-    
-    // Client-side validation
+
     if (this.payoutAmount < this.minimumPayout) {
       this.error = `Minimum payout amount is ${this.formatCurrency(this.minimumPayout)}`;
       return;
@@ -123,7 +136,6 @@ export class OwnerPayoutsComponent implements OnInit {
         this.payoutAmount = 0;
         this.notes = '';
 
-        // Reload data
         this.loadOwnerEarnings();
         this.loadPayoutHistory();
 

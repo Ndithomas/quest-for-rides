@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { PaymentService, BookingPayment } from '../services/payment.service';
+import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -15,6 +15,8 @@ import { FooterComponent } from '../footer/footer.component';
 export class GuestPaymentHistoryComponent implements OnInit {
   payments: BookingPayment[] = [];
   loading = true;
+  isLoadingMore = false;
+  nextPageUrl: string | null = null;
   error = '';
 
   constructor(private paymentService: PaymentService) {}
@@ -26,14 +28,33 @@ export class GuestPaymentHistoryComponent implements OnInit {
   loadPayments(): void {
     this.loading = true;
     this.paymentService.getGuestPayments().subscribe({
-      next: (payments) => {
-        this.payments = payments;
+      next: (response: PaginatedResponse<BookingPayment>) => {
+        this.payments = response.results; // Extract from results
+        this.nextPageUrl = response.next;   // Save the next page URL
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading payment history:', error);
         this.error = 'Failed to load payment history';
         this.loading = false;
+      }
+    });
+  }
+
+  loadMore(): void {
+    if (!this.nextPageUrl || this.isLoadingMore) return;
+
+    this.isLoadingMore = true;
+    this.paymentService.getGuestPayments(this.nextPageUrl).subscribe({
+      next: (response: PaginatedResponse<BookingPayment>) => {
+        // Append new payments to the existing list
+        this.payments = [...this.payments, ...response.results];
+        this.nextPageUrl = response.next;
+        this.isLoadingMore = false;
+      },
+      error: (error) => {
+        console.error('Error loading more payments:', error);
+        this.isLoadingMore = false;
       }
     });
   }

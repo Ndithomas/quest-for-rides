@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService, BookingPayment } from '../services/payment.service';
+import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -16,10 +16,11 @@ export class OwnerPaymentsComponent implements OnInit {
   payments: BookingPayment[] = [];
   completedPaymentsCount: number = 0;
   totalRevenue: number = 0;
-  
-  // Initialize filteredPayments to an empty array
-  filteredPayments: BookingPayment[] = []; 
-  
+
+  filteredPayments: BookingPayment[] = [];
+  nextPageUrl: string | null = null;
+  isLoadingMore = false;
+
   loading = true;
   error = '';
   success = '';
@@ -35,23 +36,43 @@ export class OwnerPaymentsComponent implements OnInit {
   }
 
   loadOwnerPayments(): void {
+    this.loading = true;
     this.paymentService.getOwnerPayments().subscribe({
-      next: (payments) => {
-        this.payments = payments;
-        
-        // Compute the values here
-        this.completedPaymentsCount = payments.filter(p => p.status === 'completed').length;
-        this.totalRevenue = payments.reduce((sum, p) => sum + p.amount, 0);
-        
+      next: (response: PaginatedResponse<BookingPayment>) => {
+        this.payments = response.results;
+        this.nextPageUrl = response.next;
+        this.updateStats();
         this.loading = false;
-        this.applyFilters(); // Initialize filteredPayments after load
+        this.applyFilters();
       },
       error: (error) => {
-        console.error('Error loading payments:', error);
-        this.error = 'Failed to load your payments history.';
-        this.loading = false; // Stop loading even on error
+        this.error = 'Failed to load payments.';
+        this.loading = false;
       }
     });
+  }
+
+  loadMore(): void {
+    if (!this.nextPageUrl || this.isLoadingMore) return;
+
+    this.isLoadingMore = true;
+    this.paymentService.getOwnerPayments(this.nextPageUrl).subscribe({
+      next: (response: PaginatedResponse<BookingPayment>) => {
+        this.payments = [...this.payments, ...response.results];
+        this.nextPageUrl = response.next;
+        this.updateStats();
+        this.isLoadingMore = false;
+        this.applyFilters();
+      },
+      error: () => {
+        this.isLoadingMore = false;
+      }
+    });
+  }
+
+  private updateStats(): void {
+    this.completedPaymentsCount = this.payments.filter(p => p.status === 'completed').length;
+    this.totalRevenue = this.payments.reduce((sum, p) => sum + p.amount, 0);
   }
 
   applyFilters(): void {

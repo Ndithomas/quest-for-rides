@@ -1,9 +1,14 @@
-// src/app/car-verification/car-verification.component.ts
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ListingsService, CarList } from '../services/listings.service';
+
+import {
+  ManagementAuthService,
+  PaginatedCars,
+  AdminCar
+} from '../services/management-auth.service';
+
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -15,57 +20,95 @@ import { FooterComponent } from '../footer/footer.component';
   styleUrls: ['./car-verification.component.scss']
 })
 export class CarVerificationComponent implements OnInit {
-  cars = signal<any[]>([]);
-  filteredCars = computed(() => {
-    const term = this.searchTerm().toLowerCase();
-    if (!term) return this.cars();
-    return this.cars().filter(car =>
-      `${car.make} ${car.model}`.toLowerCase().includes(term) ||
-      car.license_plate.toLowerCase().includes(term) ||
-      (car.owner_name || '').toLowerCase().includes(term)
-    );
-  });
 
-  searchTerm = signal('');
-  loading = signal(true);
+  cars: AdminCar[] = [];
+  filteredCars: AdminCar[] = [];
 
-  constructor(private listingsService: ListingsService) {}
+  searchTerm = '';
+  loading = true;
+  loadingMore = false;
+  nextPageUrl: string | null = null;
+  totalCount = 0;
+
+  constructor(private managementService: ManagementAuthService) {}
 
   ngOnInit(): void {
     this.loadCars();
   }
 
   loadCars() {
-    this.loading.set(true);
-    this.listingsService.getAllCars().subscribe({
-      next: (data) => {
-        this.cars.set(data);
-        this.loading.set(false);
+    this.loading = true;
+
+    this.managementService.getAllCars().subscribe({
+      next: (data: PaginatedCars) => {
+        this.cars = data.results;
+        this.totalCount = data.count;
+        this.nextPageUrl = data.next;
+        this.applyFilters();
+        this.loading = false;
       },
-      error: () => this.loading.set(false)
+      error: () => (this.loading = false)
     });
   }
 
-  filterCars() {
-    
-  }
+  loadMore() {
+    if (!this.nextPageUrl || this.loadingMore) return;
 
-  toggleVerify(car: CarList) {
-    const newStatus = !car.is_verified;
-    this.listingsService.verifyCar(car.id, newStatus).subscribe({
-      next: () => {
-        car.is_verified = newStatus;
-        // Optional: show success toast
+    this.loadingMore = true;
+
+    this.managementService.getAllCars(this.nextPageUrl).subscribe({
+      next: (data: PaginatedCars) => {
+        this.cars = [...this.cars, ...data.results];
+        this.nextPageUrl = data.next;
+        this.applyFilters();
+        this.loadingMore = false;
       },
-      error: () => alert('Failed to update verification')
+      error: () => (this.loadingMore = false)
     });
   }
 
-  getStatusClass(status: string) {
-    const map: any = {
+  applyFilters() {
+    const term = this.searchTerm.toLowerCase().trim();
+
+    if (!term) {
+      this.filteredCars = [...this.cars];
+      return;
+    }
+
+    this.filteredCars = this.cars.filter(car => {
+      const carText = `${car.year} ${car.make} ${car.model}`.toLowerCase();
+      const plate = car.license_plate.toLowerCase();
+      const owner = car.owner_name.toLowerCase();
+
+      return (
+        carText.includes(term) ||
+        plate.includes(term) ||
+        owner.includes(term)
+      );
+    });
+  }
+
+  search() {
+    this.applyFilters();
+  }
+
+  toggleVerify(car: AdminCar) {
+    this.managementService.verifyCar(car.id, !car.is_verified).subscribe({
+      next: (res) => {
+        car.is_verified = res.is_verified;
+      },
+      error: (err) => {
+        alert(err.message || 'Failed to update verification status');
+      }
+    });
+  }
+
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
       active: 'bg-success',
       inactive: 'bg-secondary',
-      maintenance: 'bg-warning text-dark'
+      maintenance: 'bg-warning text-dark',
+      booked: 'bg-info'
     };
     return map[status] || 'bg-secondary';
   }

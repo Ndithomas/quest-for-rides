@@ -2,8 +2,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { ManagementAuthService, AdminUser, AdminCar } from '../services/management-auth.service';
-import { BookingService, Booking } from '../services/booking.service';
+import { ManagementAuthService, AdminUser, AdminCar, PaginatedUsers } from '../services/management-auth.service';
+import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { FooterComponent } from '../footer/footer.component';
 import { NavbarComponent } from '../navbar/navbar.component';
 
@@ -30,62 +30,49 @@ export class ManagementDashboardComponent implements OnInit {
   }
 
   private loadData() {
-    // Get management stats (users, cars)
     this.managementService.getStats().subscribe(data => {
       this.stats = data;
     });
 
-    // Get booking stats
     this.bookingService.getBookingStats().subscribe(bookingStats => {
-      // Merge booking stats with existing stats
-      this.stats = {
-        ...this.stats,
-        ...bookingStats
-      };
+      this.stats = { ...this.stats, ...bookingStats };
     });
 
-    // Recent Users (latest 6)
-    this.managementService.getAllUsers().subscribe(users => {
-      this.recentUsers = users
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    this.managementService.getAllUsers().subscribe((response: PaginatedUsers) => {
+      this.recentUsers = response.results
+        .sort((a: AdminUser, b: AdminUser) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 6);
     });
 
-    // Recent Cars (latest 6)
-    this.managementService.getAllCars().subscribe(cars => {
-      this.recentCars = cars
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    this.managementService.getAllCars().subscribe((response: any) => {
+      const carsArray = response.results || response; 
+      this.recentCars = carsArray
+        .sort((a: AdminCar, b: AdminCar) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 6);
     });
 
-    this.bookingService.getAllBookings().subscribe(bookings => {
-      this.recentBookings = bookings
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    
+    this.bookingService.getAllBookings().subscribe((response: PaginatedBookings) => {
+      this.recentBookings = response.results
+        .sort((a: Booking, b: Booking) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 6);
     });
   }
 
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
   getDaysBetween(start: string, end: string): number {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    const diffTime = Math.abs(new Date(end).getTime() - new Date(start).getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-ZA', {
+    return new Intl.NumberFormat('en-CM', { 
       style: 'currency',
-      currency: 'ZAR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      currency: 'XAF',
+      minimumFractionDigits: 0
     }).format(amount);
   }
 }

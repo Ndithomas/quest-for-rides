@@ -6,49 +6,40 @@
             <p>Manage all booking activities</p>
         </div>
     </div>
+
     <div class="container py-4">
         <div *ngIf="notification" class="notification" [class]="'notification-' + notification.type">
             <div>
                 <i [class]="getNotificationIcon(notification.type)"></i>
                 <span>{{ notification.message }}</span>
             </div>
-            <button (click)="notification = null">×</button>
+            <button (click)="notification = null">&times;</button>
         </div>
+
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-list-alt"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-list-alt"></i></div>
                 <div>
-                    <h3>{{ filteredBookings.length }}</h3>
-                    <p>Total</p>
+                    <h3>{{ totalCount }}</h3>
+                    <p>Total Bookings</p>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div>
                     <h3>{{ pendingBookingsCount }}</h3>
                     <p>Pending</p>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-car"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-car"></i></div>
                 <div>
                     <h3>{{ activeBookingsCount }}</h3>
                     <p>Active</p>
                 </div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-money-bill-wave"></i>
-                </div>
+                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
                 <div>
                     <h3>{{ formatCurrency(totalRevenue) }}</h3>
                     <p>Revenue</p>
@@ -56,76 +47,46 @@
             </div>
         </div>
 
-        <!-- Filters -->
         <div class="filters">
             <div class="filter-row">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
-                    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()"
-                        placeholder="Search bookings...">
+                    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Search bookings...">
                 </div>
-
                 <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
-                    <option *ngFor="let option of statusOptions" [value]="option.value">
-                        {{ option.label }}
-                    </option>
+                    <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
                 </select>
-
                 <select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()">
-                    <option *ngFor="let option of sortOptions" [value]="option.value">
-                        {{ option.label }}
-                    </option>
+                    <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
                 </select>
-
                 <button (click)="refreshBookings()" [disabled]="isLoading">
-                    <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i>
-                    Refresh
+                    <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
                 </button>
             </div>
         </div>
 
-        <!-- Loading -->
-        <div *ngIf="isLoading" class="loading">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-        </div>
-
-        <!-- Error -->
-        <div *ngIf="error && !isLoading" class="error">
-            <i class="fas fa-exclamation-circle"></i>
-            <p>{{ error }}</p>
-            <button (click)="loadBookings()">Retry</button>
-        </div>
-
-        <!-- Bookings Table -->
         <div *ngIf="!isLoading && !error" class="bookings-table">
             <div class="table-responsive">
-                <table class="data-table">
+                <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Car</th>
-                            <th>Guest</th>
-                            <th>Dates</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>ID</th><th>Car</th><th>Guest</th><th>Dates</th><th>Total</th><th>Status</th><th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let booking of paginatedBookings">
-                            <td><strong>{{ booking.id }}</strong></td>
+                        <tr *ngFor="let booking of filteredBookings">
+                            <td><strong>#{{ booking.id }}</strong></td>
                             <td>
                                 <div>{{ booking.car_make }} {{ booking.car_model }}</div>
-                                <small>{{ booking.car_title }}</small>
+                                <small style="color: #6c757d;">{{ booking.car_title }}</small>
                             </td>
                             <td>
                                 <div>{{ booking.guest?.username || 'N/A' }}</div>
-                                <small>{{ booking.guest?.email || '' }}</small>
+                                <small style="color: #6c757d;">{{ booking.guest?.email }}</small>
                             </td>
                             <td>
                                 <div>{{ formatDate(booking.start_date) }}</div>
-                                <small>to {{ formatDate(booking.end_date) }}</small>
+                                <small style="color: #6c757d;">to {{ formatDate(booking.end_date) }}</small>
                             </td>
                             <td><strong>{{ formatCurrency(booking.total_price) }}</strong></td>
                             <td>
@@ -133,38 +94,21 @@
                                     {{ getStatusLabel(booking.status) }}
                                 </span>
                             </td>
-                            <td class="actions">
-                                <div class="card-footer">
-                                    <a [routerLink]="['/booking-details', booking.id]" class="view-all-btn info">
-                                        View Details
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr *ngIf="paginatedBookings.length === 0">
-                            <td colspan="7" class="empty">
-                                <i class="fas fa-calendar-times"></i>
-                                <p>No bookings found</p>
+                            <td>
+                                <a [routerLink]="['/booking-details', booking.id]" class="view-all-btn info">Details</a>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
-            <div *ngIf="totalPages > 1" class="pagination">
-                <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-
-                <span>Page {{ currentPage }} of {{ totalPages }}</span>
-
-                <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
-                    <i class="fas fa-chevron-right"></i>
+            <div class="text-center py-4" *ngIf="nextPageUrl">
+                <button (click)="loadMore()" class="view-all-btn info" [disabled]="isLoadingMore" style="padding: 0.8rem 2.5rem; font-size: 1rem;">
+                    <span *ngIf="isLoadingMore" class="spinner-border spinner-border-sm me-2"></span>
+                    {{ isLoadingMore ? 'Loading...' : 'Load More' }}
                 </button>
             </div>
         </div>
     </div>
 </div>
-
 <app-footer></app-footer>

@@ -19,24 +19,48 @@ export interface AdminUser {
 
 export interface AdminCar {
   id: number;
-  brand: string;
+  make: string;
   model: string;
   year: number;
-  price_per_day: number;
-  status: 'active' | 'inactive' | 'maintenance' | 'booked' | 'suspended';
-  is_available: boolean;
-  created_at: string;
+  daily_rate: number;
+  status: 'active' | 'inactive' | 'maintenance' | 'booked' | 'suspended' | 'available';
+  license_plate: string;
+  is_verified: boolean;
   owner_name: string;
   owner_username: string;
   owner_email: string;
   owner_phone: string;
+  created_at: string;
 }
+
+
+export interface PaginatedUsers {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AdminUser[];
+}
+
+export interface PaginatedCars {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: AdminCar[];
+}
+
+
+export interface VerifyCarResponse {
+  message: string;
+  is_verified: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ManagementAuthService {
   private readonly apiUrl = `${environment.apiBaseUrl}/api/auth/`;
   private readonly api = `${environment.apiBaseUrl}/api/management/`;
+
   constructor(private readonly http: HttpClient) { }
 
   createManagementAccount(data: any, secretCode: string): Observable<any> {
@@ -70,20 +94,29 @@ export class ManagementAuthService {
     );
   }
 
-
   getStats(): Observable<any> {
     return this.http.get(`${this.api}dashboard/stats/`);
   }
 
-  getAllUsers(): Observable<AdminUser[]> {
-    return this.http.get<AdminUser[]>(`${this.api}users/`);
+  getAllUsers(url?: string): Observable<PaginatedUsers> {
+    const requestUrl = url || `${this.api}users/`;
+    return this.http.get<PaginatedUsers>(requestUrl);
   }
 
-  getAllCars(): Observable<AdminCar[]> {
-    return this.http.get<AdminCar[]>(`${this.api}cars/`);
+  getAllCars(url?: string): Observable<PaginatedCars> {
+    const requestUrl = url || `${this.api}cars/`;
+    return this.http.get<PaginatedCars>(requestUrl);
   }
 
   getUserDetail(userId: number): Observable<AdminUser> {
     return this.http.get<AdminUser>(`${this.api}users/${userId}/`);
   }
+
+  verifyCar(carId: number, isVerified: boolean) {
+    return this.http.patch<{ message: string; is_verified: boolean }>(
+      `${this.api}cars/${carId}/verify/`,
+      { is_verified: isVerified }
+    );
+  }
+
 }

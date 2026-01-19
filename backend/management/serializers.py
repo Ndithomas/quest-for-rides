@@ -40,6 +40,9 @@ class CarStatsSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username')
     owner_email = serializers.CharField(source='owner.email')
     owner_phone = serializers.CharField(source='owner.phone_number', default='')
+
     class Meta:
         model = Car
-        fields = ['id','make','year','daily_rate','status','created_at','owner_name','owner_username','owner_email','owner_phone']
+        fields = ['id','make','model','year','daily_rate','status','created_at','license_plate',
+                'is_verified','owner_name','owner_username','owner_email','owner_phone'
+        ]
