@@ -1,7 +1,5 @@
 <app-navbar></app-navbar>
-
 <div class="container py-5">
-  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
       <h1 class="h2 mb-1">Refund Management</h1>
@@ -9,7 +7,6 @@
     </div>
   </div>
 
-  <!-- Alert Messages -->
   <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
     {{ error }}
     <button type="button" class="btn-close" (click)="error = ''"></button>
@@ -19,15 +16,12 @@
     <button type="button" class="btn-close" (click)="success = ''"></button>
   </div>
 
-  <!-- Loading State -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
     <p class="mt-3">Loading payment data...</p>
   </div>
-
-  <!-- Filters Section -->
   <div *ngIf="!loading" class="card shadow-sm mb-4">
     <div class="card-header bg-light">
       <h5 class="card-title mb-0">Filters</h5>
@@ -47,7 +41,8 @@
         </div>
         <div class="col-md-4">
           <label class="form-label">Search by Booking ID or Phone</label>
-          <input type="text" class="form-control form-control-sm" [(ngModel)]="filterSearch" (change)="onFilterChange()" placeholder="Search...">
+          <input type="text" class="form-control form-control-sm" [(ngModel)]="filterSearch" (change)="onFilterChange()"
+            placeholder="Search...">
         </div>
         <div class="col-md-4">
           <label class="form-label">&nbsp;</label>
@@ -59,7 +54,6 @@
     </div>
   </div>
 
-  <!-- Payments Table -->
   <div *ngIf="!loading && filteredPayments.length > 0" class="card shadow-sm">
     <div class="table-responsive">
       <table class="table table-hover table-sm mb-0">
@@ -85,10 +79,7 @@
             <td><small>{{ payment.customer_phone }}</small></td>
             <td><small>{{ formatDate(payment.created_at) }}</small></td>
             <td class="text-center">
-              <button 
-                *ngIf="canRefund(payment)" 
-                class="btn btn-warning btn-sm" 
-                (click)="selectPayment(payment)"
+              <button *ngIf="canRefund(payment)" class="btn btn-warning btn-sm" (click)="selectPayment(payment)"
                 title="Process Refund">
                 <i class="bi bi-arrow-return-left"></i> Refund
               </button>
@@ -99,13 +90,21 @@
       </table>
     </div>
   </div>
+  <div *ngIf="hasMore && !loading && !loadingMore" class="text-center mt-5 mb-5">
+    <button class="btn btn-primary btn-lg px-5" (click)="loadMore()">
+      Load More
+    </button>
+  </div>
 
-  <!-- No Results -->
+  <div *ngIf="loadingMore" class="text-center mt-5 mb-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading more payments...</p>
+  </div>
   <div *ngIf="!loading && filteredPayments.length === 0" class="alert alert-info">
     <i class="bi bi-info-circle"></i> No payments found matching the filters.
   </div>
-
-  <!-- Refund Modal -->
   <div *ngIf="showRefundForm && selectedPayment" class="modal d-block backdrop-show">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -129,11 +128,13 @@
               </div>
               <div class="col-6">
                 <small class="text-muted">Already Refunded</small>
-                <p class="mb-0"><strong class="text-danger">{{ formatCurrency(getRefundedAmount(selectedPayment)) }}</strong></p>
+                <p class="mb-0"><strong class="text-danger">{{ formatCurrency(getRefundedAmount(selectedPayment))
+                    }}</strong></p>
               </div>
               <div class="col-6">
                 <small class="text-muted">Max Refundable</small>
-                <p class="mb-0"><strong class="text-success">{{ formatCurrency(getRefundableAmount(selectedPayment)) }}</strong></p>
+                <p class="mb-0"><strong class="text-success">{{ formatCurrency(getRefundableAmount(selectedPayment))
+                    }}</strong></p>
               </div>
             </div>
           </div>
@@ -142,23 +143,15 @@
             <label class="form-label">Refund Amount <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text">FCFA</span>
-              <input 
-                type="number" 
-                class="form-control" 
-                [(ngModel)]="refundAmount"
-                [max]="getRefundableAmount(selectedPayment)"
-                placeholder="0"
-                required>
+              <input type="number" class="form-control" [(ngModel)]="refundAmount"
+                [max]="getRefundableAmount(selectedPayment)" placeholder="0" required>
             </div>
             <small class="text-muted">Max: {{ formatCurrency(getRefundableAmount(selectedPayment)) }}</small>
           </div>
 
           <div class="mb-3">
             <label class="form-label">Reason <span class="text-muted">(optional)</span></label>
-            <textarea 
-              class="form-control" 
-              [(ngModel)]="refundReason"
-              placeholder="Enter refund reason..."
+            <textarea class="form-control" [(ngModel)]="refundReason" placeholder="Enter refund reason..."
               rows="2"></textarea>
           </div>
 
@@ -167,7 +160,8 @@
               <strong>Split Calculation:</strong>
               <div class="mt-2">
                 <div>Owner (90%): <strong class="text-info">{{ formatCurrency(refundAmount * 0.9) }}</strong></div>
-                <div>Platform (10%): <strong class="text-primary">{{ formatCurrency(refundAmount * 0.1) }}</strong></div>
+                <div>Platform (10%): <strong class="text-primary">{{ formatCurrency(refundAmount * 0.1) }}</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -177,11 +171,7 @@
           <button type="button" class="btn btn-secondary" (click)="closeRefundForm()" [disabled]="processing">
             Cancel
           </button>
-          <button 
-            type="button" 
-            class="btn btn-danger" 
-            (click)="processRefund()"
-            [disabled]="processing">
+          <button type="button" class="btn btn-danger" (click)="processRefund()" [disabled]="processing">
             <i class="bi bi-check-circle"></i>
             {{ processing ? 'Processing...' : 'Process Refund' }}
           </button>

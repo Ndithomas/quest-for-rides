@@ -1,14 +1,16 @@
 import { Component, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
+import { ReviewService, ReviewCreate } from '../services/review.service';
 
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [CommonModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss'
 })
@@ -24,8 +26,21 @@ export class BookingsComponent implements OnInit, OnDestroy {
   currentPage = signal(1);
   hasMore = signal(false);
 
+  
+  showReviewModal = signal(false);
+  reviewingBookingId = signal<number | null>(null);
+  reviewRating = signal(5);
+  reviewComment = signal('');
+  reviewSubmitting = signal(false);
+  reviewError = signal('');
+  reviewSuccess = signal(false);
+  reviewSuccessMessage = signal('');
+
+  
+
   constructor(
     private bookingService: BookingService,
+    private reviewService: ReviewService,
     private router: Router
   ) {}
 
@@ -193,5 +208,70 @@ export class BookingsComponent implements OnInit, OnDestroy {
     const end = new Date(endDate);
     const diffMs = end.getTime() - start.getTime();
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  }
+
+  openReviewModal(booking: Booking): void {
+    if (booking.status !== 'completed') {
+      this.error.set('Only completed bookings can be reviewed.');
+      return;
+    }
+    this.reviewingBookingId.set(booking.id);
+    this.reviewRating.set(5);
+    this.reviewComment.set('');
+    this.reviewError.set('');
+    this.showReviewModal.set(true);
+  }
+
+  closeReviewModal(): void {
+    this.showReviewModal.set(false);
+    this.reviewingBookingId.set(null);
+    this.reviewComment.set('');
+  }
+
+  setReviewRating(rating: number): void {
+    this.reviewRating.set(rating);
+  }
+
+  submitReview(): void {
+    const bookingId = this.reviewingBookingId();
+    if (!bookingId) return;
+
+    if (this.reviewRating() < 1 || this.reviewRating() > 5) {
+      this.reviewError.set('Please select a rating between 1 and 5.');
+      return;
+    }
+
+    this.reviewSubmitting.set(true);
+    this.reviewError.set('');
+
+    const review: ReviewCreate = {
+      booking_id: bookingId,
+      rating: this.reviewRating(),
+      comment: this.reviewComment()
+    };
+
+    this.reviewService.createReview(review).subscribe({
+      next: () => {
+        // Show success message
+        this.reviewSuccess.set(true);
+        this.reviewSuccessMessage.set('Thank you! Your review has been submitted successfully.');
+        
+        // Close modal after a short delay
+        setTimeout(() => {
+          this.closeReviewModal();
+          this.reviewSuccess.set(false);
+          // Reload bookings to show updated review status
+          this.loadBookings();
+        }, 1500);
+      },
+      error: (err) => {
+        this.reviewError.set(err.error?.detail || 'Failed to submit review. Please try again.');
+        this.reviewSubmitting.set(false);
+      }
+    });
+  }
+
+  getReviewStars(rating: number): number[] {
+    return Array(5).fill(0).map((_, i) => i < rating ? 1 : 0);
   }
 }

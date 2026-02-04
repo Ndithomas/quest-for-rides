@@ -1,10 +1,10 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { environment } from '../environments/environment';
 import { catchError, debounceTime } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from './auth.service';
+import { ApiService } from './api.service';
 
 export interface Notification {
   id: number;
@@ -21,14 +21,14 @@ export interface Notification {
   providedIn: 'root'
 })
 export class NotificationService {
-  private apiUrl = `${environment.apiBaseUrl}/api/notifications`;
+  private basePath = '/api/notifications';
   private unreadCountSubject = new BehaviorSubject<number>(0);
   unreadCount$ = this.unreadCountSubject.asObservable();
   private refreshSubject = new Subject<void>();
   private platformId = inject(PLATFORM_ID);
 
   constructor(
-    private http: HttpClient,
+    private api: ApiService,
     private authService: AuthService
   ) {
     if (isPlatformBrowser(this.platformId) && this.authService.isLoggedIn()) {
@@ -38,27 +38,27 @@ export class NotificationService {
   }
 
   getNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${this.apiUrl}/`);
+    return this.api.get<Notification[]>(`${this.basePath}/`);
   }
 
   getNotification(id: number): Observable<Notification> {
-    return this.http.get<Notification>(`${this.apiUrl}/${id}/`);
+    return this.api.get<Notification>(`${this.basePath}/${id}/`);
   }
 
   markAsRead(id: number): Observable<Notification> {
-    return this.http.patch<Notification>(`${this.apiUrl}/${id}/read/`, { is_read: true });
+    return this.api.patch<Notification>(`${this.basePath}/${id}/read/`, { is_read: true });
   }
 
   markAllAsRead(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/mark-all-read/`, {});
+    return this.api.post(`${this.basePath}/mark-all-read/`, {});
   }
 
   deleteNotification(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}/delete/`);
+    return this.api.delete(`${this.basePath}/${id}/delete/`);
   }
 
   getUnreadCount(): Observable<{ unread_count: number }> {
-    return this.http.get<{ unread_count: number }>(`${this.apiUrl}/unread-count/`);
+    return this.api.get<{ unread_count: number }>(`${this.basePath}/unread-count/`);
   }
 
   private setupRefreshListener(): void {

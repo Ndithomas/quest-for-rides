@@ -110,6 +110,8 @@ export const routes: Routes = [
         data: { roles: ['guest', 'owner', 'management'] }
       },
 
+      
+
       {
         path: 'bookings',
         loadComponent: () => import('../bookings/bookings.component').then(m => m.BookingsComponent),

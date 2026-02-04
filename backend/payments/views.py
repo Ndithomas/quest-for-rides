@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.db import models as django_models, transaction
+from django.db.models import Q
 from userAuth.permissions import IsManagement
 from decimal import Decimal
 from django.utils import timezone
@@ -30,7 +31,7 @@ class BookingPaymentDetailView(generics.RetrieveAPIView):
         payment = self.get_object()
         booking = payment.booking
 
-        if request.user not in (booking.guest, booking.owner) and not request.user.is_staff:
+        if request.user != booking.guest and request.user != booking.owner and not request.user.is_staff:
             return Response({"detail": "Not authorized."}, status=status.HTTP_403_FORBIDDEN)
 
         return super().retrieve(request, *args, **kwargs)
@@ -110,13 +111,16 @@ class InitiateCamPayPaymentView(generics.GenericAPIView):
 class CheckCamPayStatusView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, booking_id):
+        booking = get_object_or_404(
+            Booking.objects.select_related('car'),
+            id=booking_id,
+            guest=request.user
+        )
+        
         payment = get_object_or_404(
             BookingPayment,
-            booking__id=booking_id,
-            booking__in=Booking.objects.filter(
-                models.Q(guest=request.user) | models.Q(car__owner=request.user)
-            )
-       )
+            booking=booking
+        )
 
         if not payment.campay_reference:
             return Response(

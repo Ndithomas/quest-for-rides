@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService, BookingPayment } from '../services/payment.service';
+import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -9,12 +9,21 @@ import { FooterComponent } from '../footer/footer.component';
   selector: 'app-refund-management',
   standalone: true,
   imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
-  templateUrl: './refund-management.component.html',
+  templateUrl: './refund-management.component.html',  // Fixed this line
   styleUrls: ['./refund-management.component.scss']
 })
 export class RefundManagementComponent implements OnInit {
-  payments: BookingPayment[] = [];
+  // ── Main data ───────────────────────────────────────────────
+  allPayments: BookingPayment[] = [];
   filteredPayments: BookingPayment[] = [];
+
+  // ── Pagination state ────────────────────────────────────────
+  currentPage = 1;
+  hasMore = false;
+  loadingMore = false;
+  pageSize = 20;
+
+  // ── Other states ────────────────────────────────────────────
   loading = true;
   error = '';
   success = '';
@@ -26,50 +35,92 @@ export class RefundManagementComponent implements OnInit {
 
   // Refund form
   selectedPayment: BookingPayment | null = null;
-  refundAmount: number = 0;
+  refundAmount = 0;
   refundReason = '';
   showRefundForm = false;
 
   constructor(private paymentService: PaymentService) {}
 
   ngOnInit(): void {
-    this.loadPayments();
+    this.loadPayments(true);
   }
 
-  loadPayments(): void {
-    this.loading = true;
+  // ── Load payments with pagination ───────────────────────────
+  loadPayments(reset = false): void {
+    if (reset) {
+      this.loading = true;
+      this.allPayments = [];
+      this.currentPage = 1;
+      this.hasMore = false;
+    } else {
+      this.loadingMore = true;
+    }
+
     this.error = '';
-    this.paymentService.getAllPayments().subscribe({
-      next: (data: BookingPayment[]) => {
-        this.payments = data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading payments:', error);
-        this.error = 'Failed to load payment data';
-        this.loading = false;
-      }
-    });
+
+    this.paymentService.getAllPayments(this.currentPage, this.pageSize)
+      .subscribe({
+        next: (response: PaginatedResponse<BookingPayment>) => {
+          const newPayments = response.results;
+
+          this.allPayments = reset
+            ? newPayments
+            : [...this.allPayments, ...newPayments];
+
+          this.hasMore = !!response.next;
+
+          this.applyFilters();
+
+          this.loading = false;
+          this.loadingMore = false;
+
+          if (!reset) this.currentPage++;
+        },
+        error: (err) => {
+          console.error('Error loading payments:', err);
+          this.error = 'Failed to load payment data. Please try again.';
+          this.loading = false;
+          this.loadingMore = false;
+        }
+      });
   }
 
+  loadMore(): void {
+    if (!this.hasMore || this.loadingMore || this.loading) return;
+    this.loadPayments(false);
+  }
+
+  // ── Filters ────────────────────────────────────────────────
   applyFilters(): void {
-    this.filteredPayments = this.payments.filter(payment => {
-      const statusMatch = this.filterStatus === 'all' || payment.status === this.filterStatus;
-      const searchMatch = this.filterSearch === '' ||
-        payment.booking?.id.toString().includes(this.filterSearch) ||
-        payment.customer_phone?.includes(this.filterSearch);
-      return statusMatch && searchMatch;
-    });
+    let temp = [...this.allPayments];
+
+    if (this.filterStatus !== 'all') {
+      temp = temp.filter(p => p.status === this.filterStatus);
+    }
+
+    if (this.filterSearch.trim()) {
+      const search = this.filterSearch.trim().toLowerCase();
+      temp = temp.filter(p =>
+        p.booking?.id.toString().toLowerCase().includes(search) ||
+        p.customer_phone?.toLowerCase().includes(search)
+      );
+    }
+
+    this.filteredPayments = temp;
   }
 
   onFilterChange(): void {
     this.applyFilters();
   }
 
+  refresh(): void {
+    this.loadPayments(true);
+  }
+
+  // ── Refund logic ───────────────────────────────────────────
   selectPayment(payment: BookingPayment): void {
     this.selectedPayment = payment;
-    this.refundAmount = payment.amount;
+    this.refundAmount = this.getRefundableAmount(payment);
     this.refundReason = '';
     this.showRefundForm = true;
   }
@@ -77,11 +128,10 @@ export class RefundManagementComponent implements OnInit {
   closeRefundForm(): void {
     this.showRefundForm = false;
     this.selectedPayment = null;
-    this.success = '';
   }
 
   processRefund(): void {
-    if (!this.selectedPayment || this.refundAmount <= 0) {
+    if (!this.selectedPayment || this.refundAmount <= 0 || this.refundAmount > this.getRefundableAmount(this.selectedPayment)) {
       this.error = 'Please enter a valid refund amount';
       return;
     }
@@ -94,21 +144,22 @@ export class RefundManagementComponent implements OnInit {
       reason: this.refundReason,
       amount: this.refundAmount
     }).subscribe({
-      next: (response) => {
+      next: () => {
         this.success = `Refund of ${this.formatCurrency(this.refundAmount)} processed successfully`;
         this.processing = false;
         this.showRefundForm = false;
         this.selectedPayment = null;
-        setTimeout(() => this.loadPayments(), 2000);
+
+        setTimeout(() => this.loadPayments(true), 1800);
       },
-      error: (error) => {
-        console.error('Error processing refund:', error);
-        this.error = error?.error?.detail || 'Failed to process refund';
+      error: (err) => {
+        this.error = err?.error?.detail || 'Failed to process refund';
         this.processing = false;
       }
     });
   }
 
+  // ── Helper methods ─────────────────────────────────────────
   getRefundedAmount(payment: BookingPayment): number {
     if (!payment.commission) return 0;
     return (payment.commission.refunded_platform || 0) + (payment.commission.refunded_owner || 0);

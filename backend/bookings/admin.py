@@ -3,4 +3,3 @@ from .models import *
 # Register your models here.
 admin.site.register(Booking)
 admin.site.register(BookingPayment)
-admin.site.register(BookingReview)

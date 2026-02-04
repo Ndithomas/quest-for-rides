@@ -1,0 +1,101 @@
+<div class="reviews-page">
+  <app-navbar *ngIf="!embedded"></app-navbar>
+  
+  <div class="container py-5">
+    <div class="row mb-4">
+      <div class="col-12">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+              {{ carId ? 'Car Reviews' : 'My Reviews' }}
+            </li>
+          </ol>
+        </nav>
+        <h2 class="mb-3">
+          {{ carId ? 'Reviews for this Car' : 'My Reviews' }}
+        </h2>
+        <p class="text-muted" *ngIf="!carId">
+          View and manage your reviews for completed bookings.
+        </p>
+
+        <!-- Ratings Summary -->
+        <div class="ratings-summary mt-4 mb-4" *ngIf="reviews().length > 0">
+          <div class="summary-card">
+            <div class="average-rating-display">
+              <span class="rating-number">{{ averageRating() }}</span>
+              <div class="stars-display">
+                <span *ngFor="let star of getStarArray(roundRating())"
+                      [class.filled]="star === 1"
+                      class="star">★</span>
+              </div>
+              <p class="review-count">{{ reviews().length }} review{{ reviews().length !== 1 ? 's' : '' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading()" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">Loading reviews...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error() && !loading()" class="alert alert-danger">
+      {{ error() }}
+    </div>
+
+    <!-- Reviews List -->
+    <div *ngIf="!loading() && reviews().length > 0" class="row">
+      <div class="col-12">
+        <div class="review-card" *ngFor="let review of reviews()">
+          <div class="review-header">
+            <div class="reviewer-info">
+              <div class="reviewer-avatar">
+                {{ review.reviewer?.username?.charAt(0)?.toUpperCase() || 'U' }}
+              </div>
+              <div>
+                <h5 class="mb-0">{{ review.reviewer?.username || 'Anonymous' }}</h5>
+                <small class="text-muted">{{ formatDate(review.created_at) }}</small>
+              </div>
+            </div>
+            <div class="star-rating">
+              <span *ngFor="let star of getStarArray(review.rating)"
+                    [class.filled]="star === 1"
+                    class="star">★</span>
+            </div>
+          </div>
+          
+          <div class="review-body">
+            <h6 class="text-primary mb-2">{{ review.car_title }}</h6>
+            <p class="review-comment" *ngIf="review.comment">
+              {{ review.comment }}
+            </p>
+            <p class="review-comment text-muted fst-italic" *ngIf="!review.comment">
+              No comment provided.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!loading() && reviews().length === 0 && !error()" class="text-center py-5">
+      <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h4 class="mt-3">No Reviews Yet</h4>
+        <p class="text-muted">
+          {{ carId ? 'This car has not received any reviews yet.' : 'You have not written any reviews yet.' }}
+        </p>
+        <a routerLink="/" class="btn btn-primary mt-3">
+          Browse Cars
+        </a>
+      </div>
+    </div>
+  </div>
+  <app-footer *ngIf="!embedded"></app-footer>
+</div>
+

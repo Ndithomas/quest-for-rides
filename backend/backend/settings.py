@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'listings',
     'bookings',
+    'reviews',
     'payments',
     'notifications',
     'django_cleanup.apps.CleanupConfig',
@@ -189,3 +190,31 @@ ALLOWED_HOSTS = ['*']
 
 CAMPAY_USERNAME = "your_app_username"
 CAMPAY_PASSWORD = "your_app_password"
+
+# ============ EMAIL CONFIGURATION ============
+# For development/testing, emails will be printed to console
+# For production, configure with a real SMTP server
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Use this for production:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'Quest4Rides <noreply@quest4rides.com>')
+
+# ============ SECURITY SETTINGS ============
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = False  # Set to True in production with HTTPS
+
+# ============ RATE LIMITING (optional) ============
+# Add django-ratelimit for rate limiting:
+# RATELIMIT_ENABLE = True
+# RATELIMIT_DEFAULT = '100/h'
+

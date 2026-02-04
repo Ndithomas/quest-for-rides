@@ -282,3 +282,36 @@ class OwnerBookingsListView(generics.ListAPIView):
         return Booking.objects.filter(
             car__owner=self.request.user
         ).select_related('car', 'guest', 'payment').order_by('-created_at')
+
+
+
+
+class MarkBookingCompletedAPIView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        booking = get_object_or_404(
+            Booking.objects.select_related('car', 'owner'),
+            id=pk
+        )
+
+        user = request.user
+        if user != booking.owner and user != booking.guest:
+            return Response({"detail": "Not authorized."}, status=403)
+
+        if booking.status != 'active':
+            return Response(
+                {"detail": "Only active bookings can be marked as completed."},
+                status=400
+            )
+
+        booking.status = 'completed'
+        booking.save(update_fields=['status'])
+
+        booking.car.status = 'available'
+        booking.car.save(update_fields=['status'])
+
+        return Response({
+            "detail": "Booking marked as completed.",
+            "booking": BookingDetailSerializer(booking, context={'request': request}).data
+        })

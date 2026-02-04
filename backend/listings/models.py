@@ -5,11 +5,11 @@ from userAuth.models import User
 class Car(models.Model):
     STATUS_CHOICES = [
         ('available', 'Available'),
-        ('booked', 'Booked'),                  
+        ('booked', 'Booked'),
         ('maintenance', 'Under Maintenance'),
         ('inactive', 'Inactive'),
     ]
-    
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cars", limit_choices_to={'role': 'owner'})
     make = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
@@ -21,11 +21,20 @@ class Car(models.Model):
     location_name = models.CharField(max_length=255)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
-    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Added this missing field
-    is_verified = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', db_index=True)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_verified = models.BooleanField(default=False, db_index=True)
+    avg_rating = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True, db_index=True)
+    total_reviews = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['owner', 'status']),
+            models.Index(fields=['status', 'is_verified']),
+            models.Index(fields=['-created_at']),
+        ]
 
     def __str__(self):
         return f"{self.title} • {self.owner.username}"

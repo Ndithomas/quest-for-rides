@@ -5,6 +5,14 @@
     <h1 class="display-5 fw-bold text-dark">My Bookings</h1>
     <p class="lead text-muted">Manage and track all your car rental bookings</p>
   </div>
+  
+  <!-- Success notification -->
+  <div *ngIf="reviewSuccess()" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-check-circle me-2"></i>
+    <strong>Success!</strong> {{ reviewSuccessMessage() }}
+    <button type="button" class="btn-close" (click)="reviewSuccess.set(false)"></button>
+  </div>
+  
   <div *ngIf="error()" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
     <strong>Error:</strong> {{ error() }}
     <button type="button" class="btn-close" (click)="error.set('')"></button>
@@ -86,6 +94,19 @@
         <div *ngIf="booking.rejection_reason" class="note danger">
           <strong>Rejected:</strong> {{ booking.rejection_reason }}
         </div>
+
+        <!-- Review Display Section -->
+        <div *ngIf="booking.review" class="review-badge mt-3 p-3 bg-light rounded border-start border-success border-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <strong class="text-success"><i class="bi bi-star-fill"></i> Your Review</strong>
+            <div class="review-stars">
+              <span *ngFor="let star of getReviewStars(booking.review.rating)" class="star-icon">★</span>
+            </div>
+          </div>
+          <p *ngIf="booking.review.comment" class="mb-2 text-muted small">"{{ booking.review.comment }}"</p>
+          <small class="text-muted">{{ booking.review.rating }}/5 rating</small>
+        </div>
+
         <div class="action-buttons mt-4">
           <button *ngIf="booking.status === 'pending'" (click)="cancelBooking(booking)"
             class="btn btn-outline-danger btn-sm rounded-pill">
@@ -96,9 +117,20 @@
             <i class="bi bi-credit-card me-2"></i>
             Pay with CamPay • XAF{{ booking.total_price | number:'1.0-0' }}
           </button>
+          <button *ngIf="booking.status === 'completed' && !booking.review" (click)="openReviewModal(booking)"
+            class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="bi bi-star me-1"></i>
+            Write Review
+          </button>
+          <button *ngIf="booking.status === 'completed' && booking.review" disabled
+            class="btn btn-outline-secondary btn-sm rounded-pill">
+            <i class="bi bi-check-circle me-1"></i>
+            Reviewed
+          </button>
           <a [routerLink]="['/booking-confirmation', booking.id]" class="btn btn-primary rounded-pill ms-2">
             View Details
           </a>
+          
         </div>
       </div>
     </div>
@@ -109,4 +141,59 @@
     </button>
   </div>
 </div>
+
+<!-- Review Modal -->
+<div *ngIf="showReviewModal()" class="modal-overlay" (click)="closeReviewModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <!-- Success State -->
+    <div *ngIf="reviewSuccess()" class="modal-success-state text-center py-5">
+      <div class="success-checkmark mb-3">
+        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+      </div>
+      <h4 class="text-success mb-2">Review Submitted!</h4>
+      <p class="text-muted">{{ reviewSuccessMessage() }}</p>
+    </div>
+
+    <!-- Form State -->
+    <div *ngIf="!reviewSuccess()">
+      <div class="modal-header">
+        <h4>Write a Review</h4>
+        <button type="button" class="btn-close" (click)="closeReviewModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="reviewError()" class="alert alert-danger">{{ reviewError() }}</div>
+
+        <div class="mb-4">
+          <label class="form-label">Rating</label>
+          <div class="star-rating">
+            <button *ngFor="let star of getReviewStars(reviewRating()); let i = index" (click)="setReviewRating(i + 1)"
+              class="star-btn" [class.filled]="i < reviewRating()">
+              ★
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label">Comment (optional)</label>
+          <textarea [(ngModel)]="reviewComment" class="form-control" rows="4"
+            placeholder="Share your experience with this car..." [disabled]="reviewSubmitting()"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeReviewModal()" [disabled]="reviewSubmitting()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="submitReview()" [disabled]="reviewSubmitting()">
+          <span *ngIf="!reviewSubmitting()">Submit Review</span>
+          <span *ngIf="reviewSubmitting()">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Submitting...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <app-footer></app-footer>
+

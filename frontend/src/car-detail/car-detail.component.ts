@@ -4,18 +4,21 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ListingsService } from '../services/listings.service';
 import { BookingService } from '../services/booking.service';
+import { ReviewService, Review } from '../services/review.service';
 import { AuthService } from '../services/auth.service';
 import { FooterComponent } from '../footer/footer.component';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { ReviewsComponent } from '../reviews/reviews.component';
 
 @Component({
   selector: 'app-car-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, FooterComponent, NavbarComponent],
+  imports: [CommonModule, FormsModule, FooterComponent, NavbarComponent, ReviewsComponent],
   templateUrl: './car-detail.component.html',
   styleUrl: './car-detail.component.scss'
 })
 export class CarDetailComponent implements OnInit {
+  Math = Math; // Make Math available in template
   car = signal<any>(null);
   photos = signal<any[]>([]);
   currentPhoto = signal(0);
@@ -30,6 +33,20 @@ export class CarDetailComponent implements OnInit {
   bookingLoading = signal(false);
   bookingSuccess = signal(false);
   bookingError = signal<string>('');
+
+  // Reviews
+  reviews = signal<Review[]>([]);
+  reviewsLoading = signal(false);
+  averageRating = computed(() => {
+    const revs = this.reviews();
+    if (revs.length === 0) return 0;
+    const sum = revs.reduce((acc, r) => acc + (r.rating || 0), 0);
+    const avg = sum / revs.length;
+    
+    const maxRating = revs.reduce((m, r) => Math.max(m, r.rating || 0), 0);
+    const normalized = maxRating > 5 ? (avg / 2) : avg;
+    return Math.round(normalized * 10) / 10;
+  });
 
   numDays = computed(() => {
     const start = this.startDate();
@@ -77,6 +94,7 @@ export class CarDetailComponent implements OnInit {
     private location: Location,
     private listingsService: ListingsService,
     private bookingService: BookingService,
+    private reviewService: ReviewService,
     private authService: AuthService
   ) {}
 
@@ -99,10 +117,26 @@ export class CarDetailComponent implements OnInit {
         this.car.set(data);
         this.photos.set(Array.isArray(data.photos) ? data.photos : []);
         this.loading.set(false);
+        // Load reviews for this car
+        this.loadCarReviews(id);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error.set(err.status === 404 ? 'Car not found.' : 'Failed to load car details.');
         this.loading.set(false);
+      }
+    });
+  }
+
+  loadCarReviews(carId: number): void {
+    this.reviewsLoading.set(true);
+    this.reviewService.getCarReviews(carId).subscribe({
+      next: (reviews: Review[]) => {
+        this.reviews.set(reviews);
+        this.reviewsLoading.set(false);
+      },
+      error: (err: any) => {
+        console.error('Failed to load car reviews:', err);
+        this.reviewsLoading.set(false);
       }
     });
   }
@@ -150,6 +184,28 @@ export class CarDetailComponent implements OnInit {
     return this.car()?.license_plate || 'N/A';
   }
 
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
+  getStarArray(rating: number): number[] {
+    return Array(5).fill(0).map((_, i) => i < rating ? 1 : 0);
+  }
+
+  roundRating(): number {
+    return Math.round(this.averageRating());
+  }
+
+  normalizeRating(rating: number | undefined | null): number {
+    if (!rating) return 0;
+    const r = Number(rating) || 0;
+    return r > 5 ? Math.round(r / 2) : Math.round(r);
+  }
+
   // Booking
   submitBooking() {
     if (!this.authService.isLoggedIn()) {
@@ -179,7 +235,7 @@ export class CarDetailComponent implements OnInit {
           this.router.navigate(['/booking-confirmation', booking.id]);
         }, 1500);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.bookingError.set(err.error?.detail || 'Booking failed. Please try again.');
         this.bookingLoading.set(false);
       }

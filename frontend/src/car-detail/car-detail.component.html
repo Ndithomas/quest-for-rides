@@ -1,13 +1,10 @@
 <app-navbar></app-navbar>
-
 <div class="car-detail-page" *ngIf="!loading(); else loadingTpl">
   <div class="error text-danger text-center my-4" *ngIf="error()">{{ error() }}</div>
-
   <div *ngIf="car() as c" class="container">
     <button class="back-btn" (click)="back()">Back</button>
     <h1 class="title">{{ getCarTitle() }}</h1>
     <p class="location">{{ getCarLocation() }}</p>
-
     <div class="main-grid">
       <!-- Gallery -->
       <div class="gallery-section">
@@ -50,7 +47,6 @@
           <span class="tag" *ngFor="let f of processedFeatures()">{{ f }}</span>
         </div>
 
-        <!-- BOOKING FORM -->
         <ng-container *ngIf="isCarBookable(); else notAvailable">
           <div class="booking-section">
             <h3>Rent This Car</h3>
@@ -96,6 +92,11 @@
           </div>
         </ng-template>
       </div>
+    </div>
+
+    <!-- Reviews Section (embedded) -->
+    <div class="reviews-section mt-5 pt-5">
+      <app-reviews [carId]="car()?.id" [embedded]="true"></app-reviews>
     </div>
   </div>
 </div>

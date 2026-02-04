@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService, BookingPayment } from '../services/payment.service';
+import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -54,9 +54,9 @@ export class PaymentManagementComponent implements OnInit {
 
   loadPayments() {
     this.loading = true;
-    this.paymentService.getAllPayments().subscribe({
-      next: (data: BookingPayment[]) => {  // assuming no paginated response {results, ...}
-        this.payments = data;
+    this.paymentService.getAllPayments(1, 100).subscribe({  // Added page parameters
+      next: (response: PaginatedResponse<BookingPayment>) => {  // Changed to handle PaginatedResponse
+        this.payments = response.results;  // Extract results array
         this.applyFilters();
         this.loading = false;
       },
@@ -88,22 +88,22 @@ export class PaymentManagementComponent implements OnInit {
     }
 
     // Search
-   if (this.searchTerm) {
-  const term = this.searchTerm.toLowerCase().trim();
-  result = result.filter(p => {
-    return (
-      p.id.toString().includes(term) ||
-      p.booking?.id?.toString().includes(term) ||
-      `${p.booking?.car_make || ''} ${p.booking?.car_model || ''}`.toLowerCase().includes(term) ||
-      p.booking?.guest?.username?.toLowerCase().includes(term) ||
-      p.booking?.owner?.username?.toLowerCase().includes(term) ||
-      p.customer_phone?.includes(term) ||
-      p.transaction_id?.toLowerCase().includes(term) ||
-      p.campay_reference?.toLowerCase().includes(term) ||
-      p.amount.toString().includes(term)
-    );
-  });
-}
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase().trim();
+      result = result.filter(p => {
+        return (
+          p.id.toString().includes(term) ||
+          p.booking?.id?.toString().includes(term) ||
+          `${p.booking?.car_make || ''} ${p.booking?.car_model || ''}`.toLowerCase().includes(term) ||
+          p.booking?.guest?.username?.toLowerCase().includes(term) ||
+          p.booking?.owner?.username?.toLowerCase().includes(term) ||
+          p.customer_phone?.includes(term) ||
+          p.transaction_id?.toLowerCase().includes(term) ||
+          p.campay_reference?.toLowerCase().includes(term) ||
+          p.amount.toString().includes(term)
+        );
+      });
+    }
 
     // Date range
     if (this.startDate) {
@@ -148,7 +148,7 @@ export class PaymentManagementComponent implements OnInit {
   updatePaymentStatus(payment: BookingPayment, newStatus: string) {
     if (!confirm(`Change status to "${newStatus}"?`)) return;
 
-    this.paymentService.updatePaymentStatus(payment.id, { status: newStatus }).subscribe({
+    this.paymentService.updatePaymentStatus(payment.booking.id, { status: newStatus }).subscribe({
       next: () => {
         this.success = `Payment #${payment.id} updated successfully`;
         payment.status = newStatus;

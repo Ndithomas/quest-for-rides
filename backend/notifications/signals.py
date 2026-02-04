@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.contenttypes.models import ContentType
-from bookings.models import Booking, BookingPayment, BookingReview
+from bookings.models import Booking, BookingPayment
+from reviews.models import BookingReview
 from listings.models import Car
 from payments.models import Payout
 from userAuth.models import User

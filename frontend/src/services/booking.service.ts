@@ -117,8 +117,14 @@ export class BookingService {
   ownerCancelUnpaidBooking(id: number): Observable<{ detail: string }> {
     return this.http.post<{ detail: string }>(`${this.apiUrl}/${id}/owner-cancel-unpaid/`, {});
   }
+
+  markBookingCompleted(id: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${id}/mark-completed/`, {});
+  }
+
   getBookingStats(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/stats/`);
   }
 }
+
 

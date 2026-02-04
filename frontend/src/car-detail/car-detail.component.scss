@@ -324,3 +324,154 @@ $shadow: 0 12px 35px rgba(0,0,0,0.1);
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* REVIEWS SECTION */
+.reviews-section {
+  border-top: 2px solid #e0e0e0;
+}
+
+.reviews-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2d3436;
+  margin: 0;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.average-rating {
+  text-align: center;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 2px solid #fcd34d;
+  padding: 1.2rem 1.5rem;
+  border-radius: 12px;
+  min-width: 150px;
+
+  .rating-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #d97706;
+    display: block;
+  }
+
+  .stars {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+    margin: 0.5rem 0;
+  }
+
+  .star-filled {
+    color: #f59e0b;
+    font-size: 1.1rem;
+  }
+
+  .star-empty {
+    color: #e5e7eb;
+    font-size: 1.1rem;
+  }
+
+  .review-count {
+    font-size: 0.9rem;
+    color: #92400e;
+    margin: 0.5rem 0 0 0;
+  }
+}
+
+.no-reviews {
+  padding: 1rem;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+/* REVIEWS LIST */
+.reviews-list {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.review-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.reviewer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.review-date {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.review-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .star-filled {
+    color: #f59e0b;
+    font-size: 1rem;
+  }
+
+  .star-empty {
+    color: #e5e7eb;
+    font-size: 1rem;
+  }
+
+  .rating-text {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+  }
+}
+
+.review-comment {
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 0.95rem;
+}

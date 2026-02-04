@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 import { Booking } from './booking.service';
+import { ApiService } from './api.service';
 
 export interface Car {
   id: number;
@@ -114,20 +115,20 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class PaymentService {
-  private apiUrl = `${environment.apiBaseUrl}/api/payments`;
+  private basePath = '/api/payments';
 
-  constructor(private http: HttpClient) { }
+  constructor(private api: ApiService) { }
 
   getBookingPayment(bookingId: number): Observable<BookingPayment> {
-    return this.http.get<BookingPayment>(`${this.apiUrl}/booking/${bookingId}/`);
+    return this.api.get<BookingPayment>(`${this.basePath}/booking/${bookingId}/`);
   }
 
   initiateCamPayPayment(bookingId: number, data: CamPayInitiateData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${bookingId}/initiate/`, data);
+    return this.api.post(`${this.basePath}/booking/${bookingId}/initiate/`, data);
   }
 
   checkCamPayStatus(bookingId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/booking/${bookingId}/check-status/`);
+    return this.api.get(`${this.basePath}/booking/${bookingId}/check-status/`);
   }
 
   updatePaymentStatus(bookingId: number, data: {
@@ -135,61 +136,68 @@ export class PaymentService {
     external_transaction_id?: string;
     notes?: string;
   }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${bookingId}/status-update/`, data);
+    return this.api.post(`${this.basePath}/booking/${bookingId}/status-update/`, data);
   }
 
   initiateRefund(bookingId: number, data?: { reason?: string; amount?: number }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/booking/${bookingId}/refund/`, data || {});
+    return this.api.post(`${this.basePath}/booking/${bookingId}/refund/`, data || {});
   }
 
-  getAllPayments(): Observable<BookingPayment[]> {
-    return this.http.get<BookingPayment[]>(`${this.apiUrl}/list/`);
+  getAllPayments(page: number = 1, page_size: number = 20): Observable<PaginatedResponse<BookingPayment>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', page_size.toString());
+    return this.api.get<PaginatedResponse<BookingPayment>>(`${this.basePath}/list/`, params);
   }
 
   getPaymentAnalytics(): Observable<PaymentAnalytics> {
-    return this.http.get<PaymentAnalytics>(`${this.apiUrl}/analytics/`);
+    return this.api.get<PaymentAnalytics>(`${this.basePath}/analytics/`);
   }
 
   getOwnerPayments(url?: string): Observable<PaginatedResponse<BookingPayment>> {
-    const requestUrl = url || `${this.apiUrl}/owner/payments/`;
-    return this.http.get<PaginatedResponse<BookingPayment>>(requestUrl);
+    const requestUrl = url ? url : `${this.basePath}/owner/payments/`;
+    return this.api.get<PaginatedResponse<BookingPayment>>(requestUrl);
   }
 
   getOwnerEarnings(): Observable<OwnerEarnings> {
-    return this.http.get<OwnerEarnings>(`${this.apiUrl}/owner/earnings/`);
+    return this.api.get<OwnerEarnings>(`${this.basePath}/owner/earnings/`);
   }
 
-  getOwnerPayouts(url?: string): Observable<any> {
-    const requestUrl = url || `${this.apiUrl}/owner/payouts/`;
-    return this.http.get<any>(requestUrl);
+  getOwnerPayouts(url?: string): Observable<PaginatedResponse<Payout>> {
+    const requestUrl = url ? url : `${this.basePath}/owner/payouts/`;
+    return this.api.get<PaginatedResponse<Payout>>(requestUrl);
   }
 
   requestPayout(data: { amount: number; payment_method: string; phone_number: string; notes?: string }): Observable<Payout> {
-    return this.http.post<Payout>(`${this.apiUrl}/owner/payout-request/`, data);
+    return this.api.post<Payout>(`${this.basePath}/owner/payout-request/`, data);
   }
 
   getGuestPayments(url?: string): Observable<PaginatedResponse<BookingPayment>> {
-    const requestUrl = url || `${this.apiUrl}/guest/payments/`;
-    return this.http.get<PaginatedResponse<BookingPayment>>(requestUrl);
+    const requestUrl = url ? url : `${this.basePath}/guest/payments/`;
+    return this.api.get<PaginatedResponse<BookingPayment>>(requestUrl);
   }
 
-  getManagementPayouts(status?: string): Observable<Payout[]> {
-    let url = `${this.apiUrl}/management/payouts/`;
-    if (status) {
-      url += `?status=${status}`;
+  getManagementPayouts(status?: string, page: number = 1, page_size: number = 20): Observable<PaginatedResponse<Payout>> {
+    let url = `${this.basePath}/management/payouts/`;
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('page_size', page_size.toString());
+    if (status && status !== 'all') {
+      params = params.set('status', status);
     }
-    return this.http.get<Payout[]>(url);
+    return this.api.get<PaginatedResponse<Payout>>(url, params);
   }
 
-  approvePayout(payoutId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/management/payout/${payoutId}/approve/`, {});
+  approvePayout(payoutId: number): Observable<Payout> {
+    return this.api.post<Payout>(`${this.basePath}/management/payout/${payoutId}/approve/`, {});
   }
 
-  processPayout(payoutId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/management/payout/${payoutId}/process/`, {});
+  processPayout(payoutId: number): Observable<Payout> {
+    return this.api.post<Payout>(`${this.basePath}/management/payout/${payoutId}/process/`, {});
   }
 
-  rejectPayout(payoutId: number, reason: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/management/payout/${payoutId}/reject/`, { reason });
+  rejectPayout(payoutId: number, reason: string): Observable<Payout> {
+    return this.api.post<Payout>(`${this.basePath}/management/payout/${payoutId}/reject/`, { reason });
   }
+
 }

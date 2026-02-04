@@ -3,12 +3,8 @@ from rest_framework import serializers
 from .models import *
 from userAuth.models import User
 from listings.models import Car
-
-class UserSimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number']
-        read_only_fields = fields
+from userAuth.serializers import UserSimpleSerializer
+from reviews.serializers import ReviewDetailSerializer
 
 class BookingPaymentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,12 +12,7 @@ class BookingPaymentSerializer(serializers.ModelSerializer):
         fields = ['id', 'amount', 'status', 'payment_method', 'transaction_id', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
 
-class BookingReviewSerializer(serializers.ModelSerializer):
-    reviewer = UserSimpleSerializer(read_only=True)
-    class Meta:
-        model = BookingReview
-        fields = ['id', 'reviewer', 'rating', 'comment', 'created_at']
-        read_only_fields = ['reviewer', 'created_at']
+
 
 class BookingCreateSerializer(serializers.ModelSerializer):
     car = serializers.PrimaryKeyRelatedField(queryset=Car.objects.all())
@@ -82,7 +73,7 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     car_year = serializers.IntegerField(source='car.year', read_only=True)
     car_license_plate = serializers.CharField(source='car.license_plate', read_only=True)
     payment = BookingPaymentSerializer(read_only=True)
-    review = BookingReviewSerializer(read_only=True)
+    review = ReviewDetailSerializer(read_only=True)
 
     class Meta:
         model = Booking

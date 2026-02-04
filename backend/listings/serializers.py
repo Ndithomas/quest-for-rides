@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from django.utils import timezone
 from bookings.models import Booking 
+from .utils import get_status_badge, get_status_display
 
 class CarPhotoSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True)
@@ -59,59 +60,30 @@ class CarListSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
     status_display = serializers.SerializerMethodField()
     status_badge = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
+    
     class Meta:
         model = Car
-        fields = ['id', 'title', 'make', 'model', 'year', 'daily_rate','location_name', 'primary_photo', 'photos', 'owner_name','is_verified', 'status_display', 'status_badge']
+        fields = ['id', 'title', 'make', 'model', 'year', 'daily_rate', 'location_name', 
+                  'primary_photo', 'photos', 'owner_name', 'is_verified', 'status_display', 
+                  'status_badge', 'avg_rating', 'total_reviews']
 
     def get_primary_photo(self, obj):
         photo = obj.photos.filter(is_primary=True).first()
         return photo.image.url if photo and photo.image else None
 
+    def get_avg_rating(self, obj):
+        return float(obj.avg_rating) if obj.avg_rating else None
+
+    def get_total_reviews(self, obj):
+        return obj.total_reviews
+
     def get_status_badge(self, obj) -> str:
-        today = timezone.now().date()
-        is_booked_today = Booking.objects.filter(
-            car=obj,
-            status='confirmed',
-            start_date__lte=today,
-            end_date__gte=today
-        ).exists()   
-        if is_booked_today:
-            return 'booked'
-        recently_returned = Booking.objects.filter(
-            car=obj,
-            status='confirmed',
-            end_date__lt=today,
-            end_date__gte=today - timezone.timedelta(days=2)
-        ).exists()
-        if recently_returned:
-            return 'recently-returned'
-        return obj.status  
+        return get_status_badge(obj)
 
     def get_status_display(self, obj) -> str:
-        today = timezone.now().date()
-        is_booked_today = Booking.objects.filter(
-            car=obj,
-            status='confirmed',
-            start_date__lte=today,
-            end_date__gte=today
-        ).exists()
-        if is_booked_today:
-            return "Booked"
-        recently_returned = Booking.objects.filter(
-            car=obj,
-            status='confirmed',
-            end_date__lt=today,
-            end_date__gte=today - timezone.timedelta(days=2)
-        ).exists()
-        if recently_returned:
-            return "Returned – Awaiting Check"
-        mapping = {
-            'available': 'Available',
-            'maintenance': 'Under Maintenance',
-            'inactive': 'Unavailable',
-            'booked': 'Booked',  # Add this line
-        }
-        return mapping.get(obj.status, 'Unavailable')
+        return get_status_display(obj)
 
 class CarDetailSerializer(serializers.ModelSerializer):
     photos = CarPhotoSerializer(many=True, read_only=True)
@@ -119,13 +91,23 @@ class CarDetailSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.get_full_name', read_only=True)
     status_display = serializers.SerializerMethodField()
     status_badge = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
+    
     class Meta:
         model = Car
         fields = '__all__'
         read_only_fields = ['owner', 'created_at', 'updated_at']
 
     def get_status_display(self, obj):
-        return CarListSerializer().get_status_display(obj)
+        return get_status_display(obj)
 
     def get_status_badge(self, obj):
-        return CarListSerializer().get_status_badge(obj)
+        return get_status_badge(obj)
+
+    def get_avg_rating(self, obj):
+        return float(obj.avg_rating) if obj.avg_rating else None
+
+    def get_total_reviews(self, obj):
+        return obj.total_reviews
+

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+import { ApiService } from './api.service';
 
 export interface Car {
   id: number;
@@ -94,8 +95,8 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class ListingsService {
-  private apiUrl = `${environment.apiBaseUrl}/api/listings`;
-  constructor(private http: HttpClient) { }
+  private basePath = '/api/listings';
+  constructor(private api: ApiService) { }
 
   search(filters: any = {}, page: number = 1) {
     let params = new HttpParams().set('page', page);
@@ -107,81 +108,80 @@ export class ListingsService {
       }
     });
 
-    return this.http.get<PaginatedResponse<CarList>>(`${this.apiUrl}/search/`, { params })
-      .pipe(catchError(this.handleError));
+    return this.api.get<PaginatedResponse<CarList>>(`${this.basePath}/search/`, params).pipe(catchError(this.handleError));
   }
 
   getMyCars(url?: string): Observable<PaginatedResponse<Car>> {
-    const requestUrl = url || `${this.apiUrl}/cars/`;
-    return this.http.get<PaginatedResponse<Car>>(requestUrl).pipe(catchError(this.handleError));
+    const requestUrl = url ? url : `${this.basePath}/cars/`;
+    return this.api.get<PaginatedResponse<Car>>(requestUrl).pipe(catchError(this.handleError));
   }
 
   createCar(formData: FormData): Observable<Car> {
-    return this.http.post<Car>(`${this.apiUrl}/cars/`, formData).pipe(catchError(this.handleError));
+    return this.api.post<Car>(`${this.basePath}/cars/`, formData).pipe(catchError(this.handleError));
   }
 
   getCar(id: number): Observable<CarDetail> {
-    return this.http.get<CarDetail>(`${this.apiUrl}/cars/${id}/`).pipe(catchError(this.handleError));
+    return this.api.get<CarDetail>(`${this.basePath}/cars/${id}/`).pipe(catchError(this.handleError));
   }
 
   updateCar(id: number, data: any): Observable<Car> {
-    return this.http.put<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
+    return this.api.put<Car>(`${this.basePath}/owner/cars/${id}/`, data)
       .pipe(catchError(this.handleError));
   }
 
   patchCar(id: number, data: any): Observable<Car> {
-    return this.http.patch<Car>(`${this.apiUrl}/owner/cars/${id}/`, data)
+    return this.api.patch<Car>(`${this.basePath}/owner/cars/${id}/`, data)
       .pipe(catchError(this.handleError));
   }
 
   deleteCar(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/owner/cars/${id}/`)
+    return this.api.delete<void>(`${this.basePath}/owner/cars/${id}/`)
       .pipe(catchError(this.handleError));
   }
 
   uploadPhotos(carId: number, files: File[]): Observable<CarPhoto[]> {
     const formData = new FormData();
     files.forEach(f => formData.append('images', f));
-    return this.http.post<CarPhoto[]>(`${this.apiUrl}/cars/${carId}/photos/`, formData)
+    return this.api.post<CarPhoto[]>(`${this.basePath}/cars/${carId}/photos/`, formData)
       .pipe(catchError(this.handleError));
   }
 
   setPrimaryPhoto(photoId: number): Observable<CarPhoto> {
-    return this.http.patch<CarPhoto>(`${this.apiUrl}/photos/${photoId}/set-primary/`, {})
+    return this.api.patch<CarPhoto>(`${this.basePath}/photos/${photoId}/set-primary/`, {})
       .pipe(catchError(this.handleError));
   }
 
   deletePhoto(photoId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/photos/${photoId}/`)
+    return this.api.delete<void>(`${this.basePath}/photos/${photoId}/`)
       .pipe(catchError(this.handleError));
   }
 
   getAvailability(carId: number): Observable<Availability[]> {
-    return this.http.get<Availability[]>(`${this.apiUrl}/cars/${carId}/availability/`).pipe(catchError(this.handleError));
+    return this.api.get<Availability[]>(`${this.basePath}/cars/${carId}/availability/`).pipe(catchError(this.handleError));
   }
 
   setAvailability(carId: number, dates: any[]): Observable<Availability[]> {
-    return this.http.post<Availability[]>(`${this.apiUrl}/cars/${carId}/availability/`, { dates })
+    return this.api.post<Availability[]>(`${this.basePath}/cars/${carId}/availability/`, { dates })
       .pipe(catchError(this.handleError));
   }
 
   getPricing(carId: number): Observable<PricingRule[]> {
-    return this.http.get<PricingRule[]>(`${this.apiUrl}/cars/${carId}/pricing/`).pipe(catchError(this.handleError));
+    return this.api.get<PricingRule[]>(`${this.basePath}/cars/${carId}/pricing/`).pipe(catchError(this.handleError));
   }
 
   addPricingRule(carId: number, rule: any): Observable<PricingRule> {
-    return this.http.post<PricingRule>(`${this.apiUrl}/cars/${carId}/pricing/`, rule)
+    return this.api.post<PricingRule>(`${this.basePath}/cars/${carId}/pricing/`, rule)
       .pipe(catchError(this.handleError));
   }
 
 
   toggleStatus(carId: number, status: 'available' | 'maintenance' | 'inactive'): Observable<Car> {
-    return this.http.patch<Car>(`${this.apiUrl}/cars/${carId}/toggle-status/`, { status })
+    return this.api.patch<Car>(`${this.basePath}/cars/${carId}/toggle-status/`, { status })
       .pipe(catchError(this.handleError));
   }
 
   getAllCars(): Observable<CarList[]> {
-    return this.http.get<CarList[]>(`${this.apiUrl}/cars/all/`)
+    return this.api.get<CarList[]>(`${this.basePath}/cars/all/`)
       .pipe(catchError(this.handleError));
   }
 
@@ -190,7 +190,7 @@ export class ListingsService {
   }
 
   markCarAvailable(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/cars/${id}/mark-available/`, {})
+    return this.api.post(`${this.basePath}/cars/${id}/mark-available/`, {})
       .pipe(catchError(this.handleError));
   }
 

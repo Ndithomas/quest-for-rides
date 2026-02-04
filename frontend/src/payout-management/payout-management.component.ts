@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaymentService, Payout } from '../services/payment.service';
+import { PaymentService, Payout, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 
@@ -13,52 +13,90 @@ import { FooterComponent } from '../footer/footer.component';
   styleUrls: ['./payout-management.component.scss']
 })
 export class PayoutManagementComponent implements OnInit {
-  payouts: Payout[] = [];
+  allPayouts: Payout[] = [];                 // accumulated from all pages
   filteredPayouts: Payout[] = [];
+  
   loading = true;
+  loadingMore = false;
   error = '';
   success = '';
-
+  
   filterStatus = 'all';
+  
+  currentPage = 1;
+  hasMore = false;
+  pageSize = 20;
+
   selectedPayout: Payout | null = null;
   showActionModal = false;
   actionType: 'approve' | 'process' | 'reject' | null = null;
   rejectReason = '';
   processing = false;
-
   constructor(private paymentService: PaymentService) {}
 
   ngOnInit(): void {
     this.loadPayouts();
   }
 
-  loadPayouts(): void {
-    this.loading = true;
+  loadPayouts(reset: boolean = false): void {
+    if (reset) {
+      this.loading = true;
+      this.allPayouts = [];
+      this.currentPage = 1;
+      this.hasMore = false;
+      this.filteredPayouts = [];
+    } else {
+      this.loadingMore = true;
+    }
+
     this.error = '';
-    this.paymentService.getManagementPayouts().subscribe({
-      next: (data: Payout[]) => {
-        this.payouts = data;
-        this.applyFilters();
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('Error loading payouts:', error);
-        this.error = 'Failed to load payouts';
-        this.loading = false;
-      }
-    });
+
+    this.paymentService
+      .getManagementPayouts(this.filterStatus, this.currentPage, this.pageSize)
+      .subscribe({
+        next: (response: PaginatedResponse<Payout>) => {
+          const newPayouts = response.results || [];
+
+          this.allPayouts = reset 
+            ? newPayouts 
+            : [...this.allPayouts, ...newPayouts];
+
+          this.hasMore = !!response.next;
+
+          this.applyFilters();
+
+          this.loading = false;
+          this.loadingMore = false;
+
+          if (!reset) {
+            this.currentPage++;
+          }
+        },
+        error: (err) => {
+          console.error('Error loading payouts:', err);
+          this.error = 'Failed to load payouts';
+          this.loading = false;
+          this.loadingMore = false;
+        }
+      });
+  }
+
+  loadMore(): void {
+    if (!this.hasMore || this.loadingMore || this.loading) return;
+    this.loadPayouts(false);
   }
 
   applyFilters(): void {
     if (this.filterStatus === 'all') {
-      this.filteredPayouts = [...this.payouts];
+      this.filteredPayouts = [...this.allPayouts];
     } else {
-      this.filteredPayouts = this.payouts.filter(p => p.status === this.filterStatus);
+      this.filteredPayouts = this.allPayouts.filter(p => p.status === this.filterStatus);
     }
   }
 
   onFilterChange(): void {
-    this.applyFilters();
+    // When filter changes → reset and reload with new status
+    this.loadPayouts(true);
   }
 
   openActionModal(payout: Payout, type: 'approve' | 'process' | 'reject'): void {

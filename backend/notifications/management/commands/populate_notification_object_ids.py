@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.contrib.contenttypes.models import ContentType
 from notifications.models import Notification
-from bookings.models import Booking, BookingPayment, BookingReview
+from bookings.models import Booking, BookingPayment
+from reviews.models import BookingReview
 from listings.models import Car
 from payments.models import Payout
 

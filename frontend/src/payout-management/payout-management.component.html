@@ -18,7 +18,6 @@
     </div>
   </div>
 
-  <!-- Alerts -->
   <div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
     {{ success }}
     <button type="button" class="btn-close" (click)="success = ''"></button>
@@ -29,19 +28,17 @@
     <button type="button" class="btn-close" (click)="error = ''"></button>
   </div>
 
-  <!-- Loading -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
-  <!-- Empty State -->
   <div *ngIf="!loading && filteredPayouts.length === 0" class="alert alert-info">
     No payouts found
   </div>
 
-  <!-- Table -->
+
   <div *ngIf="!loading && filteredPayouts.length > 0" class="table-responsive">
     <table class="table table-hover">
       <thead class="table-light">
@@ -70,28 +67,16 @@
           <td>{{ formatDate(payout.requested_at) }}</td>
           <td>
             <div class="btn-group btn-group-sm" role="group">
-              <button
-                *ngIf="canApprove(payout)"
-                type="button"
-                class="btn btn-success btn-sm"
-                (click)="openActionModal(payout, 'approve')"
-              >
+              <button *ngIf="canApprove(payout)" type="button" class="btn btn-success btn-sm"
+                (click)="openActionModal(payout, 'approve')">
                 Approve
               </button>
-              <button
-                *ngIf="canProcess(payout)"
-                type="button"
-                class="btn btn-primary btn-sm"
-                (click)="openActionModal(payout, 'process')"
-              >
+              <button *ngIf="canProcess(payout)" type="button" class="btn btn-primary btn-sm"
+                (click)="openActionModal(payout, 'process')">
                 Process
               </button>
-              <button
-                *ngIf="canReject(payout)"
-                type="button"
-                class="btn btn-danger btn-sm"
-                (click)="openActionModal(payout, 'reject')"
-              >
+              <button *ngIf="canReject(payout)" type="button" class="btn btn-danger btn-sm"
+                (click)="openActionModal(payout, 'reject')">
                 Reject
               </button>
             </div>
@@ -99,6 +84,12 @@
         </tr>
       </tbody>
     </table>
+  </div>
+  <div *ngIf="hasMore && !loading && filteredPayouts.length > 0" class="text-center mt-4 mb-5">
+    <button class="btn btn-outline-primary px-5 py-2" (click)="loadMore()" [disabled]="loadingMore">
+      <span *ngIf="loadingMore" class="spinner-border spinner-border-sm me-2"></span>
+      {{ loadingMore ? 'Loading...' : 'Load More' }}
+    </button>
   </div>
 </div>
 
@@ -108,7 +99,8 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">
-          {{ actionType === 'approve' ? 'Approve Payout' : actionType === 'process' ? 'Process Payment' : 'Reject Payout' }}
+          {{ actionType === 'approve' ? 'Approve Payout' : actionType === 'process' ? 'Process Payment' : 'Reject
+          Payout' }}
         </h5>
         <button type="button" class="btn-close" (click)="closeActionModal()" [disabled]="processing"></button>
       </div>
@@ -131,35 +123,27 @@
         </div>
         <div *ngIf="actionType === 'reject'" class="mb-3">
           <label for="rejectReason" class="form-label">Reason for Rejection</label>
-          <textarea
-            id="rejectReason"
-            class="form-control"
-            [(ngModel)]="rejectReason"
-            rows="3"
-            placeholder="Enter reason..."
-            [disabled]="processing"
-          ></textarea>
+          <textarea id="rejectReason" class="form-control" [(ngModel)]="rejectReason" rows="3"
+            placeholder="Enter reason..." [disabled]="processing"></textarea>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeActionModal()" [disabled]="processing">
           Cancel
         </button>
-        <button
-          type="button"
+        <button type="button"
           [class]="'btn ' + (actionType === 'reject' ? 'btn-danger' : actionType === 'process' ? 'btn-primary' : 'btn-success')"
-          (click)="executeAction()"
-          [disabled]="processing || (actionType === 'reject' && !rejectReason.trim())"
-        >
+          (click)="executeAction()" [disabled]="processing || (actionType === 'reject' && !rejectReason.trim())">
           <span *ngIf="processing" class="spinner-border spinner-border-sm me-2" role="status"></span>
-          {{ processing ? 'Processing...' : (actionType === 'approve' ? 'Approve' : actionType === 'process' ? 'Process' : 'Reject') }}
+          {{ processing ? 'Processing...' : (actionType === 'approve' ? 'Approve' : actionType === 'process' ? 'Process'
+          : 'Reject') }}
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Backdrop -->
-<div class="modal-backdrop fade" [class.show]="showActionModal" [style.display]="showActionModal ? 'block' : 'none'"></div>
+<div class="modal-backdrop fade" [class.show]="showActionModal" [style.display]="showActionModal ? 'block' : 'none'">
+</div>
 
 <app-footer></app-footer>
