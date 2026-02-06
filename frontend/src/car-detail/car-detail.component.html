@@ -1,5 +1,5 @@
 <app-navbar></app-navbar>
-<div class="car-detail-page" *ngIf="!loading(); else loadingTpl">
+<div class="car-detail-page" *ngIf="!loading()">
   <div class="error text-danger text-center my-4" *ngIf="error()">{{ error() }}</div>
   <div *ngIf="car() as c" class="container">
     <button class="back-btn" (click)="back()">Back</button>
@@ -52,7 +52,11 @@
             <h3>Rent This Car</h3>
             <div class="note">Request will be sent to owner for approval</div>
 
-            <form (ngSubmit)="submitBooking()">
+            <div *ngIf="isLoggedIn() && !isGuestUser()" class="msg error mb-3">
+              Only guest accounts can book cars. Please log in with a guest account to proceed.
+            </div>
+
+            <form (ngSubmit)="submitBooking()" *ngIf="canShowBookingForm()">
               <div class="date-row">
                 <div>
                   <label>From</label>
@@ -99,13 +103,11 @@
       <app-reviews [carId]="car()?.id" [embedded]="true"></app-reviews>
     </div>
   </div>
-</div>
+  </div>
 
-<ng-template #loadingTpl>
-  <div class="loading">
+  <div *ngIf="loading()" class="loading">
     <div class="spinner"></div>
     <p>Loading car details...</p>
   </div>
-</ng-template>
 
 <app-footer></app-footer>

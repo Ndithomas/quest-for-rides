@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
-from userAuth.permissions import IsManagement
+from userAuth.permissions import IsManagement, IsGuest
 from django.utils import timezone
 from django.db.models import Count, Sum, Q
 from listings.models import Car
@@ -23,6 +23,12 @@ class BookingListCreateAPIView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return BookingCreateSerializer
         return BookingListSerializer
+    
+    def check_permissions(self, request):
+        super().check_permissions(request)
+        if request.method == 'POST':
+            if not hasattr(request.user, 'role') or request.user.role != 'guest':
+                self.permission_denied(request, message="Only guests can create bookings.")
     
     @transaction.atomic
     def perform_create(self, serializer):

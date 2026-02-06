@@ -18,7 +18,7 @@ import { ReviewsComponent } from '../reviews/reviews.component';
   styleUrl: './car-detail.component.scss'
 })
 export class CarDetailComponent implements OnInit {
-  Math = Math; // Make Math available in template
+  Math = Math;
   car = signal<any>(null);
   photos = signal<any[]>([]);
   currentPhoto = signal(0);
@@ -28,11 +28,20 @@ export class CarDetailComponent implements OnInit {
 
   startDate = signal<string>('');
   endDate = signal<string>('');
-  specialRequirements = ''; 
+  specialRequirements = '';
 
   bookingLoading = signal(false);
   bookingSuccess = signal(false);
   bookingError = signal<string>('');
+
+  // User role for booking restriction
+  currentUser = signal<any>(null);
+  isGuestUser = signal(false);
+  isLoggedIn = signal(false);
+
+  canShowBookingForm = computed(() => {
+    return !this.isLoggedIn() || this.isGuestUser();
+  });
 
   // Reviews
   reviews = signal<Review[]>([]);
@@ -42,7 +51,7 @@ export class CarDetailComponent implements OnInit {
     if (revs.length === 0) return 0;
     const sum = revs.reduce((acc, r) => acc + (r.rating || 0), 0);
     const avg = sum / revs.length;
-    
+
     const maxRating = revs.reduce((m, r) => Math.max(m, r.rating || 0), 0);
     const normalized = maxRating > 5 ? (avg / 2) : avg;
     return Math.round(normalized * 10) / 10;
@@ -96,9 +105,16 @@ export class CarDetailComponent implements OnInit {
     private bookingService: BookingService,
     private reviewService: ReviewService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+    // Get current user role
+    const user = this.authService.getUser();
+    this.currentUser.set(user);
+    this.isGuestUser.set(user?.role === 'guest');
+
+    this.isLoggedIn.set(this.authService.isLoggedIn());
+
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? Number(idParam) : NaN;
     if (isNaN(id)) {
@@ -146,7 +162,6 @@ export class CarDetailComponent implements OnInit {
     if (id) this.loadCar(id);
   }
 
-  // Gallery
   getCurrentPhotoUrl(): string {
     return this.photos()[this.currentPhoto()]?.image || '/assets/placeholder.jpg';
   }
@@ -210,6 +225,11 @@ export class CarDetailComponent implements OnInit {
   submitBooking() {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    if (!this.isGuestUser()) {
+      this.bookingError.set('Only guests can book cars. Please log in as a guest account.');
       return;
     }
 
