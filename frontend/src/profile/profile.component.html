@@ -45,7 +45,7 @@
           <!-- User Info -->
           <h1 class="display-6 fw-bold mt-4">{{ profile.username }}</h1>
           <p class="text-muted fs-5">{{ profile.email }}</p>
-          <p class="text-muted small">Member since {{ profile.created_at | date:'MMMM yyyy' }}</p>
+<p class="text-muted small">Member since {{ profile.created_at | dateFormat:'en-US':{month:'long', year:'numeric'} }}</p>
         </div>
 
         <!-- Loading -->
@@ -91,7 +91,7 @@
               <div class="info-item"><span class="label">Username</span><strong>{{ profile.username }}</strong></div>
               <div class="info-item"><span class="label">Email</span><strong>{{ profile.email }}</strong></div>
               <div class="info-item"><span class="label">Phone</span><strong>{{ profile.phone_number || 'Not provided' }}</strong></div>
-              <div class="info-item"><span class="label">Member Since</span><strong>{{ profile.created_at | date:'mediumDate' }}</strong></div>
+<div class="info-item"><span class="label">Member Since</span><strong>{{ profile.created_at | dateFormat }}</strong></div>
             </div>
 
             <div class="text-center mt-5">

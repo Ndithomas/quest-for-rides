@@ -6,11 +6,12 @@ import { ManagementAuthService, AdminUser } from '../services/management-auth.se
 import { ManagementUserActionsService } from '../services/management-user-actions.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent, DateFormatPipe],
   templateUrl: './user-detail.component.html',
   styleUrls: ['./user-detail.component.scss']
 })

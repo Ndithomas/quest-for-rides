@@ -6,11 +6,12 @@ import { ManagementAuthService, AdminUser, AdminCar, PaginatedUsers } from '../s
 import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { FooterComponent } from '../footer/footer.component';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { CurrencyXAFPipe, DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-management-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FooterComponent, NavbarComponent],
+  imports: [CommonModule, RouterModule, FooterComponent, NavbarComponent, CurrencyXAFPipe, DateFormatPipe],
   templateUrl: './management-dashboard.component.html',
   styleUrls: ['./management-dashboard.component.scss']
 })

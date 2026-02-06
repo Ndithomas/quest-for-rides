@@ -6,11 +6,12 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { ReviewService, ReviewCreate } from '../services/review.service';
+import { DateFormatPipe, CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent, DateFormatPipe, CurrencyXAFPipe],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss'
 })

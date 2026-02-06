@@ -63,12 +63,12 @@
         <div class="date-range">
           <div class="date-item">
             <span class="label">Check-in</span>
-            <strong>{{ formatDate(booking.start_date) }}</strong>
+            <strong>{{ booking.start_date | dateFormat }}</strong>
           </div>
           <i class="bi bi-arrow-right arrow-icon"></i>
           <div class="date-item text-end">
             <span class="label">Check-out</span>
-            <strong>{{ formatDate(booking.end_date) }}</strong>
+            <strong>{{ booking.end_date | dateFormat }}</strong>
           </div>
         </div>
         <div class="summary-row">
@@ -78,11 +78,11 @@
           </div>
           <div class="summary-item">
             <span class="label">Daily Rate</span>
-            <strong>XAF {{ booking.daily_rate | number:'1.0-0' }}</strong>
+            <strong>{{ booking.daily_rate | currencyXAF }}</strong>
           </div>
           <div class="summary-item total">
             <span class="label">Total</span>
-            <strong class="text-success fs-4">XAF{{ booking.total_price | number:'1.0-0' }}</strong>
+            <strong class="text-success fs-4">{{ booking.total_price | currencyXAF }}</strong>
           </div>
         </div>
         <div *ngIf="booking.special_requirements" class="note info">
@@ -115,7 +115,7 @@
           <button *ngIf="booking.status === 'confirmed' && booking.payment_status !== 'completed'"
             (click)="goToPayment(booking.id)" class="btn btn-success rounded-pill flex-grow-1">
             <i class="bi bi-credit-card me-2"></i>
-            Pay with CamPay • XAF{{ booking.total_price | number:'1.0-0' }}
+            Pay with CamPay • {{ booking.total_price | currencyXAF }}
           </button>
           <button *ngIf="booking.status === 'completed' && !booking.review" (click)="openReviewModal(booking)"
             class="btn btn-outline-primary btn-sm rounded-pill">

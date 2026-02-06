@@ -48,12 +48,12 @@
             <p class="mb-1"><strong>Booking ID:</strong> #{{ bookingId }}</p>
             <p class="mb-1"><strong>Car:</strong> {{ booking.car?.make }} {{ booking.car?.model }}</p>
             <p class="mb-1"><strong>License Plate:</strong> {{ booking.car?.license_plate }}</p>
-            <p class="mb-1"><strong>Dates:</strong> {{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}</p>
+            <p class="mb-1"><strong>Dates:</strong> {{ booking.start_date | dateFormat }} - {{ booking.end_date | dateFormat }}</p>
             <p><strong>Guest:</strong> {{ booking.guest?.first_name }} {{ booking.guest?.last_name }}</p>
           </div>
           <div class="col-md-6 text-md-end">
             <h5>Payment Receipt</h5>
-            <p class="mb-1"><strong>Receipt Date:</strong> {{ formatDate(payment.created_at) }}</p>
+            <p class="mb-1"><strong>Receipt Date:</strong> {{ payment.created_at | dateFormat }}</p>
             <p class="mb-1"><strong>Time:</strong> {{ formatTime(payment.created_at) }}</p>
             <p class="mb-1"><strong>CamPay Reference:</strong> {{ getCamPayReference() }}</p>
             <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p>
@@ -81,13 +81,13 @@
                 <div class="col-6"><strong>Customer Phone:</strong></div>
                 <div class="col-6">{{ getCustomerPhone() }}</div>
               </div>
-              <div class="row mb-2">
+<div class="row mb-2">
                 <div class="col-6"><strong>Payment Status:</strong></div>
                 <div class="col-6"><span class="badge bg-success">{{ getPaymentStatusDisplay() }}</span></div>
               </div>
               <div class="row">
                 <div class="col-6"><strong>Payment Date:</strong></div>
-                <div class="col-6">{{ formatDate(payment.created_at) }}</div>
+                <div class="col-6">{{ payment.created_at | dateFormat }}</div>
               </div>
             </div>
           </div>
@@ -132,8 +132,8 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let transaction of payment.transactions">
-                  <td>{{ formatDate(transaction.created_at) }}</td>
+<tr *ngFor="let transaction of payment.transactions">
+                  <td>{{ transaction.created_at | dateFormat }}</td>
                   <td>{{ transaction.transaction_type_display }}</td>
                   <td>R{{ transaction.amount | number:'1.2-2' }}</td>
                   <td><span class="badge bg-success">{{ transaction.status_display }}</span></td>

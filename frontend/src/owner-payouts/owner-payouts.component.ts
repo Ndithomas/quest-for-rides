@@ -5,11 +5,12 @@ import { PaymentService, OwnerEarnings, Payout } from '../services/payment.servi
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { PaginatedResponse } from '../services/listings.service';
+import { DateFormatPipe, CurrencyXAFPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-owner-payouts',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DatePipe, CurrencyPipe],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DatePipe, CurrencyPipe, DateFormatPipe, CurrencyXAFPipe, StatusClassPipe],
   templateUrl: './owner-payouts.component.html'
 })
 export class OwnerPayoutsComponent implements OnInit {

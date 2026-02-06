@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { PaymentService, PaymentAnalytics } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-platform-earnings',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent, CurrencyXAFPipe],
   templateUrl: './platform-earnings.component.html',
   styleUrls: ['./platform-earnings.component.scss']
 })

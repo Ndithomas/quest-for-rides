@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-payment-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './payment-management.component.html',
   styleUrl: './payment-management.component.scss'
 })

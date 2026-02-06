@@ -5,11 +5,12 @@ import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { BookingService, Booking } from '../services/booking.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe, CurrencyXAFPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-booking-details',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent, DateFormatPipe, CurrencyXAFPipe, StatusClassPipe],
   templateUrl: './booking-details.component.html',
   styleUrls: ['./booking-details.component.scss']
 })

@@ -6,7 +6,7 @@
       <div class="text-center mb-5">
         <h1 class="display-6 fw-bold text-dark">Complete Your Payment</h1>
         <p class="lead text-muted">
-          Booking #{{ bookingId }} • 
+          Booking #{{ bookingId }} •
           <strong class="text-success">{{ booking?.total_price | number:'1.0-0' }} XAF</strong>
         </p>
       </div>
@@ -58,7 +58,7 @@
                 <div class="col-6">
                   <div class="text-muted small">Dates</div>
                   <div class="fw-bold">
-                    {{ booking.start_date | date:'shortDate' }} - {{ booking.end_date | date:'shortDate' }}
+{{ booking.start_date | dateFormat:'en-US':{month:'short', day:'numeric'} }} - {{ booking.end_date | dateFormat:'en-US':{month:'short', day:'numeric', year:'numeric'} }}
                   </div>
                 </div>
               </div>
@@ -69,21 +69,19 @@
             <div class="mb-4">
               <h5 class="mb-3">Enter Phone Number</h5>
               <p class="text-muted mb-3">
-                Enter your **12-digit Cameroon mobile money** phone number starting with **237**. You will receive a payment request on your phone.
+                Enter your **12-digit Cameroon mobile money** phone number starting with **237**. You will receive a
+                payment request on your phone.
               </p>
-              
+
               <div class="input-group input-group-lg">
                 <span class="input-group-text">+</span>
-                <input type="tel" 
-                       class="form-control" 
-                       placeholder="2376XXXXXXXX"
-                       [(ngModel)]="phoneNumber"
-                       (input)="formatPhoneNumber($event)"
-                       maxlength="12"
-                       [disabled]="processing">
+                <input type="tel" class="form-control" placeholder="2376XXXXXXXX" [(ngModel)]="phoneNumber"
+                  (input)="formatPhoneNumber($event)" maxlength="12" [disabled]="processing">
               </div>
-              <div class="form-text" [class.text-danger]="phoneNumber && phoneNumber.length > 0 && phoneNumber.length !== 12">
-                Format: **237** followed by 9 digits (e.g., 2376xxxxxxxx). Current length: {{ phoneNumber.length || 0 }}/12
+              <div class="form-text"
+                [class.text-danger]="phoneNumber && phoneNumber.length > 0 && phoneNumber.length !== 12">
+                Format: **237** followed by 9 digits (e.g., 2376xxxxxxxx). Current length: {{ phoneNumber.length || 0
+                }}/12
               </div>
             </div>
 
@@ -108,14 +106,12 @@
             </div>
 
             <div class="d-flex gap-3">
-              <button class="btn btn-outline-secondary btn-lg flex-fill"
-                      (click)="cancelPayment()" 
-                      [disabled]="processing">
+              <button class="btn btn-outline-secondary btn-lg flex-fill" (click)="cancelPayment()"
+                [disabled]="processing">
                 <i class="bi bi-arrow-left me-2"></i>Cancel
               </button>
-              <button class="btn btn-success btn-lg flex-fill"
-                      (click)="initiatePayment()" 
-                      [disabled]="processing || !phoneNumber || phoneNumber.length !== 12 || !phoneNumber.startsWith('237')">
+              <button class="btn btn-success btn-lg flex-fill" (click)="initiatePayment()"
+                [disabled]="processing || !phoneNumber || phoneNumber.length !== 12 || !phoneNumber.startsWith('237')">
                 <span *ngIf="!processing">
                   <i class="bi bi-send-check me-2"></i>Send Payment Request
                 </span>

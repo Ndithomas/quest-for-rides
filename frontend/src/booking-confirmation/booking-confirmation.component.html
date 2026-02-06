@@ -85,11 +85,11 @@
           <div class="date-info">
             <div class="date-item">
               <label>Start Date</label>
-              <p>{{ formatDate(booking().start_date) }}</p>
+              <p>{{ booking().start_date | dateFormat }}</p>
             </div>
             <div class="date-item">
               <label>End Date</label>
-              <p>{{ formatDate(booking().end_date) }}</p>
+              <p>{{ booking().end_date | dateFormat }}</p>
             </div>
             <div class="date-item highlight">
               <label>Duration</label>

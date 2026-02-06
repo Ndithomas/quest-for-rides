@@ -3,24 +3,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PaymentService, CamPayInitiateData } from '../services/payment.service';
-
-// NOTE: Relying on existing definitions for BookingService and its return type (e.g., CarBooking)
-// The actual definitions for these must exist in your project in the imported files.
 import { BookingService } from '../services/booking.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-campay-payment',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DateFormatPipe],
   templateUrl: './campay-payment.component.html',
   styleUrl: './campay-payment.component.scss'
 })
 export class CampayPaymentComponent implements OnInit, OnDestroy {
   bookingId: number = 0;
-  // NOTE: 'any' is used here since the specific interface (e.g., CarBooking) was requested to be removed.
-  // In a real app, define and use the interface from '../services/booking.service'.
   booking: any = null; 
   phoneNumber: string = '';
   loading = true; // Set to true to show loading spinner on initial load

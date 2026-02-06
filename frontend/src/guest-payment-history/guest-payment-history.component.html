@@ -51,7 +51,7 @@
                         <tbody>
                             <tr *ngFor="let payment of payments; trackBy: trackByPaymentId">
                                 <td class="fw-semibold text-primary">#{{ payment.booking.id }}</td>
-                                <td>{{ formatDate(payment.created_at) }}</td>
+                                <td>{{ payment.created_at | dateFormat }}</td>
                                 <td>
                                     <div>
                                         <strong>{{ payment.booking.car_make }} {{ payment.booking.car_model }}</strong>
@@ -64,7 +64,7 @@
                                     </div>
                                 </td>
                                 <td class="fw-bold text-success">
-                                    {{ formatCurrency(payment.amount) }}
+                                    {{ payment.amount | currencyXAF }}
                                 </td>
                                 <td>
                                     <span class="badge bg-info text-dark" *ngIf="isCamPay(payment)">
@@ -75,7 +75,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span [class]="getStatusClass(payment.status)" class="px-3 py-1 rounded">
+                                    <span [class]="payment.status | statusClass" class="px-3 py-1 rounded">
                                         {{ payment.status_display || payment.status | titlecase }}
                                     </span>
                                 </td>

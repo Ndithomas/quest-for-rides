@@ -37,7 +37,7 @@
                             <i class="bi bi-wallet2 fs-1"></i>
                         </div>
                         <h3 class="h5 mb-1">Available Balance</h3>
-                        <h2 class="h3 mb-0 text-success">{{ formatCurrency(earnings.available_balance) }}</h2>
+                        <h2 class="h3 mb-0 text-success">{{ earnings.available_balance | currencyXAF }}</h2>
                         <small class="text-muted">Ready for payout</small>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                             <i class="bi bi-cash-coin fs-1"></i>
                         </div>
                         <h3 class="h5 mb-1">Total Earnings</h3>
-                        <h2 class="h3 mb-0 text-warning">{{ formatCurrency(earnings.total_earnings) }}</h2>
+                        <h2 class="h3 mb-0 text-warning">{{ earnings.total_earnings | currencyXAF }}</h2>
                         <small class="text-muted">All time earnings</small>
                     </div>
                 </div>
@@ -85,8 +85,8 @@
                                     [min]="minimumPayout" [max]="earnings.available_balance" step="1" required>
                             </div>
                             <div class="form-text">
-                                Available: {{ formatCurrency(earnings.available_balance) }} |
-                                Minimum: {{ formatCurrency(minimumPayout) }}
+                                Available: {{ earnings.available_balance | currencyXAF }} |
+                                Minimum: {{ minimumPayout | currencyXAF }}
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -158,8 +158,8 @@
                         </thead>
                         <tbody>
                             <tr *ngFor="let payout of payoutHistory">
-                                <td>{{ payout.requested_at | date:'mediumDate' }}</td>
-                                <td>{{ formatCurrency(payout.amount) }}</td>
+                                <td>{{ payout.requested_at | dateFormat }}</td>
+                                <td>{{ payout.amount | currencyXAF }}</td>
                                 <td>{{ payout.payment_method_display }}</td>
                                 <td>
                                     <span class="badge" [ngClass]="{

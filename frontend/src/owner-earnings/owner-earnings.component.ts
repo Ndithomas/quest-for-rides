@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { PaymentService, OwnerEarnings, BookingPayment } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-owner-earnings',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './owner-earnings.component.html',
   styleUrls: ['./owner-earnings.component.scss']
 })

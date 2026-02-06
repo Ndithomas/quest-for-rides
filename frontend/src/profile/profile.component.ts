@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ProfileService } from '../services/profile.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DateFormatPipe],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })

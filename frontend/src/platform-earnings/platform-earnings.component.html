@@ -26,7 +26,7 @@
               <i class="bi bi-graph-up fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Total Revenue</h6>
-            <h3 class="h2 mb-0 text-success">{{ formatCurrency(analytics.total_revenue) }}</h3>
+            <h3 class="h2 mb-0 text-success">{{ analytics.total_revenue | currencyXAF }}</h3>
             <small class="text-success">{{ analytics.total_transactions }} transactions</small>
           </div>
         </div>
@@ -39,7 +39,7 @@
               <i class="bi bi-percent fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Platform Commission (10%)</h6>
-            <h3 class="h2 mb-0 text-primary">{{ formatCurrency(analytics.platform_commission) }}</h3>
+            <h3 class="h2 mb-0 text-primary">{{ analytics.platform_commission | currencyXAF }}</h3>
             <small class="text-primary">Net income</small>
           </div>
         </div>
@@ -52,7 +52,7 @@
               <i class="bi bi-wallet2 fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Owner Payouts (90%)</h6>
-            <h3 class="h2 mb-0 text-info">{{ formatCurrency(analytics.owner_payouts) }}</h3>
+            <h3 class="h2 mb-0 text-info">{{ analytics.owner_payouts | currencyXAF }}</h3>
             <small class="text-info">Distributed to owners</small>
           </div>
         </div>
@@ -65,7 +65,7 @@
               <i class="bi bi-arrow-left-right fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Total Refunded</h6>
-            <h3 class="h2 mb-0 text-warning">{{ formatCurrency(analytics.total_refunded) }}</h3>
+            <h3 class="h2 mb-0 text-warning">{{ analytics.total_refunded | currencyXAF }}</h3>
             <small class="text-warning">Split 90/10</small>
           </div>
         </div>
@@ -86,19 +86,19 @@
                 </tr>
                 <tr>
                   <td><strong>Total Revenue:</strong></td>
-                  <td class="text-end">{{ formatCurrency(analytics.total_revenue) }}</td>
+                  <td class="text-end">{{ analytics.total_revenue | currencyXAF }}</td>
                 </tr>
                 <tr class="border-top">
                   <td><strong>Platform Commission (10%):</strong></td>
-                  <td class="text-end text-primary"><strong>{{ formatCurrency(analytics.platform_commission) }}</strong></td>
+                  <td class="text-end text-primary"><strong>{{ analytics.platform_commission | currencyXAF }}</strong></td>
                 </tr>
                 <tr>
                   <td><strong>Owner Payouts (90%):</strong></td>
-                  <td class="text-end text-info"><strong>{{ formatCurrency(analytics.owner_payouts) }}</strong></td>
+                  <td class="text-end text-info"><strong>{{ analytics.owner_payouts | currencyXAF }}</strong></td>
                 </tr>
                 <tr class="border-top">
                   <td><strong>Total Refunded:</strong></td>
-                  <td class="text-end text-warning"><strong>{{ formatCurrency(analytics.total_refunded) }}</strong></td>
+                  <td class="text-end text-warning"><strong>{{ analytics.total_refunded | currencyXAF }}</strong></td>
                 </tr>
               </tbody>
             </table>
@@ -122,7 +122,7 @@
             </div>
             <div>
               <small class="text-muted">Net Platform Income</small>
-              <p class="mb-0"><strong class="text-success">{{ formatCurrency(analytics.platform_commission) }}</strong></p>
+              <p class="mb-0"><strong class="text-success">{{ analytics.platform_commission | currencyXAF }}</strong></p>
             </div>
           </div>
         </div>

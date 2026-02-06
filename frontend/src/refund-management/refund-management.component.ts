@@ -4,12 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-refund-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
-  templateUrl: './refund-management.component.html',  // Fixed this line
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
+  templateUrl: './refund-management.component.html',
   styleUrls: ['./refund-management.component.scss']
 })
 export class RefundManagementComponent implements OnInit {

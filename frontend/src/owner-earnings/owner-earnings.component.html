@@ -28,7 +28,7 @@
               <i class="bi bi-cash-stack fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Total Earnings</h6>
-            <h3 class="h2 mb-0 text-success">{{ formatCurrency(earningsData.total_earnings) }}</h3>
+<h3 class="h2 mb-0 text-success">{{ earningsData.total_earnings | currencyXAF }}</h3>
             <small class="text-success">Your 90% share</small>
           </div>
         </div>
@@ -41,7 +41,7 @@
               <i class="bi bi-wallet2 fs-2"></i>
             </div>
             <h6 class="text-muted mb-1">Available Balance</h6>
-            <h3 class="h2 mb-0 text-info">{{ formatCurrency(earningsData.available_balance) }}</h3>
+<h3 class="h2 mb-0 text-info">{{ earningsData.available_balance | currencyXAF }}</h3>
             <small class="text-info">Ready for payout</small>
           </div>
         </div>
@@ -88,11 +88,11 @@
               </div>
               <div class="list-group-item d-flex justify-content-between">
                 <span>Total Revenue:</span>
-                <strong>{{ formatCurrency(getTotalRevenue()) }}</strong>
+<strong>{{ getTotalRevenue() | currencyXAF }}</strong>
               </div>
               <div class="list-group-item d-flex justify-content-between">
                 <span>Platform Commission:</span>
-                <strong class="text-info">{{ formatCurrency(getPlatformCommission()) }}</strong>
+<strong class="text-info">{{ getPlatformCommission() | currencyXAF }}</strong>
               </div>
             </div>
           </div>
@@ -117,12 +117,12 @@
                     <i class="bi bi-receipt me-1 text-muted"></i>
                     #{{ payment.booking }}
                   </td>
-                  <td class="fw-semibold">{{ formatCurrency(payment.amount) }}</td>
-                  <td class="text-success fw-semibold">
-                    {{ formatCurrency(payment.amount * 0.9) }}
+<td class="fw-semibold">{{ payment.amount | currencyXAF }}</td>
+<td class="text-success fw-semibold">
+                    {{ (payment.amount * 0.9) | currencyXAF }}
                     <small class="text-muted d-block">(Your 90% share)</small>
                   </td>
-                  <td class="text-muted small">{{ formatDate(payment.created_at) }}</td>
+<td class="text-muted small">{{ payment.created_at | dateFormat }}</td>
                 </tr>
               </tbody>
             </table>
@@ -162,7 +162,7 @@
                   <li class="mb-2">Earnings are available for payout immediately</li>
                   <li class="mb-2">Contact support to request payout</li>
                   <li class="mb-2">Payouts processed via CamPay to your phone</li>
-                  <li>Minimum payout: {{ formatCurrency(100) }}</li>
+<li>Minimum payout: {{ 100 | currencyXAF }}</li>
                 </ul>
               </div>
             </div>

@@ -59,7 +59,7 @@
             <div class="dates">
               <strong>{{ days(b.start_date, b.end_date) }} days</strong>
               <small class="text-muted">
-                {{ b.start_date | date:'MMM d' }} – {{ b.end_date | date:'MMM d, y' }}
+{{ b.start_date | dateFormat:'en-US':{month:'short', day:'numeric'} }} – {{ b.end_date | dateFormat }}
               </small>
             </div>
             <div class="price">R{{ b.total_price | number:'1.0-0' }}</div>
@@ -115,11 +115,11 @@
     <div class="modal-body" *ngIf="bookingToCancel() as b">
       <p>You are about to cancel this booking because the guest has not completed payment.</p>
 
-      <div class="booking-summary bg-light p-3 rounded mb-3">
+<div class="booking-summary bg-light p-3 rounded mb-3">
         <p class="mb-1"><strong>Car:</strong> {{ b.car_make }} {{ b.car_model }}</p>
         <p class="mb-1"><strong>Guest:</strong> {{ b.guest?.first_name }} {{ b.guest?.last_name }}</p>
         <p class="mb-1"><strong>Dates:</strong>
-          {{ b.start_date | date:'mediumDate' }} – {{ b.end_date | date:'mediumDate' }}
+          {{ b.start_date | dateFormat }} – {{ b.end_date | dateFormat }}
         </p>
         <p class="mb-0"><strong>Total:</strong>
           <span class="text-success">R{{ b.total_price | number:'1.0-0' }}</span>
@@ -152,10 +152,10 @@
     </div>
 
     <div class="modal-body" *ngIf="currentBooking() as b">
-      <div class="booking-summary">
+<div class="booking-summary">
         <p><strong>Car:</strong> {{ b.car_make }} {{ b.car_model }}</p>
         <p><strong>Guest:</strong> {{ b.guest?.first_name }} {{ b.guest?.last_name }}</p>
-        <p><strong>Dates:</strong> {{ b.start_date | date:'mediumDate' }} – {{ b.end_date | date:'mediumDate' }}</p>
+        <p><strong>Dates:</strong> {{ b.start_date | dateFormat }} – {{ b.end_date | dateFormat }}</p>
         <p><strong>Duration:</strong> {{ days(b.start_date, b.end_date) }} days</p>
         <p><strong>Total:</strong> <strong class="text-success">R{{ b.total_price | number:'1.2-2' }}</strong></p>
       </div>

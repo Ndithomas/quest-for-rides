@@ -48,7 +48,7 @@
           <i class="bi bi-currency-rand"></i>
           <h3>Revenue</h3>
         </div>
-        <div class="stat-value">{{ formatCurrency(stats.total_revenue || 0) }}</div>
+        <div class="stat-value">{{ stats.total_revenue | currencyXAF }}</div>
       </div>
     </div>
 

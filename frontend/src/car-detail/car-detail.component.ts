@@ -9,11 +9,12 @@ import { AuthService } from '../services/auth.service';
 import { FooterComponent } from '../footer/footer.component';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ReviewsComponent } from '../reviews/reviews.component';
+import { DateFormatPipe, CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-car-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, FooterComponent, NavbarComponent, ReviewsComponent],
+  imports: [CommonModule, FormsModule, FooterComponent, NavbarComponent, ReviewsComponent, DateFormatPipe, CurrencyXAFPipe],
   templateUrl: './car-detail.component.html',
   styleUrl: './car-detail.component.scss'
 })

@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BookingService, Booking } from '../services/booking.service';
-import { PaginatedResponse } from '../services/listings.service'; // Ensure this path is correct
+import { PaginatedResponse } from '../services/listings.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-management-bookings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './management-bookings.component.html',
   styleUrls: ['./management-bookings.component.scss']
 })

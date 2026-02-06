@@ -5,11 +5,12 @@ import { PaymentService } from '../services/payment.service';
 import { BookingService } from '../services/booking.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe, CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-payment-success',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink],
+  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink, DateFormatPipe, CurrencyXAFPipe],
   templateUrl: './payment-success.component.html',
   styleUrl: './payment-success.component.scss'
 })

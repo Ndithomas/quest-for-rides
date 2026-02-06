@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-guest-payment-history',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, RouterModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './guest-payment-history.component.html',
   styleUrls: ['./guest-payment-history.component.scss']
 })
@@ -57,24 +58,6 @@ export class GuestPaymentHistoryComponent implements OnInit {
         this.isLoadingMore = false;
       }
     });
-  }
-
-  getStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'completed': return 'badge bg-success';
-      case 'pending': return 'badge bg-warning';
-      case 'failed': return 'badge bg-danger';
-      case 'refunded': return 'badge bg-secondary';
-      default: return 'badge bg-secondary';
-    }
-  }
-
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-CM', {
-      style: 'currency',
-      currency: 'XAF',
-      minimumFractionDigits: 0
-    }).format(amount);
   }
 
   getRefundedAmount(payment: BookingPayment): number {

@@ -6,11 +6,12 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { BookingService } from '../services/booking.service';
 import { ListingsService } from '../services/listings.service';
+import { DateFormatPipe, CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-booking-confirmation',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, NavbarComponent, FooterComponent, DateFormatPipe, CurrencyXAFPipe],
   templateUrl: './booking-confirmation.component.html',
   styleUrls: ['./booking-confirmation.component.scss']
 })

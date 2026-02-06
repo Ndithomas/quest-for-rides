@@ -10,7 +10,7 @@ from django.utils import timezone
 from bookings.models import Booking, BookingPayment
 from userAuth.models import User
 from .models import *
-from .campay import initiate_collection, get_transaction_status
+from .campay import initiate_collection, get_transaction_status, initiate_payout
 from .serializers import *
 
 class BookingPaymentDetailView(generics.RetrieveAPIView):
@@ -453,15 +453,57 @@ class PayoutProcessView(generics.GenericAPIView):
             payout.status = 'processing'
             payout.save(update_fields=['status'])
 
-            # TODO: Integrate with actual payment gateway (CamPay, bank transfer, etc.)
-            # For now, mark as completed immediately
-            payout.status = 'completed'
-            payout.completed_at = timezone.now()
-            payout.external_reference = f"payout_{payout.id}_{payout.created_at.timestamp()}"
-            payout.save(update_fields=['status', 'completed_at', 'external_reference'])
+            # Attempt to call CamPay disbursement API
+            try:
+                external_ref = f"payout_{payout.id}_{int(payout.created_at.timestamp())}"
+                # Use integer string amount like other CamPay usages
+                response = initiate_payout(
+                    amount=str(int(payout.amount)),
+                    phone=payout.phone_number,
+                    description=f"Payout to {payout.owner.username} - Payout {payout.id}",
+                    external_ref=external_ref,
+                )
 
+                # Normalize response reference/status
+                ref = None
+                status_hint = None
+                if isinstance(response, dict):
+                    ref = response.get('reference') or response.get('external_reference') or response.get('id')
+                    status_hint = (response.get('status') or response.get('result') or '').upper()
+
+                payout.external_reference = ref or external_ref
+
+                # Map common statuses to our internal states
+                if status_hint in ('SUCCESS', 'SUCCESSFUL', 'COMPLETED'):
+                    payout.status = 'completed'
+                    payout.completed_at = timezone.now()
+                    payout.save(update_fields=['status', 'completed_at', 'external_reference'])
+                else:
+                    # Leave as processing if SDK returns async reference
+                    payout.status = 'processing'
+                    payout.save(update_fields=['status', 'external_reference'])
+
+            except NotImplementedError as nie:
+                # SDK doesn't support disburse in this environment
+                payout.status = 'failed'
+                payout.notes = (payout.notes or '') + f"\nPayout integration missing: {str(nie)}"
+                payout.save(update_fields=['status', 'notes'])
+                return Response({
+                    "detail": "Payout integration missing on server. See server logs.",
+                    "error": str(nie)
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            except Exception as e:
+                # External call failed; mark failed and return error
+                payout.status = 'failed'
+                payout.notes = (payout.notes or '') + f"\nPayout failed: {str(e)}"
+                payout.save(update_fields=['status', 'notes', 'external_reference'])
+                return Response({
+                    "detail": "Payout processing failed.",
+                    "error": str(e)
+                }, status=status.HTTP_502_BAD_GATEWAY)
         return Response({
-            "detail": "Payout processed successfully",
+            "detail": "Payout processing started",
             "payout": PayoutSerializer(payout).data
         })
 
@@ -481,4 +523,90 @@ class PayoutRejectView(generics.GenericAPIView):
         return Response({
             "detail": "Payout rejected",
             "payout": PayoutSerializer(payout).data
+        })
+
+
+class CamPayWebhookView(generics.GenericAPIView):
+    """
+    Webhook endpoint to receive status callbacks from CamPay.
+    Configure CamPay to send callbacks to: https://yourdomain.com/api/payments/webhook/campay/
+    """
+    permission_classes = []  # No auth - CamPay will use signature/hmac verification
+    authentication_classes = []
+
+    def post(self, request):
+        import logging
+        logger = logging.getLogger(__name__)
+
+        # Log webhook for debugging
+        logger.info(f"CamPay webhook received: {request.data}")
+
+        # Extract reference and status from CamPay payload
+        # CamPay typically sends: {"reference": "...", "status": "...", "event": "..."}
+        external_ref = (
+            request.data.get('reference') or
+            request.data.get('external_reference') or
+            request.data.get('transaction_reference')
+        )
+        campay_status = (request.data.get('status') or request.data.get('result') or '').upper()
+        event_type = request.data.get('event', '').lower()
+
+        if not external_ref:
+            logger.warning("CamPay webhook missing reference")
+            return Response({"detail": "Missing reference"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find payout by external_reference
+        payout = Payout.objects.filter(external_reference=external_ref).first()
+
+        if not payout:
+            # Try to find by parsing payout ID from reference format: payout_{id}_{timestamp}
+            if external_ref.startswith('payout_'):
+                try:
+                    parts = external_ref.split('_')
+                    if len(parts) >= 2:
+                        payout_id = int(parts[1])
+                        payout = Payout.objects.filter(id=payout_id).first()
+                except (ValueError, IndexError):
+                    pass
+
+        if not payout:
+            logger.warning(f"CamPay webhook: No payout found for reference {external_ref}")
+            return Response({"detail": "Payout not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Determine new status from CamPay status
+        new_status = None
+        if campay_status in ('SUCCESS', 'SUCCESSFUL', 'COMPLETED', 'DONE'):
+            new_status = 'completed'
+        elif campay_status in ('FAILED', 'ERROR', 'REJECTED', 'CANCELLED', 'FAILED'):
+            new_status = 'failed'
+        elif event_type in ('disbursement_success', 'payout_success', 'transfer_success'):
+            new_status = 'completed'
+        elif event_type in ('disbursement_failed', 'payout_failed', 'transfer_failed'):
+            new_status = 'failed'
+
+        if new_status and new_status != payout.status:
+            old_status = payout.status
+            payout.status = new_status
+
+            if new_status == 'completed':
+                payout.completed_at = timezone.now()
+                payout.save(update_fields=['status', 'completed_at'])
+            else:
+                payout.notes = (payout.notes or '') + f"\nWebhook status: {campay_status} ({event_type})"
+                payout.save(update_fields=['status', 'notes'])
+
+            logger.info(f"CamPay webhook updated payout {payout.id}: {old_status} -> {new_status}")
+
+            return Response({
+                "detail": "Webhook processed",
+                "payout_id": payout.id,
+                "new_status": new_status
+            })
+
+        # No status change needed
+        return Response({
+            "detail": "Webhook received, no action taken",
+            "payout_id": payout.id,
+            "current_status": payout.status,
+            "campay_status": campay_status
         })

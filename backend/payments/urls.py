@@ -8,6 +8,8 @@ urlpatterns = [
     path('booking/<int:booking_id>/status-update/', views.PaymentStatusUpdateView.as_view()),
     path('booking/<int:booking_id>/refund/', views.PaymentRefundView.as_view()),
 
+    path('webhook/campay/', views.CamPayWebhookView.as_view(), name='campay-webhook'),
+
     path('list/', views.PaymentListView.as_view()),
     path('analytics/', views.PaymentAnalyticsView.as_view()),
 

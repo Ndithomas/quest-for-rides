@@ -5,12 +5,13 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { Router, RouterLink } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
-import { AuthService } from '../services/auth.service'; // <-- import
+import { AuthService } from '../services/auth.service';
+import { DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink],
+  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink, DateFormatPipe],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss'
 })

@@ -4,11 +4,12 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReviewService, Review } from '../services/review.service';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
+import { DateFormatPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-reviews',
   standalone: true,
-  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink],
+  imports: [CommonModule, NavbarComponent, FooterComponent, RouterLink, DateFormatPipe],
   templateUrl: './reviews.component.html',
   styleUrls: ['./reviews.component.scss']
 })

@@ -5,11 +5,12 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { BookingService, Booking, PaginatedBookings } from '../services/booking.service';
 import { AuthService } from '../services/auth.service';
+import { DateFormatPipe, CurrencyXAFPipe } from '../shared/pipes';
 
 @Component({
   selector: 'app-owner-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, DateFormatPipe, CurrencyXAFPipe],
   templateUrl: './owner-bookings.component.html',
   styleUrl: './owner-bookings.component.scss'
 })

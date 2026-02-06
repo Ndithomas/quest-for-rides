@@ -74,8 +74,8 @@
           <div class="notification-content">
             <h6 class="notification-title">{{ notification.title }}</h6>
             <p class="notification-message">{{ notification.message }}</p>
-            <span class="notification-time">
-              {{ notification.created_at | date:'short' }}
+<span class="notification-time">
+              {{ notification.created_at | dateFormat }}
             </span>
           </div>
 
