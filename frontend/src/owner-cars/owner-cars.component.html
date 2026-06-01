@@ -46,155 +46,183 @@
         </button>
       </div>
 
-      <div *ngIf="loading()" class="text-center py-5">
-        <div class="spinner"></div>
-        <p class="mt-4 text-muted fs-5">Loading your fleet...</p>
-      </div>
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner"></div>
+          <p class="mt-4 text-muted fs-5">Loading your fleet...</p>
+        </div>
+      }
 
 
-      <div *ngIf="!loading() && cars().length === 0" class="text-center py-5 empty-state">
-        <i class="bi bi-car-front-fill text-muted" style="font-size: 5rem;"></i>
-        <h3 class="mt-4">Your fleet is empty</h3>
-        <p class="text-muted mb-4">Add your first car and start earning today</p>
-        <a routerLink="/owner/add-car" class="btn btn-success rounded-pill px-5">
-          Add Your First Car
-        </a>
-      </div>
+      @if (!loading() && cars().length === 0) {
+        <div class="text-center py-5 empty-state">
+          <i class="bi bi-car-front-fill text-muted" style="font-size: 5rem;"></i>
+          <h3 class="mt-4">Your fleet is empty</h3>
+          <p class="text-muted mb-4">Add your first car and start earning today</p>
+          <a routerLink="/owner/add-car" class="btn btn-success rounded-pill px-5">
+            Add Your First Car
+          </a>
+        </div>
+      }
 
 
-      <div class="row g-4" *ngIf="!loading() && cars().length > 0">
-        <div class="col-md-6 col-lg-4" *ngFor="let car of cars(); trackBy: trackByCarId">
-          <div class="car-card" [class.inactive]="car.status === 'inactive'">
-
-            <div class="image-wrapper">
-              <span class="status-badge" [ngClass]="getStatusBadgeClass(car)">
-                {{ car.status_display }}
-              </span>
-
-              <span class="verify-badge"
-                *ngIf="car.status_badge !== 'booked' && car.status_badge !== 'recently-returned'"
-                [class.bg-success]="car.is_verified" [class.bg-warning]="!car.is_verified">
-                <i class="bi" [ngClass]="car.is_verified ? 'bi-shield-check' : 'bi-shield-exclamation'"></i>
-                {{ car.is_verified ? 'Verified' : 'Pending' }}
-              </span>
-
-              <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model" class="car-img"
-                *ngIf="hasPhoto(car); else noPhoto">
-              <ng-template #noPhoto>
-                <div class="no-photo">
-                  <i class="bi bi-car-front-fill"></i>
+      @if (!loading() && cars().length > 0) {
+        <div class="row g-4">
+          @for (car of cars(); track trackByCarId($index, car)) {
+            <div class="col-md-6 col-lg-4">
+              <div class="car-card" [class.inactive]="car.status === 'inactive'">
+                <div class="image-wrapper">
+                  <span class="status-badge" [ngClass]="getStatusBadgeClass(car)">
+                    {{ car.status_display }}
+                  </span>
+                  @if (car.status_badge !== 'booked' && car.status_badge !== 'recently-returned') {
+                    <span class="verify-badge"
+                      [class.bg-success]="car.is_verified" [class.bg-warning]="!car.is_verified">
+                      <i class="bi" [ngClass]="car.is_verified ? 'bi-shield-check' : 'bi-shield-exclamation'"></i>
+                      {{ car.is_verified ? 'Verified' : 'Pending' }}
+                    </span>
+                  }
+                  @if (hasPhoto(car)) {
+                    <img [src]="getPrimaryPhoto(car)" [alt]="car.make + ' ' + car.model" class="car-img"
+                      >
+                  } @else {
+                    <div class="no-photo">
+                      <i class="bi bi-car-front-fill"></i>
+                    </div>
+                  }
                 </div>
-              </ng-template>
-            </div>
-
-            <div class="details">
-              <h5 class="title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>
-              <p class="info text-muted small">
-                {{ car.license_plate }} • {{ car.location_name || 'No location' }}
-              </p>
-
-              <div class="d-flex justify-content-between align-items-end mt-3">
-                <div>
-                  <div class="price">XAF {{ car.daily_rate }}<small class="text-muted">/day</small></div>
-                  <div class="text-muted small mt-1">
-                    <strong>{{ car.total_trips || 0 }}</strong> trips •
-                    <strong class="text-success">XAF {{ (car.total_earnings || 0) | number:'1.0-0' }}</strong>
+                <div class="details">
+                  <h5 class="title">{{ car.year }} {{ car.make }} {{ car.model }}</h5>
+                  <p class="info text-muted small">
+                    {{ car.license_plate }} • {{ car.location_name || 'No location' }}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-end mt-3">
+                    <div>
+                      <div class="price">XAF {{ car.daily_rate }}<small class="text-muted">/day</small></div>
+                      <div class="text-muted small mt-1">
+                        <strong>{{ car.total_trips || 0 }}</strong> trips •
+                        <strong class="text-success">XAF {{ (car.total_earnings || 0) | number:'1.0-0' }}</strong>
+                      </div>
+                    </div>
+                    <div class="actions">
+                      <button (click)="view(car.id)" class="btn-action" title="View">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button (click)="edit(car.id)" class="btn-action edit" title="Edit">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button (click)="openDeleteModal(car)" class="btn-action delete" title="Delete"
+                        [disabled]="isDeleting()">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
                   </div>
+                  @if (car.status_badge !== 'booked') {
+                    <div class="status-controls mt-3">
+                      <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn btn-sm" [class.btn-success]="car.status === 'available'"
+                          [class.btn-outline-success]="car.status !== 'available'" (click)="changeStatus(car.id, 'available')"
+                          [disabled]="changingStatusId() === car.id">
+                          @if (changingStatusId() === car.id) {
+                            <span>
+                              <span class="spinner-border spinner-border-sm me-1"></span>
+                            </span>
+                          }
+                          @if (changingStatusId() !== car.id) {
+                            <span>
+                              <i class="bi bi-check-circle me-1"></i>
+                            </span>
+                          }
+                          Available
+                        </button>
+                        <button type="button" class="btn btn-sm" [class.btn-warning]="car.status === 'maintenance'"
+                          [class.btn-outline-warning]="car.status !== 'maintenance'"
+                          (click)="changeStatus(car.id, 'maintenance')" [disabled]="changingStatusId() === car.id">
+                          @if (changingStatusId() === car.id) {
+                            <span>
+                              <span class="spinner-border spinner-border-sm me-1"></span>
+                            </span>
+                          }
+                          @if (changingStatusId() !== car.id) {
+                            <span>
+                              <i class="bi bi-tools me-1"></i>
+                            </span>
+                          }
+                          Maintenance
+                        </button>
+                        <!-- Inactive Button -->
+                        <button type="button" class="btn btn-sm" [class.btn-danger]="car.status === 'inactive'"
+                          [class.btn-outline-danger]="car.status !== 'inactive'" (click)="changeStatus(car.id, 'inactive')"
+                          [disabled]="changingStatusId() === car.id">
+                          @if (changingStatusId() === car.id) {
+                            <span>
+                              <span class="spinner-border spinner-border-sm me-1"></span>
+                            </span>
+                          }
+                          @if (changingStatusId() !== car.id) {
+                            <span>
+                              <i class="bi bi-slash-circle me-1"></i>
+                            </span>
+                          }
+                          Unavailable
+                        </button>
+                      </div>
+                      @if (car.status_badge === 'recently-returned') {
+                        <button (click)="markAsAvailable(car.id)"
+                          class="btn btn-success btn-sm rounded-pill px-4 mt-2 w-100" [disabled]="markingId() === car.id">
+                          @if (markingId() === car.id) {
+                            <span>
+                              <span class="spinner-border spinner-border-sm me-2"></span>Saving...
+                            </span>
+                          }
+                          @if (markingId() !== car.id) {
+                            <span>
+                              <i class="bi bi-check2-circle me-1"></i>Mark Available
+                            </span>
+                          }
+                        </button>
+                      }
+                    </div>
+                  }
+                  @if (car.status_badge === 'booked') {
+                    <div class="alert alert-warning mt-3 p-2 text-center">
+                      <small><i class="bi bi-info-circle me-1"></i>Car is booked - status cannot be changed</small>
+                    </div>
+                  }
                 </div>
-
-                <div class="actions">
-                  <button (click)="view(car.id)" class="btn-action" title="View">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button (click)="edit(car.id)" class="btn-action edit" title="Edit">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button (click)="openDeleteModal(car)" class="btn-action delete" title="Delete"
-                    [disabled]="isDeleting()">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-
-              <div class="status-controls mt-3" *ngIf="car.status_badge !== 'booked'">
-                <div class="btn-group w-100" role="group">
-                  <button type="button" class="btn btn-sm" [class.btn-success]="car.status === 'available'"
-                    [class.btn-outline-success]="car.status !== 'available'" (click)="changeStatus(car.id, 'available')"
-                    [disabled]="changingStatusId() === car.id">
-                    <span *ngIf="changingStatusId() === car.id">
-                      <span class="spinner-border spinner-border-sm me-1"></span>
-                    </span>
-                    <span *ngIf="changingStatusId() !== car.id">
-                      <i class="bi bi-check-circle me-1"></i>
-                    </span>
-                    Available
-                  </button>
-
-                  <button type="button" class="btn btn-sm" [class.btn-warning]="car.status === 'maintenance'"
-                    [class.btn-outline-warning]="car.status !== 'maintenance'"
-                    (click)="changeStatus(car.id, 'maintenance')" [disabled]="changingStatusId() === car.id">
-                    <span *ngIf="changingStatusId() === car.id">
-                      <span class="spinner-border spinner-border-sm me-1"></span>
-                    </span>
-                    <span *ngIf="changingStatusId() !== car.id">
-                      <i class="bi bi-tools me-1"></i>
-                    </span>
-                    Maintenance
-                  </button>
-
-                  <!-- Inactive Button -->
-                  <button type="button" class="btn btn-sm" [class.btn-danger]="car.status === 'inactive'"
-                    [class.btn-outline-danger]="car.status !== 'inactive'" (click)="changeStatus(car.id, 'inactive')"
-                    [disabled]="changingStatusId() === car.id">
-                    <span *ngIf="changingStatusId() === car.id">
-                      <span class="spinner-border spinner-border-sm me-1"></span>
-                    </span>
-                    <span *ngIf="changingStatusId() !== car.id">
-                      <i class="bi bi-slash-circle me-1"></i>
-                    </span>
-                    Unavailable
-                  </button>
-                </div>
-
-                <button *ngIf="car.status_badge === 'recently-returned'" (click)="markAsAvailable(car.id)"
-                  class="btn btn-success btn-sm rounded-pill px-4 mt-2 w-100" [disabled]="markingId() === car.id">
-                  <span *ngIf="markingId() === car.id">
-                    <span class="spinner-border spinner-border-sm me-2"></span>Saving...
-                  </span>
-                  <span *ngIf="markingId() !== car.id">
-                    <i class="bi bi-check2-circle me-1"></i>Mark Available
-                  </span>
-                </button>
-              </div>
-              <div *ngIf="car.status_badge === 'booked'" class="alert alert-warning mt-3 p-2 text-center">
-                <small><i class="bi bi-info-circle me-1"></i>Car is booked - status cannot be changed</small>
               </div>
             </div>
-          </div>
+          }
+          @if (nextPageUrl()) {
+            <div class="text-center mt-5 mb-4">
+              <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm" (click)="loadMore()"
+                [disabled]="isLoadingMore()">
+                @if (isLoadingMore()) {
+                  <span>
+                    <span class="spinner-border spinner-border-sm me-2"></span>Loading more cars...
+                  </span>
+                }
+                @if (!isLoadingMore()) {
+                  <span>
+                    <i class="bi bi-chevron-down me-2"></i>Load More Vehicles
+                  </span>
+                }
+              </button>
+            </div>
+          }
+          @if (!nextPageUrl() && cars().length > 0) {
+            <div class="text-center text-muted mt-4">
+              <small><i class="bi bi-check-all me-1"></i> All vehicles loaded</small>
+            </div>
+          }
         </div>
-        <div class="text-center mt-5 mb-4" *ngIf="nextPageUrl()">
-          <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm" (click)="loadMore()"
-            [disabled]="isLoadingMore()">
-
-            <span *ngIf="isLoadingMore()">
-              <span class="spinner-border spinner-border-sm me-2"></span>Loading more cars...
-            </span>
-
-            <span *ngIf="!isLoadingMore()">
-              <i class="bi bi-chevron-down me-2"></i>Load More Vehicles
-            </span>
-          </button>
-        </div>
-        <div class="text-center text-muted mt-4" *ngIf="!nextPageUrl() && cars().length > 0">
-          <small><i class="bi bi-check-all me-1"></i> All vehicles loaded</small>
-        </div>
-      </div>
+      }
     </div>
   </div>
 </div>
 
 @if (showDeleteModal() && selectedCar()) {
-<app-delete-car [car]="selectedCar()" [deleting]="isDeleting()" (cancel)="closeDeleteModal()" (confirm)="onDeleteCar()">
-</app-delete-car>
+  <app-delete-car [car]="selectedCar()" [deleting]="isDeleting()" (cancel)="closeDeleteModal()" (confirm)="onDeleteCar()">
+  </app-delete-car>
 }
 <app-footer></app-footer>

@@ -40,12 +40,16 @@
           <a routerLink="/forgot-password" class="link-forgot">Forgot password?</a>
         </div>
 
-        <div class="alert-error" *ngIf="error">
-          {{ error }}
-        </div>
+        @if (error) {
+          <div class="alert-error">
+            {{ error }}
+          </div>
+        }
 
         <button type="submit" class="btn-login" [disabled]="loading">
-          <span *ngIf="loading" class="spinner"></span>
+          @if (loading) {
+            <span class="spinner"></span>
+          }
           {{ loading ? 'Signing in...' : 'Sign In' }}
         </button>
 

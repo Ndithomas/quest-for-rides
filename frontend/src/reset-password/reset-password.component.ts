@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -9,7 +9,7 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, NavbarComponent, FooterComponent],
+  imports: [FormsModule, RouterLink, NavbarComponent, FooterComponent],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss']
 })

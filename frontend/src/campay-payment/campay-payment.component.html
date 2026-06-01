@@ -11,153 +11,158 @@
         </p>
       </div>
 
-      <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-4 text-muted fs-5">Preparing payment...</p>
-      </div>
-
-      <div *ngIf="!loading && booking" class="payment-card">
-        <div *ngIf="error" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-          {{ error }}
-          <button type="button" class="btn-close" (click)="error = ''"></button>
-        </div>
-
-        <div *ngIf="success" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-          {{ success }}
-          <button type="button" class="btn-close" (click)="success = ''"></button>
-        </div>
-
-        <div *ngIf="paymentStatus" class="alert alert-info mb-4">
-          <div class="d-flex align-items-center">
-            <div class="spinner-border spinner-border-sm me-3" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <div>
-              <strong>Payment Status:</strong> {{ paymentStatus.status || 'Checking...' }}
-              <div *ngIf="paymentStatus.campay_status" class="small">
-                CamPay Reference: {{ paymentStatus.external_transaction_id || paymentStatus.campay_status }}
-              </div>
-            </div>
+      @if (loading) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
           </div>
+          <p class="mt-4 text-muted fs-5">Preparing payment...</p>
         </div>
+      }
 
-        <div class="card border-0 shadow-lg">
-          <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-phone me-2"></i>Mobile Money Payment (CamPay)</h4>
-          </div>
-          <div class="card-body p-4">
-            <div class="mb-4">
-              <h5 class="mb-3">Booking Summary</h5>
-              <div class="row">
-                <div class="col-6">
-                  <div class="text-muted small">Car</div>
-                  <div class="fw-bold">{{ booking.car?.make }} {{ booking.car?.model }}</div>
-                </div>
-                <div class="col-6">
-                  <div class="text-muted small">Dates</div>
-                  <div class="fw-bold">
-{{ booking.start_date | dateFormat:'en-US':{month:'short', day:'numeric'} }} - {{ booking.end_date | dateFormat:'en-US':{month:'short', day:'numeric', year:'numeric'} }}
-                  </div>
-                </div>
-              </div>
+      @if (!loading && booking) {
+        <div class="payment-card">
+          @if (error) {
+            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+              {{ error }}
+              <button type="button" class="btn-close" (click)="error = ''"></button>
             </div>
-
-            <hr>
-
-            <div class="mb-4">
-              <h5 class="mb-3">Enter Phone Number</h5>
-              <p class="text-muted mb-3">
-                Enter your **12-digit Cameroon mobile money** phone number starting with **237**. You will receive a
-                payment request on your phone.
-              </p>
-
-              <div class="input-group input-group-lg">
-                <span class="input-group-text">+</span>
-                <input type="tel" class="form-control" placeholder="2376XXXXXXXX" [(ngModel)]="phoneNumber"
-                  (input)="formatPhoneNumber($event)" maxlength="12" [disabled]="processing">
-              </div>
-              <div class="form-text"
-                [class.text-danger]="phoneNumber && phoneNumber.length > 0 && phoneNumber.length !== 12">
-                Format: **237** followed by 9 digits (e.g., 2376xxxxxxxx). Current length: {{ phoneNumber.length || 0
-                }}/12
-              </div>
+          }
+          @if (success) {
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+              {{ success }}
+              <button type="button" class="btn-close" (click)="success = ''"></button>
             </div>
-
-            <hr>
-
-            <div class="mb-4">
-              <h5 class="mb-3">Payment Amount</h5>
-              <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+          }
+          @if (paymentStatus) {
+            <div class="alert alert-info mb-4">
+              <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-3" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
                 <div>
-                  <div class="text-muted small">Total Amount</div>
-                  <div class="display-6 fw-bold text-success">
-                    {{ booking.total_price | number:'1.0-0' }} XAF
-                  </div>
-                </div>
-                <div class="text-end">
-                  <div class="text-muted small">Via CamPay</div>
-                  <div class="h4 mb-0">
-                    <i class="bi bi-phone text-primary"></i>
-                  </div>
+                  <strong>Payment Status:</strong> {{ paymentStatus.status || 'Checking...' }}
+                  @if (paymentStatus.campay_status) {
+                    <div class="small">
+                      CamPay Reference: {{ paymentStatus.external_transaction_id || paymentStatus.campay_status }}
+                    </div>
+                  }
                 </div>
               </div>
             </div>
-
-            <div class="d-flex gap-3">
-              <button class="btn btn-outline-secondary btn-lg flex-fill" (click)="cancelPayment()"
-                [disabled]="processing">
-                <i class="bi bi-arrow-left me-2"></i>Cancel
-              </button>
-              <button class="btn btn-success btn-lg flex-fill" (click)="initiatePayment()"
-                [disabled]="processing || !phoneNumber || phoneNumber.length !== 12 || !phoneNumber.startsWith('237')">
-                <span *ngIf="!processing">
-                  <i class="bi bi-send-check me-2"></i>Send Payment Request
-                </span>
-                <span *ngIf="processing" class="d-flex align-items-center justify-content-center">
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                  Processing...
-                </span>
-              </button>
+          }
+          <div class="card border-0 shadow-lg">
+            <div class="card-header bg-primary text-white">
+              <h4 class="mb-0"><i class="bi bi-phone me-2"></i>Mobile Money Payment (CamPay)</h4>
             </div>
-
-            <div class="mt-4 pt-3 border-top">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="d-flex align-items-center text-muted small">
-                    <i class="bi bi-shield-check text-success me-2"></i>
-                    <span>Secure & Encrypted</span>
+            <div class="card-body p-4">
+              <div class="mb-4">
+                <h5 class="mb-3">Booking Summary</h5>
+                <div class="row">
+                  <div class="col-6">
+                    <div class="text-muted small">Car</div>
+                    <div class="fw-bold">{{ booking.car?.make }} {{ booking.car?.model }}</div>
                   </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="d-flex align-items-center text-muted small">
-                    <i class="bi bi-info-circle text-primary me-2"></i>
-                    <span>You'll confirm payment on your phone</span>
+                  <div class="col-6">
+                    <div class="text-muted small">Dates</div>
+                    <div class="fw-bold">
+                      {{ booking.start_date | dateFormat:'en-US':{month:'short', day:'numeric'} }} - {{ booking.end_date | dateFormat:'en-US':{month:'short', day:'numeric', year:'numeric'} }}
+                    </div>
                   </div>
                 </div>
               </div>
+              <hr>
+                <div class="mb-4">
+                  <h5 class="mb-3">Enter Phone Number</h5>
+                  <p class="text-muted mb-3">
+                    Enter your **12-digit Cameroon mobile money** phone number starting with **237**. You will receive a
+                    payment request on your phone.
+                  </p>
+                  <div class="input-group input-group-lg">
+                    <span class="input-group-text">+</span>
+                    <input type="tel" class="form-control" placeholder="2376XXXXXXXX" [(ngModel)]="phoneNumber"
+                      (input)="formatPhoneNumber($event)" maxlength="12" [disabled]="processing">
+                  </div>
+                  <div class="form-text"
+                    [class.text-danger]="phoneNumber && phoneNumber.length > 0 && phoneNumber.length !== 12">
+                    Format: **237** followed by 9 digits (e.g., 2376xxxxxxxx). Current length: {{ phoneNumber.length || 0
+                    }}/12
+                  </div>
+                </div>
+                <hr>
+                  <div class="mb-4">
+                    <h5 class="mb-3">Payment Amount</h5>
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
+                      <div>
+                        <div class="text-muted small">Total Amount</div>
+                        <div class="display-6 fw-bold text-success">
+                          {{ booking.total_price | number:'1.0-0' }} XAF
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="text-muted small">Via CamPay</div>
+                        <div class="h4 mb-0">
+                          <i class="bi bi-phone text-primary"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-flex gap-3">
+                    <button class="btn btn-outline-secondary btn-lg flex-fill" (click)="cancelPayment()"
+                      [disabled]="processing">
+                      <i class="bi bi-arrow-left me-2"></i>Cancel
+                    </button>
+                    <button class="btn btn-success btn-lg flex-fill" (click)="initiatePayment()"
+                      [disabled]="processing || !phoneNumber || phoneNumber.length !== 12 || !phoneNumber.startsWith('237')">
+                      @if (!processing) {
+                        <span>
+                          <i class="bi bi-send-check me-2"></i>Send Payment Request
+                        </span>
+                      }
+                      @if (processing) {
+                        <span class="d-flex align-items-center justify-content-center">
+                          <span class="spinner-border spinner-border-sm me-2"></span>
+                          Processing...
+                        </span>
+                      }
+                    </button>
+                  </div>
+                  <div class="mt-4 pt-3 border-top">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="d-flex align-items-center text-muted small">
+                          <i class="bi bi-shield-check text-success me-2"></i>
+                          <span>Secure & Encrypted</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="d-flex align-items-center text-muted small">
+                          <i class="bi bi-info-circle text-primary me-2"></i>
+                          <span>You'll confirm payment on your phone</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card border-info mt-4">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>How to Pay with CamPay</h5>
+                </div>
+                <div class="card-body">
+                  <ol class="mb-0">
+                    <li class="mb-2">Enter your 12-digit Cameroon phone number (MTN or Orange) starting with **237**.</li>
+                    <li class="mb-2">Click "**Send Payment Request**"</li>
+                    <li class="mb-2">Check your phone for a USSD prompt or SMS </li>
+                    <li class="mb-2">Confirm the payment on your phone (usually by entering a mobile money PIN).</li>
+                    <li>Return here to see payment status update automatically.</li>
+                  </ol>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-
-        <div class="card border-info mt-4">
-          <div class="card-header bg-info text-white">
-            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>How to Pay with CamPay</h5>
-          </div>
-          <div class="card-body">
-            <ol class="mb-0">
-              <li class="mb-2">Enter your 12-digit Cameroon phone number (MTN or Orange) starting with **237**.</li>
-              <li class="mb-2">Click "**Send Payment Request**"</li>
-              <li class="mb-2">Check your phone for a USSD prompt or SMS </li>
-              <li class="mb-2">Confirm the payment on your phone (usually by entering a mobile money PIN).</li>
-              <li>Return here to see payment status update automatically.</li>
-            </ol>
-          </div>
+          }
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<app-footer></app-footer>
+    <app-footer></app-footer>

@@ -3,12 +3,12 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ManagementAuthService } from '../services/management-auth.service';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-management-setup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink],
   templateUrl: './management-setup.component.html',
   styleUrls: ['./management-setup.component.scss']
 })

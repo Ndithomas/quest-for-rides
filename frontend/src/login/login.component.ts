@@ -4,13 +4,13 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { RoleRedirectService } from '../services/role-redirect.service';
 import { NavbarComponent } from '../navbar/navbar.component';
-import { CommonModule } from '@angular/common';
+
 import { FooterComponent } from '../footer/footer.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule,  NavbarComponent, RouterLink, FooterComponent],
+  imports: [FormsModule, NavbarComponent, RouterLink, FooterComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })

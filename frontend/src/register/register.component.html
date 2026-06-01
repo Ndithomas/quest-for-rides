@@ -1,7 +1,7 @@
 <app-navbar></app-navbar>
 
 <div class="register-page">
- 
+
   <div class="register-container">
     <div class="register-card">
       <div class="text-center mb-5">
@@ -37,9 +37,11 @@
           <label class="form-label">Password</label>
           <input type="password" class="form-input" placeholder="Minimum 8 characters"
             [(ngModel)]="user.password" name="password" minlength="8" #pwd="ngModel" required />
-          <small *ngIf="pwd.invalid && pwd.touched" class="text-danger d-block mt-1">
-            Password must be at least 8 characters long.
-          </small>
+          @if (pwd.invalid && pwd.touched) {
+            <small class="text-danger d-block mt-1">
+              Password must be at least 8 characters long.
+            </small>
+          }
         </div>
 
         <div class="form-group">
@@ -75,13 +77,17 @@
             [(ngModel)]="user.phone_number" name="phone_number" />
         </div>
 
-        <div class="alert-error" *ngIf="error">
-          {{ error }}
-        </div>
+        @if (error) {
+          <div class="alert-error">
+            {{ error }}
+          </div>
+        }
 
         <button type="submit" class="btn-register"
           [disabled]="loading || registerForm.invalid">
-          <span *ngIf="loading" class="spinner"></span>
+          @if (loading) {
+            <span class="spinner"></span>
+          }
           {{ loading ? 'Creating Account...' : 'Create Account' }}
         </button>
 

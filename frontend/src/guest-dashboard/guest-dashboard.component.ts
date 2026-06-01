@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
@@ -11,12 +11,11 @@ import { AuthService } from '../services/auth.service';
   selector: 'app-guest-dashboard',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     NavbarComponent,
     FooterComponent,
     ListingsComponent
-  ],
+],
   templateUrl: './guest-dashboard.component.html',
   styleUrls: ['./guest-dashboard.component.scss']
 })

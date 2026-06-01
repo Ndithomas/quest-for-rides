@@ -1,121 +1,147 @@
 <app-navbar></app-navbar>
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h2 mb-1">Payment History</h1>
-            <p class="text-muted mb-0">View all your payment transactions</p>
-        </div>
-        <a routerLink="/guest-dashboard" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-        </a>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">Payment History</h1>
+      <p class="text-muted mb-0">View all your payment transactions</p>
     </div>
+    <a routerLink="/guest-dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+    </a>
+  </div>
 
-    <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-3 text-muted">Loading your payment history...</p>
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3 text-muted">Loading your payment history...</p>
     </div>
+  }
 
-    <div *ngIf="error && !loading" class="alert alert-danger d-flex justify-content-between align-items-center">
-        <span>{{ error }}</span>
-        <button class="btn btn-sm btn-outline-danger" (click)="loadPayments()">Retry</button>
+  @if (error && !loading) {
+    <div class="alert alert-danger d-flex justify-content-between align-items-center">
+      <span>{{ error }}</span>
+      <button class="btn btn-sm btn-outline-danger" (click)="loadPayments()">Retry</button>
     </div>
+  }
 
-    <div *ngIf="!loading && !error">
-        <div *ngIf="payments.length === 0" class="text-center py-5">
-            <i class="bi bi-receipt-cutoff display-1 text-muted opacity-75"></i>
-            <h4 class="mt-4 text-muted">No Payments Yet</h4>
-            <p class="text-muted mb-4">You haven't made any payments on the platform.</p>
-            <a routerLink="/listings" class="btn btn-primary px-4">
-                <i class="bi bi-car-front me-2"></i>Browse Cars to Rent
-            </a>
+  @if (!loading && !error) {
+    <div>
+      @if (payments.length === 0) {
+        <div class="text-center py-5">
+          <i class="bi bi-receipt-cutoff display-1 text-muted opacity-75"></i>
+          <h4 class="mt-4 text-muted">No Payments Yet</h4>
+          <p class="text-muted mb-4">You haven't made any payments on the platform.</p>
+          <a routerLink="/listings" class="btn btn-primary px-4">
+            <i class="bi bi-car-front me-2"></i>Browse Cars to Rent
+          </a>
         </div>
-
-        <div *ngIf="payments.length > 0" class="card shadow-sm border-0">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 align-middle">
-                        <thead class="bg-light">
-                            <tr>
-                                <th scope="col">Booking ID</th>
-                                <th scope="col">Date</th>
-                                <th scope="col">Vehicle</th>
-                                <th scope="col">Amount</th>
-                                <th scope="col">Method</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Reference</th>
-                                <th scope="col" class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let payment of payments; trackBy: trackByPaymentId">
-                                <td class="fw-semibold text-primary">#{{ payment.booking.id }}</td>
-                                <td>{{ payment.created_at | dateFormat }}</td>
-                                <td>
-                                    <div>
-                                        <strong>{{ payment.booking.car_make }} {{ payment.booking.car_model }}</strong>
-                                        <small class="text-muted d-block" *ngIf="payment.booking.car_year">
-                                            {{ payment.booking.car_year }} • {{ payment.booking.car_license_plate ||
-                                            'N/A' }}
-                                        </small>
-                                        <small class="text-muted" *ngIf="!payment.booking.car_make">Unknown
-                                            Vehicle</small>
-                                    </div>
-                                </td>
-                                <td class="fw-bold text-success">
-                                    {{ payment.amount | currencyXAF }}
-                                </td>
-                                <td>
-                                    <span class="badge bg-info text-dark" *ngIf="isCamPay(payment)">
-                                        <i class="bi bi-phone me-1"></i>CamPay
-                                    </span>
-                                    <span class="badge bg-secondary" *ngIf="!isCamPay(payment)">
-                                        {{ payment.payment_method || 'Other' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span [class]="payment.status | statusClass" class="px-3 py-1 rounded">
-                                        {{ payment.status_display || payment.status | titlecase }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <code class="small text-monospace" *ngIf="payment.campay_reference">
-                                        {{ payment.campay_reference }}
-                                    </code>
-                                    <span class="text-muted small" *ngIf="!payment.campay_reference">—</span>
-                                </td>
-                                <td class="text-end">
-                                    <a [routerLink]="['/booking-confirmation', payment.booking.id]"
-                                        class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye me-1"></i>View
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-center py-4 border-top" *ngIf="nextPageUrl">
-                    <button class="btn btn-primary px-5" (click)="loadMore()" [disabled]="isLoadingMore">
-                        <span *ngIf="isLoadingMore" class="spinner-border spinner-border-sm me-2"></span>
-                        {{ isLoadingMore ? 'Loading...' : 'Load More Transactions' }}
-                    </button>
-                </div>
+      }
+      @if (payments.length > 0) {
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                  <tr>
+                    <th scope="col">Booking ID</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Vehicle</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Method</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Reference</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (payment of payments; track trackByPaymentId($index, payment)) {
+                    <tr>
+                      <td class="fw-semibold text-primary">#{{ payment.booking.id }}</td>
+                      <td>{{ payment.created_at | dateFormat }}</td>
+                      <td>
+                        <div>
+                          <strong>{{ payment.booking.car_make }} {{ payment.booking.car_model }}</strong>
+                          @if (payment.booking.car_year) {
+                            <small class="text-muted d-block">
+                              {{ payment.booking.car_year }} • {{ payment.booking.car_license_plate ||
+                              'N/A' }}
+                            </small>
+                          }
+                          @if (!payment.booking.car_make) {
+                            <small class="text-muted">Unknown
+                            Vehicle</small>
+                          }
+                        </div>
+                      </td>
+                      <td class="fw-bold text-success">
+                        {{ payment.amount | currencyXAF }}
+                      </td>
+                      <td>
+                        @if (isCamPay(payment)) {
+                          <span class="badge bg-info text-dark">
+                            <i class="bi bi-phone me-1"></i>CamPay
+                          </span>
+                        }
+                        @if (!isCamPay(payment)) {
+                          <span class="badge bg-secondary">
+                            {{ payment.payment_method || 'Other' }}
+                          </span>
+                        }
+                      </td>
+                      <td>
+                        <span [class]="payment.status | statusClass" class="px-3 py-1 rounded">
+                          {{ payment.status_display || payment.status | titlecase }}
+                        </span>
+                      </td>
+                      <td>
+                        @if (payment.campay_reference) {
+                          <code class="small text-monospace">
+                            {{ payment.campay_reference }}
+                          </code>
+                        }
+                        @if (!payment.campay_reference) {
+                          <span class="text-muted small">—</span>
+                        }
+                      </td>
+                      <td class="text-end">
+                        <a [routerLink]="['/booking-confirmation', payment.booking.id]"
+                          class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-eye me-1"></i>View
+                        </a>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
-
-            <div class="card-footer bg-white border-top py-3">
-                <div class="d-flex justify-content-between align-items-center small text-muted">
-                    <div>
-                        Showing <strong>{{ payments.length }}</strong> payment{{ payments.length !== 1 ? 's' : '' }}
-                    </div>
-                    <div>
-                        <i class="bi bi-shield-lock me-1"></i>
-                        All transactions secured via CamPay mobile money
-                    </div>
-                </div>
+            @if (nextPageUrl) {
+              <div class="text-center py-4 border-top">
+                <button class="btn btn-primary px-5" (click)="loadMore()" [disabled]="isLoadingMore">
+                  @if (isLoadingMore) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  {{ isLoadingMore ? 'Loading...' : 'Load More Transactions' }}
+                </button>
+              </div>
+            }
+          </div>
+          <div class="card-footer bg-white border-top py-3">
+            <div class="d-flex justify-content-between align-items-center small text-muted">
+              <div>
+                Showing <strong>{{ payments.length }}</strong> payment{{ payments.length !== 1 ? 's' : '' }}
+              </div>
+              <div>
+                <i class="bi bi-shield-lock me-1"></i>
+                All transactions secured via CamPay mobile money
+              </div>
             </div>
+          </div>
         </div>
+      }
     </div>
+  }
 </div>
 
 <app-footer></app-footer>

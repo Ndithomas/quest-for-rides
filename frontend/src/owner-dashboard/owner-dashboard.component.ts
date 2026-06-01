@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { FooterComponent } from '../footer/footer.component';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { ListingsService, Car, PaginatedResponse } from '../services/listings.service';
 
 
@@ -10,7 +10,7 @@ import { ListingsService, Car, PaginatedResponse } from '../services/listings.se
 @Component({
   selector: 'app-owner-dashboard',
   standalone: true,
-  imports: [NavbarComponent,FooterComponent,RouterLink, CommonModule],
+  imports: [NavbarComponent, FooterComponent, RouterLink],
   templateUrl: './owner-dashboard.component.html',
   styleUrls: ['./owner-dashboard.component.scss']
 })

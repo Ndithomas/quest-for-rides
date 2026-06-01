@@ -1,6 +1,6 @@
 // src/app/edit-car/edit-owner-cars.component.ts
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ListingsService } from '../services/listings.service';
@@ -10,7 +10,7 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-edit-owner-cars',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './edit-owner-cars.component.html',
   styleUrls: ['./edit-owner-cars.component.scss']
 })

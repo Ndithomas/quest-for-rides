@@ -12,13 +12,15 @@
               [src]="previewUrl || profile.profile_picture || 'assets/default-avatar.png'"
               class="profile-avatar rounded-circle shadow"
               alt="Profile"
-            >
+              >
 
             <!-- Camera Overlay (visible only in edit mode) -->
-            <label class="camera-overlay" *ngIf="isEditing" for="profilePictureInput">
-              <i class="bi bi-camera fs-3"></i>
-              <span class="d-block small">Change Photo</span>
-            </label>
+            @if (isEditing) {
+              <label class="camera-overlay" for="profilePictureInput">
+                <i class="bi bi-camera fs-3"></i>
+                <span class="d-block small">Change Photo</span>
+              </label>
+            }
 
             <!-- Hidden File Input -->
             <input
@@ -27,80 +29,90 @@
               class="d-none"
               (change)="onFileSelected($event)"
               accept="image/*"
-            >
+              >
           </div>
 
           <!-- Remove Button (below avatar, only if image exists) -->
-          <div *ngIf="isEditing && (profile.profile_picture || previewUrl)" class="mt-3">
-            <button type="button" class="btn btn-outline-danger btn-sm" (click)="removePicture()">
-              <i class="bi bi-trash me-1"></i> Remove Photo
-            </button>
-          </div>
+          @if (isEditing && (profile.profile_picture || previewUrl)) {
+            <div class="mt-3">
+              <button type="button" class="btn btn-outline-danger btn-sm" (click)="removePicture()">
+                <i class="bi bi-trash me-1"></i> Remove Photo
+              </button>
+            </div>
+          }
 
           <!-- Selected file feedback -->
-          <small *ngIf="isEditing && selectedFile" class="text-success d-block mt-2">
-            ✓ New photo selected: {{ selectedFile.name }}
-          </small>
+          @if (isEditing && selectedFile) {
+            <small class="text-success d-block mt-2">
+              ✓ New photo selected: {{ selectedFile.name }}
+            </small>
+          }
 
           <!-- User Info -->
           <h1 class="display-6 fw-bold mt-4">{{ profile.username }}</h1>
           <p class="text-muted fs-5">{{ profile.email }}</p>
-<p class="text-muted small">Member since {{ profile.created_at | dateFormat:'en-US':{month:'long', year:'numeric'} }}</p>
+          <p class="text-muted small">Member since {{ profile.created_at | dateFormat:'en-US':{month:'long', year:'numeric'} }}</p>
         </div>
 
         <!-- Loading -->
-        <div *ngIf="loading" class="text-center py-5">
-          <div class="spinner"></div>
-          <p class="mt-4 text-muted fs-5">Loading profile...</p>
-        </div>
+        @if (loading) {
+          <div class="text-center py-5">
+            <div class="spinner"></div>
+            <p class="mt-4 text-muted fs-5">Loading profile...</p>
+          </div>
+        }
 
         <!-- Profile Card -->
-        <div *ngIf="!loading" class="profile-card">
-
-          <!-- Edit Form (no picture field here anymore) -->
-          <form *ngIf="isEditing" (ngSubmit)="save()" class="edit-form">
-            <div class="row g-4">
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Username</label>
-                <input class="form-control form-control-lg" [(ngModel)]="profile.username" name="username" required>
+        @if (!loading) {
+          <div class="profile-card">
+            <!-- Edit Form (no picture field here anymore) -->
+            @if (isEditing) {
+              <form (ngSubmit)="save()" class="edit-form">
+                <div class="row g-4">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Username</label>
+                    <input class="form-control form-control-lg" [(ngModel)]="profile.username" name="username" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input class="form-control form-control-lg" type="email" [(ngModel)]="profile.email" name="email" required>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold">Phone Number <small class="text-muted">(optional)</small></label>
+                    <input class="form-control form-control-lg" [(ngModel)]="profile.phone_number" name="phone_number">
+                  </div>
+                </div>
+                <div class="action-buttons mt-5">
+                  <button type="submit" class="btn btn-success btn-lg rounded-pill px-5" [disabled]="saving">
+                    @if (saving) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    {{ saving ? 'Saving...' : 'Save Changes' }}
+                  </button>
+                  <button type="button" (click)="cancelEdit()" class="btn btn-outline-secondary btn-lg rounded-pill px-5">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            }
+            <!-- View Mode -->
+            @if (!isEditing) {
+              <div>
+                <div class="info-grid">
+                  <div class="info-item"><span class="label">Username</span><strong>{{ profile.username }}</strong></div>
+                  <div class="info-item"><span class="label">Email</span><strong>{{ profile.email }}</strong></div>
+                  <div class="info-item"><span class="label">Phone</span><strong>{{ profile.phone_number || 'Not provided' }}</strong></div>
+                  <div class="info-item"><span class="label">Member Since</span><strong>{{ profile.created_at | dateFormat }}</strong></div>
+                </div>
+                <div class="text-center mt-5">
+                  <button (click)="isEditing = true" class="btn btn-primary btn-lg rounded-pill px-5">
+                    Edit Profile
+                  </button>
+                </div>
               </div>
-              <div class="col-md-6">
-                <label class="form-label fw-semibold">Email</label>
-                <input class="form-control form-control-lg" type="email" [(ngModel)]="profile.email" name="email" required>
-              </div>
-              <div class="col-12">
-                <label class="form-label fw-semibold">Phone Number <small class="text-muted">(optional)</small></label>
-                <input class="form-control form-control-lg" [(ngModel)]="profile.phone_number" name="phone_number">
-              </div>
-            </div>
-
-            <div class="action-buttons mt-5">
-              <button type="submit" class="btn btn-success btn-lg rounded-pill px-5" [disabled]="saving">
-                <span *ngIf="saving" class="spinner-border spinner-border-sm me-2"></span>
-                {{ saving ? 'Saving...' : 'Save Changes' }}
-              </button>
-              <button type="button" (click)="cancelEdit()" class="btn btn-outline-secondary btn-lg rounded-pill px-5">
-                Cancel
-              </button>
-            </div>
-          </form>
-
-          <!-- View Mode -->
-          <div *ngIf="!isEditing">
-            <div class="info-grid">
-              <div class="info-item"><span class="label">Username</span><strong>{{ profile.username }}</strong></div>
-              <div class="info-item"><span class="label">Email</span><strong>{{ profile.email }}</strong></div>
-              <div class="info-item"><span class="label">Phone</span><strong>{{ profile.phone_number || 'Not provided' }}</strong></div>
-<div class="info-item"><span class="label">Member Since</span><strong>{{ profile.created_at | dateFormat }}</strong></div>
-            </div>
-
-            <div class="text-center mt-5">
-              <button (click)="isEditing = true" class="btn btn-primary btn-lg rounded-pill px-5">
-                Edit Profile
-              </button>
-            </div>
+            }
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>

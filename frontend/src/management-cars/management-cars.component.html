@@ -27,87 +27,103 @@
           <p>Verified</p>
         </div>
       </div>
-      <div class="col-md-4 col-sm-6" *ngIf="pendingCars() > 0">
-        <div class="stat-card pending">
-          <h3 class="text-warning">{{ pendingCars() }}</h3>
-          <p>Pending Verification</p>
+      @if (pendingCars() > 0) {
+        <div class="col-md-4 col-sm-6">
+          <div class="stat-card pending">
+            <h3 class="text-warning">{{ pendingCars() }}</h3>
+            <p>Pending Verification</p>
+          </div>
         </div>
-      </div>
+      }
     </div>
 
-    <div class="text-center my-5" *ngIf="pendingCars() > 0">
-      <a routerLink="/verify-cars" class="btn btn-warning btn-lg rounded-pill px-5 shadow-lg fw-bold">
-        {{ pendingCars() }} Car{{ pendingCars() > 1 ? 's' : '' }} Need Verification
-      </a>
-    </div>
+    @if (pendingCars() > 0) {
+      <div class="text-center my-5">
+        <a routerLink="/verify-cars" class="btn btn-warning btn-lg rounded-pill px-5 shadow-lg fw-bold">
+          {{ pendingCars() }} Car{{ pendingCars() > 1 ? 's' : '' }} Need Verification
+        </a>
+      </div>
+    }
 
     <div class="table-card">
-      <div *ngIf="loading()" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
-        <p class="mt-2">Loading fleet...</p>
-      </div>
+      @if (loading()) {
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary"></div>
+          <p class="mt-2">Loading fleet...</p>
+        </div>
+      }
 
-      <div class="table-wrapper" *ngIf="!loading()">
-        <table class="cars-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Car</th>
-              <th>Owner</th>
-              <th>Status</th>
-              <th>Verified</th>
-              <th class="text-end">View</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let car of cars(); let i = index" class="car-row">
-              <td class="index">{{ i + 1 }}</td>
-              <td class="car-cell">
-                <div class="car-info">
-                  <div>
-                    <strong>{{ car.brand }} {{ car.model }}</strong><br>
-                    <small class="text-muted">{{ car.year }}</small>
-                  </div>
-                </div>
-              </td>
-              <td>{{ car.owner_name || '—' }}</td>
-              <td>
-                <span class="badge status-badge"
+      @if (!loading()) {
+        <div class="table-wrapper">
+          <table class="cars-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Car</th>
+                <th>Owner</th>
+                <th>Status</th>
+                <th>Verified</th>
+                <th class="text-end">View</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (car of cars(); track car; let i = $index) {
+                <tr class="car-row">
+                  <td class="index">{{ i + 1 }}</td>
+                  <td class="car-cell">
+                    <div class="car-info">
+                      <div>
+                        <strong>{{ car.brand }} {{ car.model }}</strong><br>
+                        <small class="text-muted">{{ car.year }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ car.owner_name || '—' }}</td>
+                  <td>
+                    <span class="badge status-badge"
                   [ngClass]="{
                     'bg-success': car.status === 'active',
                     'bg-warning text-dark': car.status === 'maintenance',
                     'bg-secondary': car.status === 'inactive'
                   }">
-                  {{ car.status | titlecase }}
-                </span>
-              </td>
-              <td>
-                <span class="badge"
-                  [class.bg-success]="car.is_verified"
-                  [class.bg-danger]="!car.is_verified">
-                  {{ car.is_verified ? 'Verified' : 'Pending' }}
-                </span>
-              </td>
-              <td class="text-end">
-                <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary">View</a>
-              </td>
-            </tr>
-            <tr *ngIf="cars().length === 0">
-              <td colspan="6" class="empty-state">No cars found</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                      {{ car.status | titlecase }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge"
+                      [class.bg-success]="car.is_verified"
+                      [class.bg-danger]="!car.is_verified">
+                      {{ car.is_verified ? 'Verified' : 'Pending' }}
+                    </span>
+                  </td>
+                  <td class="text-end">
+                    <a [routerLink]="['/car', car.id]" class="btn btn-sm btn-outline-primary">View</a>
+                  </td>
+                </tr>
+              }
+              @if (cars().length === 0) {
+                <tr>
+                  <td colspan="6" class="empty-state">No cars found</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
 
-    <div class="text-center mt-5" *ngIf="nextPageUrl()">
-      <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm" 
-              (click)="loadMore()" 
-              [disabled]="isLoadingMore()">
-        <span *ngIf="isLoadingMore()" class="spinner-border spinner-border-sm me-2"></span>
-        {{ isLoadingMore() ? 'Loading...' : 'Load More Vehicles' }}
-      </button>
-    </div>
+    @if (nextPageUrl()) {
+      <div class="text-center mt-5">
+        <button class="btn btn-outline-primary btn-lg rounded-pill px-5 shadow-sm"
+          (click)="loadMore()"
+          [disabled]="isLoadingMore()">
+          @if (isLoadingMore()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          {{ isLoadingMore() ? 'Loading...' : 'Load More Vehicles' }}
+        </button>
+      </div>
+    }
 
     <div class="text-center mt-5">
       <a routerLink="/verify-cars" class="btn btn-success rounded-pill px-5">

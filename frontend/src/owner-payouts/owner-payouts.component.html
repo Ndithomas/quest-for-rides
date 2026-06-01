@@ -1,167 +1,180 @@
 <app-navbar></app-navbar>
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h2 mb-1">Payout Management</h1>
-            <p class="text-muted mb-0">Request and track your earnings payouts</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h2 mb-1">Payout Management</h1>
+      <p class="text-muted mb-0">Request and track your earnings payouts</p>
+    </div>
+    <button class="btn btn-primary" (click)="toggleRequestForm()"
+      [disabled]="(earnings?.available_balance ?? 0) < minimumPayout">
+      <i class="bi bi-cash-coin me-2"></i>Request Payout
+    </button>
+  </div>
+
+  @if (error) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = ''"></button>
+    </div>
+  }
+
+  @if (success) {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{ success }}
+      <button type="button" class="btn-close" (click)="success = ''"></button>
+    </div>
+  }
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3">Loading payout information...</p>
+    </div>
+  }
+
+  @if (!loading && earnings) {
+    <div>
+      <div class="row mb-4">
+        <div class="col-md-4 col-6 mb-3">
+          <div class="card border-success shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-success mb-2">
+                <i class="bi bi-wallet2 fs-1"></i>
+              </div>
+              <h3 class="h5 mb-1">Available Balance</h3>
+              <h2 class="h3 mb-0 text-success">{{ earnings.available_balance | currencyXAF }}</h2>
+              <small class="text-muted">Ready for payout</small>
+            </div>
+          </div>
         </div>
-        <button class="btn btn-primary" (click)="toggleRequestForm()"
-            [disabled]="(earnings?.available_balance ?? 0) < minimumPayout">
-            <i class="bi bi-cash-coin me-2"></i>Request Payout
-        </button>
-    </div>
-
-    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ error }}
-        <button type="button" class="btn-close" (click)="error = ''"></button>
-    </div>
-
-    <div *ngIf="success" class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ success }}
-        <button type="button" class="btn-close" (click)="success = ''"></button>
-    </div>
-
-    <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <div class="col-md-4 col-6 mb-3">
+          <div class="card border-warning shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-warning mb-2">
+                <i class="bi bi-cash-coin fs-1"></i>
+              </div>
+              <h3 class="h5 mb-1">Total Earnings</h3>
+              <h2 class="h3 mb-0 text-warning">{{ earnings.total_earnings | currencyXAF }}</h2>
+              <small class="text-muted">All time earnings</small>
+            </div>
+          </div>
         </div>
-        <p class="mt-3">Loading payout information...</p>
-    </div>
-
-    <div *ngIf="!loading && earnings">
-        <div class="row mb-4">
-            <div class="col-md-4 col-6 mb-3">
-                <div class="card border-success shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="text-success mb-2">
-                            <i class="bi bi-wallet2 fs-1"></i>
-                        </div>
-                        <h3 class="h5 mb-1">Available Balance</h3>
-                        <h2 class="h3 mb-0 text-success">{{ earnings.available_balance | currencyXAF }}</h2>
-                        <small class="text-muted">Ready for payout</small>
-                    </div>
+        <div class="col-md-4 col-6 mb-3">
+          <div class="card border-info shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="text-info mb-2">
+                <i class="bi bi-currency-exchange fs-1"></i>
+              </div>
+              <h3 class="h5 mb-1">Currency</h3>
+              <h2 class="h4 mb-0 text-info">{{ earnings.currency }}</h2>
+              <small class="text-muted">Payment currency</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      @if (showRequestForm) {
+        <div class="card shadow-lg mb-4 border-primary">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Request New Payout</h5>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="requestPayout()">
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <label class="form-label">Payout Amount</label>
+                  <div class="input-group">
+                    <span class="input-group-text">{{ earnings.currency === 'XAF' ? 'FCFA' : '$' }}</span>
+                    <input type="number" class="form-control" [(ngModel)]="payoutAmount" name="payoutAmount"
+                      [min]="minimumPayout" [max]="earnings.available_balance" step="1" required>
+                  </div>
+                  <div class="form-text">
+                    Available: {{ earnings.available_balance | currencyXAF }} |
+                    Minimum: {{ minimumPayout | currencyXAF }}
+                  </div>
                 </div>
-            </div>
-
-            <div class="col-md-4 col-6 mb-3">
-                <div class="card border-warning shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="text-warning mb-2">
-                            <i class="bi bi-cash-coin fs-1"></i>
-                        </div>
-                        <h3 class="h5 mb-1">Total Earnings</h3>
-                        <h2 class="h3 mb-0 text-warning">{{ earnings.total_earnings | currencyXAF }}</h2>
-                        <small class="text-muted">All time earnings</small>
-                    </div>
+                <div class="col-md-6">
+                  <label class="form-label">Payment Method</label>
+                  <select class="form-select" [(ngModel)]="paymentMethod" name="paymentMethod" required>
+                    <option value="campay">CamPay (Mobile Money)</option>
+                  </select>
                 </div>
-            </div>
-
-            <div class="col-md-4 col-6 mb-3">
-                <div class="card border-info shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="text-info mb-2">
-                            <i class="bi bi-currency-exchange fs-1"></i>
-                        </div>
-                        <h3 class="h5 mb-1">Currency</h3>
-                        <h2 class="h4 mb-0 text-info">{{ earnings.currency }}</h2>
-                        <small class="text-muted">Payment currency</small>
+              </div>
+              @if (paymentMethod === 'campay') {
+                <div class="mb-4">
+                  <h6 class="mb-3">Mobile Money Details</h6>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Phone Number</label>
+                      <input type="tel" class="form-control" [(ngModel)]="phoneNumber" name="phoneNumber"
+                        placeholder="237XXXXXXXXX" pattern="237[0-9]{9}" required>
+                      <div class="form-text">Enter your Cameroon mobile money number starting with 237 (9
+                      digits after)</div>
                     </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Additional Notes (Optional)</label>
+                      <input type="text" class="form-control" [(ngModel)]="notes" name="notes"
+                        placeholder="e.g., reference or notes">
+                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <div *ngIf="showRequestForm" class="card shadow-lg mb-4 border-primary">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Request New Payout</h5>
-            </div>
-            <div class="card-body">
-                <form (ngSubmit)="requestPayout()">
-
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <label class="form-label">Payout Amount</label>
-                            <div class="input-group">
-                                <span class="input-group-text">{{ earnings.currency === 'XAF' ? 'FCFA' : '$' }}</span>
-                                <input type="number" class="form-control" [(ngModel)]="payoutAmount" name="payoutAmount"
-                                    [min]="minimumPayout" [max]="earnings.available_balance" step="1" required>
-                            </div>
-                            <div class="form-text">
-                                Available: {{ earnings.available_balance | currencyXAF }} |
-                                Minimum: {{ minimumPayout | currencyXAF }}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Payment Method</label>
-                            <select class="form-select" [(ngModel)]="paymentMethod" name="paymentMethod" required>
-                                <option value="campay">CamPay (Mobile Money)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div *ngIf="paymentMethod === 'campay'" class="mb-4">
-                        <h6 class="mb-3">Mobile Money Details</h6>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" [(ngModel)]="phoneNumber" name="phoneNumber"
-                                    placeholder="237XXXXXXXXX" pattern="237[0-9]{9}" required>
-                                <div class="form-text">Enter your Cameroon mobile money number starting with 237 (9
-                                    digits after)</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Additional Notes (Optional)</label>
-                                <input type="text" class="form-control" [(ngModel)]="notes" name="notes"
-                                    placeholder="e.g., reference or notes">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"
-                            [disabled]="requesting || payoutAmount < minimumPayout || payoutAmount > earnings.available_balance || !phoneNumber">
-                            <span *ngIf="requesting" class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            Submit Payout Request
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" (click)="toggleRequestForm()">
-                            Cancel
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card shadow">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Payout History</h5>
-                <button class="btn btn-sm btn-outline-primary" (click)="loadPayoutHistory()"
-                    [disabled]="loadingHistory">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh
+              }
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"
+                  [disabled]="requesting || payoutAmount < minimumPayout || payoutAmount > earnings.available_balance || !phoneNumber">
+                  @if (requesting) {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  }
+                  Submit Payout Request
                 </button>
+                <button type="button" class="btn btn-outline-secondary" (click)="toggleRequestForm()">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      }
+      <div class="card shadow">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Payout History</h5>
+          <button class="btn btn-sm btn-outline-primary" (click)="loadPayoutHistory()"
+            [disabled]="loadingHistory">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+        <div class="card-body">
+          @if (loadingHistory) {
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary" role="status"></div>
             </div>
-            <div class="card-body">
-                <div *ngIf="loadingHistory" class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status"></div>
-                </div>
-                <div *ngIf="!loadingHistory && payoutHistory.length === 0" class="text-center py-4">
-                    <i class="bi bi-inbox fs-1 text-muted"></i>
-                    <p class="mt-2 mb-0 text-muted">No payout history available</p>
-                </div>
-                <div *ngIf="!loadingHistory && payoutHistory.length > 0" class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                                <th>Reference</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let payout of payoutHistory">
-                                <td>{{ payout.requested_at | dateFormat }}</td>
-                                <td>{{ payout.amount | currencyXAF }}</td>
-                                <td>{{ payout.payment_method_display }}</td>
-                                <td>
+          }
+          @if (!loadingHistory && payoutHistory.length === 0) {
+            <div class="text-center py-4">
+              <i class="bi bi-inbox fs-1 text-muted"></i>
+              <p class="mt-2 mb-0 text-muted">No payout history available</p>
+            </div>
+          }
+          @if (!loadingHistory && payoutHistory.length > 0) {
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Reference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (payout of payoutHistory; track payout) {
+                    <tr>
+                      <td>{{ payout.requested_at | dateFormat }}</td>
+                      <td>{{ payout.amount | currencyXAF }}</td>
+                      <td>{{ payout.payment_method_display }}</td>
+                      <td>
                                     <span class="badge" [ngClass]="{
                     'bg-warning text-dark': payout.status === 'pending',
                     'bg-info': payout.status === 'approved',
@@ -169,22 +182,29 @@
                     'bg-success': payout.status === 'completed',
                     'bg-danger': payout.status === 'failed'
                   }">
-                                        {{ payout.status_display || payout.status }}
-                                    </span>
-                                </td>
-                                <td>{{ payout.external_reference || '-' }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-center mt-3" *ngIf="nextPageUrl">
-                    <button class="btn btn-outline-primary btn-sm px-4" (click)="loadMore()"
-                        [disabled]="loadingHistory">
-                        <span *ngIf="loadingHistory" class="spinner-border spinner-border-sm me-2"></span>
-                        {{ loadingHistory ? 'Loading...' : 'View Older Payouts' }}
-                    </button>
-                </div>
+                          {{ payout.status_display || payout.status }}
+                        </span>
+                      </td>
+                      <td>{{ payout.external_reference || '-' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
             </div>
+          }
+          @if (nextPageUrl) {
+            <div class="text-center mt-3">
+              <button class="btn btn-outline-primary btn-sm px-4" (click)="loadMore()"
+                [disabled]="loadingHistory">
+                @if (loadingHistory) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                {{ loadingHistory ? 'Loading...' : 'View Older Payouts' }}
+              </button>
+            </div>
+          }
         </div>
+      </div>
     </div>
+  }
 </div>

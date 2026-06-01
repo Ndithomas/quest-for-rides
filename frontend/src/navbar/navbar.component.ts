@@ -4,7 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { RoleRedirectService } from '../services/role-redirect.service';
 import { ProfileService } from '../services/profile.service';
 import { NotificationService } from '../services/notification.service';
-import { CommonModule } from '@angular/common';
+
 import { Subscription } from 'rxjs';
 
 interface TokenUser {
@@ -17,7 +17,7 @@ interface TokenUser {
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss'
 })

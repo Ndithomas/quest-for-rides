@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BookingService, Booking } from '../services/booking.service';
@@ -11,7 +11,7 @@ import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipe
 @Component({
   selector: 'app-management-bookings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
+  imports: [RouterModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './management-bookings.component.html',
   styleUrls: ['./management-bookings.component.scss']
 })

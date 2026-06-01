@@ -1,174 +1,188 @@
 <app-navbar></app-navbar>
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1>Payment Management</h1>
-            <p class="text-muted">Complete overview of all platform transactions</p>
-        </div>
-        <button class="btn btn-outline-primary" (click)="showAnalytics = !showAnalytics">
-            {{ showAnalytics ? 'Hide' : 'Show' }} Analytics
-        </button>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Payment Management</h1>
+      <p class="text-muted">Complete overview of all platform transactions</p>
     </div>
-    <div *ngIf="showAnalytics && analytics" class="row mb-5 g-4">
+    <button class="btn btn-outline-primary" (click)="showAnalytics = !showAnalytics">
+      {{ showAnalytics ? 'Hide' : 'Show' }} Analytics
+    </button>
+  </div>
+  @if (showAnalytics && analytics) {
+    <div class="row mb-5 g-4">
+      <div class="col-md-3">
+        <div class="card text-center border-success shadow-sm">
+          <div class="card-body">
+            <h6 class="text-success">Total Revenue</h6>
+            <h4>{{ formatCurrency(analytics.total_revenue || 0) }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-primary shadow-sm">
+          <div class="card-body">
+            <h6 class="text-primary">Platform Commission</h6>
+            <h4>{{ formatCurrency(analytics.platform_commission_10_percent || 0) }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-info shadow-sm">
+          <div class="card-body">
+            <h6 class="text-info">Total Transactions</h6>
+            <h4>{{ analytics.total_transactions || 0 }}</h4>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-warning shadow-sm">
+          <div class="card-body">
+            <h6 class="text-warning">Owner Payouts</h6>
+            <h4>{{ formatCurrency(analytics.owner_payouts || 0) }}</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <div class="row g-3">
         <div class="col-md-3">
-            <div class="card text-center border-success shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-success">Total Revenue</h6>
-                    <h4>{{ formatCurrency(analytics.total_revenue || 0) }}</h4>
-                </div>
-            </div>
+          <label class="form-label">Search</label>
+          <input type="text" class="form-control" placeholder="Booking, car, phone, tx..."
+            [(ngModel)]="searchTerm" (input)="applyFilters()">
         </div>
-        <div class="col-md-3">
-            <div class="card text-center border-primary shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-primary">Platform Commission</h6>
-                    <h4>{{ formatCurrency(analytics.platform_commission_10_percent || 0) }}</h4>
-                </div>
-            </div>
+        <div class="col-md-2">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center border-info shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-info">Total Transactions</h6>
-                    <h4>{{ analytics.total_transactions || 0 }}</h4>
-                </div>
-            </div>
+        <div class="col-md-2">
+          <label class="form-label">From</label>
+          <input type="date" class="form-control" [(ngModel)]="startDate" (change)="applyFilters()">
         </div>
-        <div class="col-md-3">
-            <div class="card text-center border-warning shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-warning">Owner Payouts</h6>
-                    <h4>{{ formatCurrency(analytics.owner_payouts || 0) }}</h4>
-                </div>
-            </div>
+        <div class="col-md-2">
+          <label class="form-label">To</label>
+          <input type="date" class="form-control" [(ngModel)]="endDate" (change)="applyFilters()">
         </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Search</label>
-                    <input type="text" class="form-control" placeholder="Booking, car, phone, tx..."
-                        [(ngModel)]="searchTerm" (input)="applyFilters()">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
-                        <option value="all">All</option>
-                        <option value="pending">Pending</option>
-                        <option value="completed">Completed</option>
-                        <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">From</label>
-                    <input type="date" class="form-control" [(ngModel)]="startDate" (change)="applyFilters()">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">To</label>
-                    <input type="date" class="form-control" [(ngModel)]="endDate" (change)="applyFilters()">
-                </div>
-                <div class="col-md-3 d-flex align-items-end gap-2">
-                    <button class="btn btn-outline-secondary flex-grow-1" (click)="clearFilters()">
-                        Clear
-                    </button>
-                    <button class="btn btn-primary flex-grow-1" (click)="loadPayments()">
-                        Refresh
-                    </button>
-                </div>
-            </div>
+        <div class="col-md-3 d-flex align-items-end gap-2">
+          <button class="btn btn-outline-secondary flex-grow-1" (click)="clearFilters()">
+            Clear
+          </button>
+          <button class="btn btn-primary flex-grow-1" (click)="loadPayments()">
+            Refresh
+          </button>
         </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Messages -->
-    <div *ngIf="success" class="alert alert-success alert-dismissible">
-        {{ success }}
-        <button type="button" class="btn-close" (click)="success=''"></button>
+  <!-- Messages -->
+  @if (success) {
+    <div class="alert alert-success alert-dismissible">
+      {{ success }}
+      <button type="button" class="btn-close" (click)="success=''"></button>
     </div>
-    <div *ngIf="error" class="alert alert-danger alert-dismissible">
-        {{ error }}
-        <button type="button" class="btn-close" (click)="error=''"></button>
+  }
+  @if (error) {
+    <div class="alert alert-danger alert-dismissible">
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error=''"></button>
     </div>
+  }
 
-    <!-- Table -->
-    <div *ngIf="loading" class="text-center py-5">
-        <div class="spinner-border text-primary"></div>
-        <p>Loading payments...</p>
+  <!-- Table -->
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <p>Loading payments...</p>
     </div>
+  }
 
-    <div *ngIf="!loading" class="table-responsive">
-        <table class="table table-hover table-bordered align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Booking</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Phone</th>
-                    <th>Tx Ref</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let p of paginatedPayments">
-                    <td>#{{ p.id }}</td>
-                    <td>
-                        <strong>#{{ p.booking.id }}</strong><br>
-                        <small class="text-muted">
-                           {{ p.booking.car_make }} {{ p.booking.car_model }}
-                        </small>
-                    </td>
-                    <td class="fw-bold">{{ formatCurrency(p.amount) }}</td>
-                    <td>
-                        <span [class]="getStatusClass(p.status)">
-                            {{ p.status_display || p.status | titlecase }}
-                        </span>
-                    </td>
-                    <td>{{ p.customer_phone || '—' }}</td>
-                    <td>
-                        <small>{{ p.transaction_id || p.campay_reference || '—' }}</small>
-                    </td>
-                    <td>{{ formatDate(p.created_at) }}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-info" (click)="updatePaymentStatus(p, 'completed')">
-                                Complete
-                            </button>
-                            <button class="btn btn-outline-danger" (click)="updatePaymentStatus(p, 'refunded')">
-                                Refund
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <tr *ngIf="filteredPayments.length === 0">
-                    <td colspan="8" class="text-center py-4 text-muted">
-                        No payments found with current filters
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Pagination -->
-        <!-- In template -->
-        <div *ngIf="filteredPayments.length > 0" class="d-flex justify-content-between align-items-center mt-3">
-            <div>
-                Showing {{ startIndex }} — {{ endIndex }} of {{ filteredPayments.length }}
-            </div>
-            <div>
-                <button class="btn btn-sm btn-outline-secondary me-2" [disabled]="page === 1" (click)="previousPage()">
-                    Previous
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="nextPage()">
-                    Next
-                </button>
-            </div>
+  @if (!loading) {
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Booking</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Phone</th>
+            <th>Tx Ref</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of paginatedPayments; track p) {
+            <tr>
+              <td>#{{ p.id }}</td>
+              <td>
+                <strong>#{{ p.booking.id }}</strong><br>
+                <small class="text-muted">
+                  {{ p.booking.car_make }} {{ p.booking.car_model }}
+                </small>
+              </td>
+              <td class="fw-bold">{{ formatCurrency(p.amount) }}</td>
+              <td>
+                <span [class]="getStatusClass(p.status)">
+                  {{ p.status_display || p.status | titlecase }}
+                </span>
+              </td>
+              <td>{{ p.customer_phone || '—' }}</td>
+              <td>
+                <small>{{ p.transaction_id || p.campay_reference || '—' }}</small>
+              </td>
+              <td>{{ formatDate(p.created_at) }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-info" (click)="updatePaymentStatus(p, 'completed')">
+                    Complete
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="updatePaymentStatus(p, 'refunded')">
+                    Refund
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (filteredPayments.length === 0) {
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">
+                No payments found with current filters
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <!-- Pagination -->
+      <!-- In template -->
+      @if (filteredPayments.length > 0) {
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <div>
+            Showing {{ startIndex }} — {{ endIndex }} of {{ filteredPayments.length }}
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-2" [disabled]="page === 1" (click)="previousPage()">
+              Previous
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" [disabled]="page >= totalPages" (click)="nextPage()">
+              Next
+            </button>
+          </div>
         </div>
+      }
     </div>
+  }
 </div>
 
 <app-footer></app-footer>

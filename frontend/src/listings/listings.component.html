@@ -20,58 +20,72 @@
         <button (click)="clear()" class="clear-btn">Clear Filters</button>
       </div>
     </div>
-    <div *ngIf="searchError()" class="alert-error">
-      <p>{{ searchError() }}</p>
-    </div>
-    <div *ngIf="loading()" class="loading-state">
-      <div class="spinner"></div>
-      <p>Searching for the best cars...</p>
-    </div>
-    <div *ngIf="!loading() && !searchError() && cars().length > 0" class="cars-grid">
-      <div *ngFor="let car of cars(); trackBy: trackByCarId" (click)="view(car.id)" class="car-card">
-
-        <div class="image-wrapper">
-          <img *ngIf="getCarImage(car)" [src]="getCarImage(car)" [alt]="getCarTitle(car)" class="car-image" />
-
-          <div *ngIf="!getCarImage(car)" class="no-image">
-            <span>No Image</span>
-          </div>
-
-          <div class="status-badge" [ngClass]="car.status_badge">
-            {{ car.status_display }}
-          </div>
-          <div *ngIf="car.is_verified" class="verified-badge">
-            ✔ Verified
-          </div>
-
-          <div *ngIf="!hasPricing(car)" class="pricing-needed">Pricing Needed</div>
-        </div>
-
-        <div class="car-info">
-          <h3 class="car-title">{{ getCarTitle(car) }}</h3>
-          <p class="location">
-            {{ car.location_name || 'Location not set' }}
-          </p>
-
-          <div class="price-owner">
-            <div class="price" [class.no-price]="!hasPricing(car)">
-              XAF{{ getDailyRate(car) }}<small>/day</small>
-            </div>
-            <div class="owner">by {{ car.owner_name || 'Owner' }}</div>
-          </div>
-        </div>
+    @if (searchError()) {
+      <div class="alert-error">
+        <p>{{ searchError() }}</p>
       </div>
-    </div>
-    <div class="text-center mt-5" *ngIf="hasNext() && !loading() && !searchError() && cars().length > 0">
-      <button (click)="search(currentPage() + 1)" class="btn btn-primary rounded-pill px-5">
-        Load More Cars
-      </button>
-    </div>
-    <div *ngIf="!loading() && !searchError() && cars().length === 0" class="empty-state">
-      <i class="bi bi-car-front fs-1 text-muted mb-4"></i>
-      <h4>No cars found</h4>
-      <p class="text-muted mb-4">Try adjusting your filters or search in a different location</p>
-      <button (click)="clear()" class="btn-clear">Clear All Filters</button>
-    </div>
+    }
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Searching for the best cars...</p>
+      </div>
+    }
+    @if (!loading() && !searchError() && cars().length > 0) {
+      <div class="cars-grid">
+        @for (car of cars(); track trackByCarId($index, car)) {
+          <div (click)="view(car.id)" class="car-card">
+            <div class="image-wrapper">
+              @if (getCarImage(car)) {
+                <img [src]="getCarImage(car)" [alt]="getCarTitle(car)" class="car-image" />
+              }
+              @if (!getCarImage(car)) {
+                <div class="no-image">
+                  <span>No Image</span>
+                </div>
+              }
+              <div class="status-badge" [ngClass]="car.status_badge">
+                {{ car.status_display }}
+              </div>
+              @if (car.is_verified) {
+                <div class="verified-badge">
+                  ✔ Verified
+                </div>
+              }
+              @if (!hasPricing(car)) {
+                <div class="pricing-needed">Pricing Needed</div>
+              }
+            </div>
+            <div class="car-info">
+              <h3 class="car-title">{{ getCarTitle(car) }}</h3>
+              <p class="location">
+                {{ car.location_name || 'Location not set' }}
+              </p>
+              <div class="price-owner">
+                <div class="price" [class.no-price]="!hasPricing(car)">
+                  XAF{{ getDailyRate(car) }}<small>/day</small>
+                </div>
+                <div class="owner">by {{ car.owner_name || 'Owner' }}</div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (hasNext() && !loading() && !searchError() && cars().length > 0) {
+      <div class="text-center mt-5">
+        <button (click)="search(currentPage() + 1)" class="btn btn-primary rounded-pill px-5">
+          Load More Cars
+        </button>
+      </div>
+    }
+    @if (!loading() && !searchError() && cars().length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-car-front fs-1 text-muted mb-4"></i>
+        <h4>No cars found</h4>
+        <p class="text-muted mb-4">Try adjusting your filters or search in a different location</p>
+        <button (click)="clear()" class="btn-clear">Clear All Filters</button>
+      </div>
+    }
   </div>
 </div>

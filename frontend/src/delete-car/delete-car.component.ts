@@ -1,10 +1,10 @@
 import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-delete-car',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './delete-car.component.html',
   styleUrls: ['./delete-car.component.scss']
 })

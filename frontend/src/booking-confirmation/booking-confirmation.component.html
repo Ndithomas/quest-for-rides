@@ -3,142 +3,151 @@
 <div class="confirmation-container">
 
   <!-- Loading State -->
-  <div *ngIf="loading()" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading your booking confirmation...</p>
-  </div>
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your booking confirmation...</p>
+    </div>
+  }
 
   <!-- Error State -->
-  <div *ngIf="error() && !loading()" class="error-state">
-    <div class="error-box">
-      <h2>Error</h2>
-      <p>{{ error() }}</p>
-      <button (click)="goBack()" class="btn btn-secondary">Go Back</button>
+  @if (error() && !loading()) {
+    <div class="error-state">
+      <div class="error-box">
+        <h2>Error</h2>
+        <p>{{ error() }}</p>
+        <button (click)="goBack()" class="btn btn-secondary">Go Back</button>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Success State -->
-  <div *ngIf="booking() && car() && !loading() && !error()" class="success-state">
-
-    <!-- Confirmation Header -->
-    <div class="confirmation-header">
-      <div class="check-icon">✓</div>
-      <h1>Booking Confirmed!</h1>
-      <p class="subtitle">Your booking request has been submitted successfully</p>
-    </div>
-
-    <!-- Status Card -->
-    <div class="status-card" [ngClass]="getStatusColor()">
-      <div class="status-content">
-        <p class="status-label">Current Status</p>
-        <h2 class="status-value">{{ getStatusLabel() }}</h2>
-        <p class="status-description" *ngIf="booking().status === 'pending'">
-          The car owner will review your request and confirm within 24 hours
-        </p>
-        <p class="status-description"
-          *ngIf="booking().status === 'confirmed' && (!booking().payment || booking().payment?.status !== 'completed')">
-          The owner has confirmed your booking! Please complete payment to secure your reservation.
-        </p>
-        <p class="status-description"
-          *ngIf="booking().status === 'confirmed' && booking().payment?.status === 'completed'">
-          Your booking is fully confirmed and paid!
-        </p>
+  @if (booking() && car() && !loading() && !error()) {
+    <div class="success-state">
+      <!-- Confirmation Header -->
+      <div class="confirmation-header">
+        <div class="check-icon">✓</div>
+        <h1>Booking Confirmed!</h1>
+        <p class="subtitle">Your booking request has been submitted successfully</p>
       </div>
-    </div>
-
-    <!-- Payment Section -->
-    <div
-      *ngIf="booking()?.status === 'confirmed' && (!booking()?.payment || booking()?.payment?.status !== 'completed')"
-      class="payment-section">
-      <h3>Secure Your Booking with Payment</h3>
-      <p>Complete payment within 24 hours to lock in your reservation.</p>
-      <div class="payment-actions">
-        <button (click)="initiatePayment()" class="btn btn-success btn-lg">
-          Proceed to Payment (XAF{{ booking()?.total_price | number:'1.0-0' }})
-        </button>
-        <p class="small text-muted mt-3">
-          <strong>Secure payment powered by Stripe</strong><br>
-          Payment required within 24 hours or booking may be cancelled
-        </p>
-      </div>
-    </div>
-
-    <!-- Booking Details -->
-    <div class="details-section">
-      <div class="section-title">
-        <h3>Booking Details</h3>
-      </div>
-      <div class="booking-grid">
-        <div class="detail-card car-card">
-          <div class="car-image-wrapper" *ngIf="car().photos && car().photos.length > 0">
-            <img [src]="car().photos[0].image" [alt]="car().make + ' ' + car().model" class="car-image" />
-          </div>
-          <div class="car-details">
-            <h4>{{ car().make }} {{ car().model }}</h4>
-            <p class="year">{{ car().year }}</p>
-            <p class="license-plate">{{ car().license_plate }}</p>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <h4>Trip Dates</h4>
-          <div class="date-info">
-            <div class="date-item">
-              <label>Start Date</label>
-              <p>{{ booking().start_date | dateFormat }}</p>
-            </div>
-            <div class="date-item">
-              <label>End Date</label>
-              <p>{{ booking().end_date | dateFormat }}</p>
-            </div>
-            <div class="date-item highlight">
-              <label>Duration</label>
-              <p>{{ getDayCount() }} day{{ getDayCount() !== 1 ? 's' : '' }}</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <h4>Pricing Summary</h4>
-          <div class="pricing-info">
-            <div class="price-row">
-              <span>Daily Rate:</span>
-              <strong>XAF{{ booking().daily_rate | number: '1.2-2' }}</strong>
-            </div>
-            <div class="price-row">
-              <span>Number of Days:</span>
-              <strong>{{ getDayCount() }}</strong>
-            </div>
-            <div class="price-row total">
-              <span>Total Price:</span>
-              <strong>XAF{{ booking().total_price | number: '1.2-2' }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div class="detail-card">
-          <h4>Car Owner</h4>
-          <div class="owner-info">
-            <p class="owner-name">{{ booking().owner.first_name }} {{ booking().owner.last_name }}</p>
-            <p class="owner-email">{{ booking().owner.email }}</p>
-            <p class="owner-phone" *ngIf="booking().owner.phone_number">{{ booking().owner.phone_number }}</p>
-          </div>
-        </div>
-
-        <div class="detail-card" *ngIf="booking().special_requirements">
-          <h4>Special Requirements</h4>
-          <p class="requirements-text">{{ booking().special_requirements }}</p>
+      <!-- Status Card -->
+      <div class="status-card" [ngClass]="getStatusColor()">
+        <div class="status-content">
+          <p class="status-label">Current Status</p>
+          <h2 class="status-value">{{ getStatusLabel() }}</h2>
+          @if (booking().status === 'pending') {
+            <p class="status-description">
+              The car owner will review your request and confirm within 24 hours
+            </p>
+          }
+          @if (booking().status === 'confirmed' && (!booking().payment || booking().payment?.status !== 'completed')) {
+            <p class="status-description"
+              >
+              The owner has confirmed your booking! Please complete payment to secure your reservation.
+            </p>
+          }
+          @if (booking().status === 'confirmed' && booking().payment?.status === 'completed') {
+            <p class="status-description"
+              >
+              Your booking is fully confirmed and paid!
+            </p>
+          }
         </div>
       </div>
+      <!-- Payment Section -->
+      @if (booking()?.status === 'confirmed' && (!booking()?.payment || booking()?.payment?.status !== 'completed')) {
+        <div
+          class="payment-section">
+          <h3>Secure Your Booking with Payment</h3>
+          <p>Complete payment within 24 hours to lock in your reservation.</p>
+          <div class="payment-actions">
+            <button (click)="initiatePayment()" class="btn btn-success btn-lg">
+              Proceed to Payment (XAF{{ booking()?.total_price | number:'1.0-0' }})
+            </button>
+            <p class="small text-muted mt-3">
+              <strong>Secure payment powered by Stripe</strong><br>
+              Payment required within 24 hours or booking may be cancelled
+            </p>
+          </div>
+        </div>
+      }
+      <!-- Booking Details -->
+      <div class="details-section">
+        <div class="section-title">
+          <h3>Booking Details</h3>
+        </div>
+        <div class="booking-grid">
+          <div class="detail-card car-card">
+            @if (car().photos && car().photos.length > 0) {
+              <div class="car-image-wrapper">
+                <img [src]="car().photos[0].image" [alt]="car().make + ' ' + car().model" class="car-image" />
+              </div>
+            }
+            <div class="car-details">
+              <h4>{{ car().make }} {{ car().model }}</h4>
+              <p class="year">{{ car().year }}</p>
+              <p class="license-plate">{{ car().license_plate }}</p>
+            </div>
+          </div>
+          <div class="detail-card">
+            <h4>Trip Dates</h4>
+            <div class="date-info">
+              <div class="date-item">
+                <label>Start Date</label>
+                <p>{{ booking().start_date | dateFormat }}</p>
+              </div>
+              <div class="date-item">
+                <label>End Date</label>
+                <p>{{ booking().end_date | dateFormat }}</p>
+              </div>
+              <div class="date-item highlight">
+                <label>Duration</label>
+                <p>{{ getDayCount() }} day{{ getDayCount() !== 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="detail-card">
+            <h4>Pricing Summary</h4>
+            <div class="pricing-info">
+              <div class="price-row">
+                <span>Daily Rate:</span>
+                <strong>XAF{{ booking().daily_rate | number: '1.2-2' }}</strong>
+              </div>
+              <div class="price-row">
+                <span>Number of Days:</span>
+                <strong>{{ getDayCount() }}</strong>
+              </div>
+              <div class="price-row total">
+                <span>Total Price:</span>
+                <strong>XAF{{ booking().total_price | number: '1.2-2' }}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="detail-card">
+            <h4>Car Owner</h4>
+            <div class="owner-info">
+              <p class="owner-name">{{ booking().owner.first_name }} {{ booking().owner.last_name }}</p>
+              <p class="owner-email">{{ booking().owner.email }}</p>
+              @if (booking().owner.phone_number) {
+                <p class="owner-phone">{{ booking().owner.phone_number }}</p>
+              }
+            </div>
+          </div>
+          @if (booking().special_requirements) {
+            <div class="detail-card">
+              <h4>Special Requirements</h4>
+              <p class="requirements-text">{{ booking().special_requirements }}</p>
+            </div>
+          }
+        </div>
+      </div>
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button (click)="goToDashboard()" class="btn btn-primary">Go to Dashboard</button>
+        <button (click)="goToBookings()" class="btn btn-secondary">View All Bookings</button>
+      </div>
     </div>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-      <button (click)="goToDashboard()" class="btn btn-primary">Go to Dashboard</button>
-      <button (click)="goToBookings()" class="btn btn-secondary">View All Bookings</button>
-    </div>
-
-  </div>
+  }
 </div>
 
 <app-footer></app-footer>

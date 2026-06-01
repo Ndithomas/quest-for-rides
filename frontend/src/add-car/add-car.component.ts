@@ -1,5 +1,5 @@
 import { Component, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ListingsService } from '../services/listings.service';
@@ -9,7 +9,7 @@ import { FooterComponent } from '../footer/footer.component';
 @Component({
   selector: 'app-add-car',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent],
+  imports: [FormsModule, NavbarComponent, FooterComponent],
   templateUrl: './add-car.component.html',
   styleUrls: ['./add-car.component.scss']
 })

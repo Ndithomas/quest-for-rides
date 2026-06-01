@@ -1,113 +1,129 @@
 <app-navbar></app-navbar>
-<div class="car-detail-page" *ngIf="!loading()">
-  <div class="error text-danger text-center my-4" *ngIf="error()">{{ error() }}</div>
-  <div *ngIf="car() as c" class="container">
-    <button class="back-btn" (click)="back()">Back</button>
-    <h1 class="title">{{ getCarTitle() }}</h1>
-    <p class="location">{{ getCarLocation() }}</p>
-    <div class="main-grid">
-      <!-- Gallery -->
-      <div class="gallery-section">
-        <div class="main-photo-wrapper">
-          <img [src]="getCurrentPhotoUrl()" alt="Car" class="main-photo">
-          <button class="nav prev" (click)="prev()" *ngIf="photos().length > 1">Left</button>
-          <button class="nav next" (click)="next()" *ngIf="photos().length > 1">Right</button>
-        </div>
-        <div class="thumbs" *ngIf="photos().length > 1">
-          <img *ngFor="let p of photos(); let i = index" [src]="p.image" [class.active]="currentPhoto() === i"
-            (click)="currentPhoto.set(i)" alt="thumb">
-        </div>
-      </div>
-
-      <!-- Details + Booking -->
-      <div class="details-card">
-        <div class="header-bar">
-          <span class="badge" [ngClass]="'status-' + c.status_badge">
-            {{ c.status_display || 'Unknown' }}
-          </span>
-          <button class="refresh-btn" (click)="refreshCar()">Refresh</button>
-        </div>
-
-        <div class="info-grid">
-          <div><strong>Make</strong> <span>{{ c.make }}</span></div>
-          <div><strong>Model</strong> <span>{{ c.model }}</span></div>
-          <div><strong>Year</strong> <span>{{ c.year }}</span></div>
-          <div><strong>Plate</strong> <span>{{ getLicensePlate() }}</span></div>
-          <div><strong>Verified</strong>
-            <span [class.text-success]="c.is_verified" [class.text-danger]="!c.is_verified">
-              {{ c.is_verified ? 'Yes' : 'No' }}
-            </span>
-          </div>
-          <div><strong>Daily Rate</strong> <span>XAF {{ c.daily_rate }}</span></div>
-        </div>
-
-        <p class="description">{{ c.description || 'No description provided.' }}</p>
-
-        <div class="feature-tags" *ngIf="processedFeatures().length">
-          <span class="tag" *ngFor="let f of processedFeatures()">{{ f }}</span>
-        </div>
-
-        <ng-container *ngIf="isCarBookable(); else notAvailable">
-          <div class="booking-section">
-            <h3>Rent This Car</h3>
-            <div class="note">Request will be sent to owner for approval</div>
-
-            <div *ngIf="isLoggedIn() && !isGuestUser()" class="msg error mb-3">
-              Only guest accounts can book cars. Please log in with a guest account to proceed.
+@if (!loading()) {
+  <div class="car-detail-page">
+    @if (error()) {
+      <div class="error text-danger text-center my-4">{{ error() }}</div>
+    }
+    @if (car(); as c) {
+      <div class="container">
+        <button class="back-btn" (click)="back()">Back</button>
+        <h1 class="title">{{ getCarTitle() }}</h1>
+        <p class="location">{{ getCarLocation() }}</p>
+        <div class="main-grid">
+          <!-- Gallery -->
+          <div class="gallery-section">
+            <div class="main-photo-wrapper">
+              <img [src]="getCurrentPhotoUrl()" alt="Car" class="main-photo">
+              @if (photos().length > 1) {
+                <button class="nav prev" (click)="prev()">Left</button>
+              }
+              @if (photos().length > 1) {
+                <button class="nav next" (click)="next()">Right</button>
+              }
             </div>
-
-            <form (ngSubmit)="submitBooking()" *ngIf="canShowBookingForm()">
-              <div class="date-row">
-                <div>
-                  <label>From</label>
-                  <input type="date" [min]="today()" [value]="startDate()"
-                    (input)="startDate.set(($any($event).target).value)" required>
-                </div>
-                <div>
-                  <label>To</label>
-                  <input type="date" [min]="startDate() || today()" [value]="endDate()"
-                    (input)="endDate.set(($any($event).target).value)" required>
-                </div>
+            @if (photos().length > 1) {
+              <div class="thumbs">
+                @for (p of photos(); track p; let i = $index) {
+                  <img [src]="p.image" [class.active]="currentPhoto() === i"
+                    (click)="currentPhoto.set(i)" alt="thumb">
+                }
               </div>
-
-              <textarea [(ngModel)]="specialRequirements" name="msg" placeholder="Special requests (optional)...">
-</textarea>
-
-
-              <div class="price-box" *ngIf="numDays() > 0">
-                <div class="days">{{ numDays() }} day{{ numDays() > 1 ? 's' : '' }}</div>
-                <div class="total">XAF {{ totalPrice() | number:'1.0-0' }}</div>
-                <small>&#64; XAF{{ c.daily_rate }}/day</small>
-              </div>
-
-              <button type="submit" class="book-btn" [disabled]="bookingLoading()">
-                {{ bookingLoading() ? 'Sending Request...' : 'Send Booking Request' }}
-              </button>
-
-              <div class="msg success" *ngIf="bookingSuccess()">Request sent successfully!</div>
-              <div class="msg error" *ngIf="bookingError()">{{ bookingError() }}</div>
-            </form>
+            }
           </div>
-        </ng-container>
-        <ng-template #notAvailable>
-          <div class="not-available">
-            <p>This car is currently not available for booking</p>
-            <small>Status: {{ c.status_display }}</small>
+          <!-- Details + Booking -->
+          <div class="details-card">
+            <div class="header-bar">
+              <span class="badge" [ngClass]="'status-' + c.status_badge">
+                {{ c.status_display || 'Unknown' }}
+              </span>
+              <button class="refresh-btn" (click)="refreshCar()">Refresh</button>
+            </div>
+            <div class="info-grid">
+              <div><strong>Make</strong> <span>{{ c.make }}</span></div>
+              <div><strong>Model</strong> <span>{{ c.model }}</span></div>
+              <div><strong>Year</strong> <span>{{ c.year }}</span></div>
+              <div><strong>Plate</strong> <span>{{ getLicensePlate() }}</span></div>
+              <div><strong>Verified</strong>
+              <span [class.text-success]="c.is_verified" [class.text-danger]="!c.is_verified">
+                {{ c.is_verified ? 'Yes' : 'No' }}
+              </span>
+            </div>
+            <div><strong>Daily Rate</strong> <span>XAF {{ c.daily_rate }}</span></div>
           </div>
-        </ng-template>
+          <p class="description">{{ c.description || 'No description provided.' }}</p>
+          @if (processedFeatures().length) {
+            <div class="feature-tags">
+              @for (f of processedFeatures(); track f) {
+                <span class="tag">{{ f }}</span>
+              }
+            </div>
+          }
+          @if (isCarBookable()) {
+            <div class="booking-section">
+              <h3>Rent This Car</h3>
+              <div class="note">Request will be sent to owner for approval</div>
+              @if (isLoggedIn() && !isGuestUser()) {
+                <div class="msg error mb-3">
+                  Only guest accounts can book cars. Please log in with a guest account to proceed.
+                </div>
+              }
+              @if (canShowBookingForm()) {
+                <form (ngSubmit)="submitBooking()">
+                  <div class="date-row">
+                    <div>
+                      <label>From</label>
+                      <input type="date" [min]="today()" [value]="startDate()"
+                        (input)="startDate.set(($any($event).target).value)" required>
+                    </div>
+                    <div>
+                      <label>To</label>
+                      <input type="date" [min]="startDate() || today()" [value]="endDate()"
+                        (input)="endDate.set(($any($event).target).value)" required>
+                    </div>
+                  </div>
+                  <textarea [(ngModel)]="specialRequirements" name="msg" placeholder="Special requests (optional)...">
+                  </textarea>
+                  @if (numDays() > 0) {
+                    <div class="price-box">
+                      <div class="days">{{ numDays() }} day{{ numDays() > 1 ? 's' : '' }}</div>
+                      <div class="total">XAF {{ totalPrice() | number:'1.0-0' }}</div>
+                      <small>&#64; XAF{{ c.daily_rate }}/day</small>
+                    </div>
+                  }
+                  <button type="submit" class="book-btn" [disabled]="bookingLoading()">
+                    {{ bookingLoading() ? 'Sending Request...' : 'Send Booking Request' }}
+                  </button>
+                  @if (bookingSuccess()) {
+                    <div class="msg success">Request sent successfully!</div>
+                  }
+                  @if (bookingError()) {
+                    <div class="msg error">{{ bookingError() }}</div>
+                  }
+                </form>
+              }
+            </div>
+          } @else {
+            <div class="not-available">
+              <p>This car is currently not available for booking</p>
+              <small>Status: {{ c.status_display }}</small>
+            </div>
+          }
+        </div>
+      </div>
+      <!-- Reviews Section (embedded) -->
+      <div class="reviews-section mt-5 pt-5">
+        <app-reviews [carId]="car()?.id" [embedded]="true"></app-reviews>
       </div>
     </div>
+  }
+</div>
+}
 
-    <!-- Reviews Section (embedded) -->
-    <div class="reviews-section mt-5 pt-5">
-      <app-reviews [carId]="car()?.id" [embedded]="true"></app-reviews>
-    </div>
-  </div>
-  </div>
-
-  <div *ngIf="loading()" class="loading">
+@if (loading()) {
+  <div class="loading">
     <div class="spinner"></div>
     <p>Loading car details...</p>
   </div>
+}
 
 <app-footer></app-footer>

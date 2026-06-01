@@ -30,86 +30,92 @@
         </div>
       </form>
     </div>
-    <div *ngIf="loading" class="loading-state">
-      <div class="spinner-large"></div>
-      <p>Loading users...</p>
-    </div>
-    <div *ngIf="!loading" class="users-table-card">
-      <div class="table-wrapper">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>User</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th class="text-end">View</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of filteredUsers; let i = index" class="user-row">
-              <td class="index">{{ i + 1 }}</td>
-              <td class="user-cell">
-                <div class="user-info">
+    @if (loading) {
+      <div class="loading-state">
+        <div class="spinner-large"></div>
+        <p>Loading users...</p>
+      </div>
+    }
+    @if (!loading) {
+      <div class="users-table-card">
+        <div class="table-wrapper">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th class="text-end">View</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (user of filteredUsers; track user; let i = $index) {
+                <tr class="user-row">
+                  <td class="index">{{ i + 1 }}</td>
+                  <td class="user-cell">
+                    <div class="user-info">
                   <div class="avatar" [style.background-color]="
        user.role === 'owner' ? '#3b82f6' : 
        user.role === 'guest' ? '#8b5cf6' : 
        user.role === 'management' ? '#ef4444' : 
        '#27ae60'
      ">
-                    {{ getInitials(user) }}
-                  </div>
-                  <div class="user-details">
-                    <div class="username">{{ user.username }}</div>
-                    <div class="email">{{ user.email }}</div>
-                  </div>
-                </div>
-              </td>
-
-              <td>
-                <span class="role-badge" [class]="getRoleBadge(user.role)">
-                  {{ user.role | titlecase }}
-                </span>
-              </td>
-
-              <td>
-                <span class="status-badge" [class]="getStatusBadge(user.status)">
-                  {{ user.status | titlecase }}
-                </span>
-              </td>
-
-              <td class="actions-cell">
-                <a [routerLink]="['/user-detail', user.id]" class="btn-view">View</a>
-
-
-              </td>
-            </tr>
-            <tr *ngIf="filteredUsers.length === 0">
-              <td colspan="5" class="empty-state">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#94a3b8">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                <p>No users found matching your search</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="header-content">
-  <h1 class="page-title">All Users ({{ totalCount }})</h1>
-  <p class="page-subtitle">Manage and monitor every member of your platform</p>
-</div>
-
-<div class="text-center py-4" *ngIf="nextPageUrl">
-  <button (click)="loadMore()" class="btn btn-primary px-5" [disabled]="loadingMore" style="width: auto; padding: 0.8rem 3rem;">
-    <span *ngIf="loadingMore" class="spinner-small"></span>
-    {{ loadingMore ? 'Loading...' : 'Load More Users' }}
-  </button>
-</div>
+                        {{ getInitials(user) }}
+                      </div>
+                      <div class="user-details">
+                        <div class="username">{{ user.username }}</div>
+                        <div class="email">{{ user.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="role-badge" [class]="getRoleBadge(user.role)">
+                      {{ user.role | titlecase }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class]="getStatusBadge(user.status)">
+                      {{ user.status | titlecase }}
+                    </span>
+                  </td>
+                  <td class="actions-cell">
+                    <a [routerLink]="['/user-detail', user.id]" class="btn-view">View</a>
+                  </td>
+                </tr>
+              }
+              @if (filteredUsers.length === 0) {
+                <tr>
+                  <td colspan="5" class="empty-state">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#94a3b8">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <p>No users found matching your search</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="header-content">
+            <h1 class="page-title">All Users ({{ totalCount }})</h1>
+            <p class="page-subtitle">Manage and monitor every member of your platform</p>
+          </div>
+          @if (nextPageUrl) {
+            <div class="text-center py-4">
+              <button (click)="loadMore()" class="btn btn-primary px-5" [disabled]="loadingMore" style="width: auto; padding: 0.8rem 3rem;">
+                @if (loadingMore) {
+                  <span class="spinner-small"></span>
+                }
+                {{ loadingMore ? 'Loading...' : 'Load More Users' }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
-    </div>
+    }
   </div>
 </div>
 <app-footer></app-footer>

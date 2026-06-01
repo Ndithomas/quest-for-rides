@@ -1,114 +1,127 @@
 <app-navbar></app-navbar>
 <div class="management-bookings">
-    <div class="bookings-header">
-        <div class="container">
-            <h1>Booking Management</h1>
-            <p>Manage all booking activities</p>
+  <div class="bookings-header">
+    <div class="container">
+      <h1>Booking Management</h1>
+      <p>Manage all booking activities</p>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    @if (notification) {
+      <div class="notification" [class]="'notification-' + notification.type">
+        <div>
+          <i [class]="getNotificationIcon(notification.type)"></i>
+          <span>{{ notification.message }}</span>
         </div>
+        <button (click)="notification = null">&times;</button>
+      </div>
+    }
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-list-alt"></i></div>
+        <div>
+          <h3>{{ totalCount }}</h3>
+          <p>Total Bookings</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div>
+          <h3>{{ pendingBookingsCount }}</h3>
+          <p>Pending</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-car"></i></div>
+        <div>
+          <h3>{{ activeBookingsCount }}</h3>
+          <p>Active</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+        <div>
+          <h3>{{ formatCurrency(totalRevenue) }}</h3>
+          <p>Revenue</p>
+        </div>
+      </div>
     </div>
 
-    <div class="container py-4">
-        <div *ngIf="notification" class="notification" [class]="'notification-' + notification.type">
-            <div>
-                <i [class]="getNotificationIcon(notification.type)"></i>
-                <span>{{ notification.message }}</span>
-            </div>
-            <button (click)="notification = null">&times;</button>
+    <div class="filters">
+      <div class="filter-row">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Search bookings...">
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-list-alt"></i></div>
-                <div>
-                    <h3>{{ totalCount }}</h3>
-                    <p>Total Bookings</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <div>
-                    <h3>{{ pendingBookingsCount }}</h3>
-                    <p>Pending</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-car"></i></div>
-                <div>
-                    <h3>{{ activeBookingsCount }}</h3>
-                    <p>Active</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
-                <div>
-                    <h3>{{ formatCurrency(totalRevenue) }}</h3>
-                    <p>Revenue</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="filters">
-            <div class="filter-row">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" placeholder="Search bookings...">
-                </div>
-                <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
-                    <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
-                </select>
-                <select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()">
-                    <option *ngFor="let opt of sortOptions" [value]="opt.value">{{ opt.label }}</option>
-                </select>
-                <button (click)="refreshBookings()" [disabled]="isLoading">
-                    <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
-                </button>
-            </div>
-        </div>
-
-        <div *ngIf="!isLoading && !error" class="bookings-table">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Car</th><th>Guest</th><th>Dates</th><th>Total</th><th>Status</th><th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let booking of filteredBookings">
-                            <td><strong>#{{ booking.id }}</strong></td>
-                            <td>
-                                <div>{{ booking.car_make }} {{ booking.car_model }}</div>
-                                <small style="color: #6c757d;">{{ booking.car_title }}</small>
-                            </td>
-                            <td>
-                                <div>{{ booking.guest?.username || 'N/A' }}</div>
-                                <small style="color: #6c757d;">{{ booking.guest?.email }}</small>
-                            </td>
-                            <td>
-                                <div>{{ formatDate(booking.start_date) }}</div>
-                                <small style="color: #6c757d;">to {{ formatDate(booking.end_date) }}</small>
-                            </td>
-                            <td><strong>{{ formatCurrency(booking.total_price) }}</strong></td>
-                            <td>
-                                <span class="status" [class]="'status-' + booking.status">
-                                    {{ getStatusLabel(booking.status) }}
-                                </span>
-                            </td>
-                            <td>
-                                <a [routerLink]="['/booking-details', booking.id]" class="view-all-btn info">Details</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="text-center py-4" *ngIf="nextPageUrl">
-                <button (click)="loadMore()" class="view-all-btn info" [disabled]="isLoadingMore" style="padding: 0.8rem 2.5rem; font-size: 1rem;">
-                    <span *ngIf="isLoadingMore" class="spinner-border spinner-border-sm me-2"></span>
-                    {{ isLoadingMore ? 'Loading...' : 'Load More' }}
-                </button>
-            </div>
-        </div>
+        <select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+          @for (opt of statusOptions; track opt) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+        <select [(ngModel)]="sortBy" (ngModelChange)="onFilterChange()">
+          @for (opt of sortOptions; track opt) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+        <button (click)="refreshBookings()" [disabled]="isLoading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="isLoading"></i> Refresh
+        </button>
+      </div>
     </div>
+
+    @if (!isLoading && !error) {
+      <div class="bookings-table">
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th><th>Car</th><th>Guest</th><th>Dates</th><th>Total</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (booking of filteredBookings; track booking) {
+                <tr>
+                  <td><strong>#{{ booking.id }}</strong></td>
+                  <td>
+                    <div>{{ booking.car_make }} {{ booking.car_model }}</div>
+                    <small style="color: #6c757d;">{{ booking.car_title }}</small>
+                  </td>
+                  <td>
+                    <div>{{ booking.guest?.username || 'N/A' }}</div>
+                    <small style="color: #6c757d;">{{ booking.guest?.email }}</small>
+                  </td>
+                  <td>
+                    <div>{{ formatDate(booking.start_date) }}</div>
+                    <small style="color: #6c757d;">to {{ formatDate(booking.end_date) }}</small>
+                  </td>
+                  <td><strong>{{ formatCurrency(booking.total_price) }}</strong></td>
+                  <td>
+                    <span class="status" [class]="'status-' + booking.status">
+                      {{ getStatusLabel(booking.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <a [routerLink]="['/booking-details', booking.id]" class="view-all-btn info">Details</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (nextPageUrl) {
+          <div class="text-center py-4">
+            <button (click)="loadMore()" class="view-all-btn info" [disabled]="isLoadingMore" style="padding: 0.8rem 2.5rem; font-size: 1rem;">
+              @if (isLoadingMore) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
 <app-footer></app-footer>

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { PaymentService, BookingPayment, PaginatedResponse } from '../services/payment.service';
 import { NavbarComponent } from '../navbar/navbar.component';
@@ -9,7 +9,7 @@ import { CurrencyXAFPipe, DateFormatPipe, StatusClassPipe } from '../shared/pipe
 @Component({
   selector: 'app-owner-payments',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
+  imports: [FormsModule, NavbarComponent, FooterComponent, CurrencyXAFPipe, DateFormatPipe, StatusClassPipe],
   templateUrl: './owner-payments.component.html',
   styleUrl: './owner-payments.component.scss'
 })

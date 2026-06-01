@@ -36,12 +36,16 @@
         <div class="stat-card listings">
           <div class="icon"><i class="bi bi-car-front-fill"></i></div>
           <div>
-            <h3 *ngIf="!isLoading" class="fw-bold">{{ cars.length }}</h3>
+            @if (!isLoading) {
+              <h3 class="fw-bold">{{ cars.length }}</h3>
+            }
 
-            <div *ngIf="isLoading" class="spinner-border text-primary" role="status"
-              style="width: 1.5rem; height: 1.5rem;">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+            @if (isLoading) {
+              <div class="spinner-border text-primary" role="status"
+                style="width: 1.5rem; height: 1.5rem;">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            }
 
             <p>Total Cars Listed</p>
           </div>
