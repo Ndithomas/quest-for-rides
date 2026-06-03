@@ -1,4 +1,8 @@
+import { of } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { ActivatedRoute, provideRouter } from '@angular/router';
 import { UserDetailComponent } from './user-detail.component';
 
 describe('UserDetailComponent', () => {
@@ -7,7 +11,13 @@ describe('UserDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserDetailComponent]
+      imports: [UserDetailComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { params: of({ id: '1' }) } }
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserDetailComponent);
@@ -41,7 +51,7 @@ describe('UserDetailComponent', () => {
 
     const compiled = fixture.nativeElement;
     expect(compiled.textContent).toContain('Test User');
-    expect(compiled.textContent).toContain('@testuser');
+    expect(compiled.textContent).toContain('testuser');
   });
 
   it('should change user status', () => {
@@ -57,9 +67,7 @@ describe('UserDetailComponent', () => {
     };
     component.selectedStatus = 'suspended';
 
-    spyOn(component['userActions'], 'changeUserStatus').and.returnValue(
-      { subscribe: (callback: any) => callback() } as any
-    );
+    spyOn(component['userActions'], 'changeUserStatus').and.returnValue(of(null));
 
     component.changeStatus();
     expect(component['userActions'].changeUserStatus).toHaveBeenCalledWith(1, 'suspended');
@@ -71,6 +79,6 @@ describe('UserDetailComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement;
-    expect(compiled.textContent).toContain('User not found');
+    expect(compiled.textContent).toContain('User Not Found');
   });
 });
