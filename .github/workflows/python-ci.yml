@@ -1,4 +1,5 @@
 name: Python Backend CI Pipeline
+run-name: Backend Build/Release - ${{ github.ref_name }} (${{ github.sha }})
 
 on:
   push:
