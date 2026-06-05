@@ -1,12 +1,13 @@
-name: angular-ci
+name: Angular CI Pipeline
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]  # Triggers versioned builds when you push a tag like v1.0.0
     paths:
       - 'frontend/**'
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
     paths:
       - 'frontend/**'
 
@@ -36,9 +37,9 @@ jobs:
       - name: Build
         run: npm run build
 
-  # ======= ADDING THE MISSING DOCKER BUILD JOB FOR FRONTEND =======
   build-frontend-docker:
     needs: build-and-test
+    if: github.event_name == 'push' # Only build/push images on merges to main or tag pushes
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,12 +56,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Automatically extracts metadata and tags based on Git state
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/ndithomas/quest4rides-frontend
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=sha,format=short
+
       - name: Build and Push Angular Docker Image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: |
-            ghcr.io/ndithomas/quest4rides-frontend:latest
-            ghcr.io/ndithomas/quest4rides-frontend:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
