@@ -1,1 +1,36 @@
+name: Angular CI Pipeline
 
+# Controls when the workflow will run
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download the repository code onto the runner
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Change this to match your local Node.js version
+          cache: 'npm'       # Caches node_modules to speed up subsequent builds
+
+      # Step 3: Install Project Dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # Step 4: Run Angular Unit Tests
+      - name: Run Unit Tests
+        run: npm run test:ci
+
+      # Step 5: Build the Application
+      - name: Build Application
+        run: npm run build -- --configuration production
