@@ -1,4 +1,4 @@
-# Triggering full backend docker image build
+#backend
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -6,7 +6,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install system dependencies needed for libraries (Added pkg-config and mysql dev tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     pkg-config \
