@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
-# Angular 20 outputs production assets straight to dist/frontend/browser
+
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
