@@ -32,11 +32,13 @@ jobs:
           if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
 
       # Run Django migrations and tests
-      # This block sets up a dummy Secret Key for testing purposes so your build doesn't crash
+      # We pass required env variables so load_dotenv defaults don't break the initialization
       - name: Run Django Tests
         env:
-          SECRET_KEY: 'ci-testing-secret-key-safe-to-expose'
-          DEBUG: 'False'
+          DEBUG: 'True'
+          MANAGEMENT_SECRET_CODE: 'ci-mock-management-code-123'
+          EMAIL_HOST_USER: 'test@example.com'
+          EMAIL_HOST_PASSWORD: 'testpassword'
         run: |
           cd backend
           python manage.py migrate
