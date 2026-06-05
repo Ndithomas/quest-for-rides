@@ -1,4 +1,3 @@
-# Triggering full frontend docker image build
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
