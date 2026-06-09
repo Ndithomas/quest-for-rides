@@ -1,4 +1,4 @@
-#backend
+#backend for Quest4Rides application
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
