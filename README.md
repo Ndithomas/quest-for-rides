@@ -1,2 +1,2 @@
 # Quest For Rides
-A modern car-rental platform for booking, managing, and tracking vehicles.
+A modern car-rental platform for booking, managing, and tracking vehicles...
