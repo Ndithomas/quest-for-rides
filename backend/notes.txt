@@ -1,4 +1,4 @@
-1. Users & Authentication
+1. Users and Authentication
 Purpose: Handle registration, login, JWT authentication, and role-based access (guest, owner, management).
 
 Features:
