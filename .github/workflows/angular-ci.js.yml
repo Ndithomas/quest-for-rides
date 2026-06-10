@@ -5,12 +5,13 @@ on:
   push:
     branches: [ "main" ]
     tags: [ "v*.*.*" ]
-    paths:
-      - 'frontend/**'
+    # Triggers on changes anywhere (like root files) EXCEPT backend changes
+    paths-ignore:
+      - 'backend/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'frontend/**'
+    paths-ignore:
+      - 'backend/**'
 
 jobs:
   build-and-test:
@@ -42,7 +43,7 @@ jobs:
     needs: build-and-test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: production  # Binds this job to your secure environment settings
+    environment: production
 
     steps:
       - name: Checkout Source Code

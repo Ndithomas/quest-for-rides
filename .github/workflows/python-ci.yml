@@ -5,18 +5,18 @@ on:
   push:
     branches: [ "main" ]
     tags: [ "v*.*.*" ]
-    paths:
-      - 'backend/**'
+    # Triggers on changes anywhere (like root files) EXCEPT frontend changes
+    paths-ignore:
+      - 'frontend/**'
   pull_request:
     branches: [ "main" ]
-    paths:
-      - 'backend/**'
+    paths-ignore:
+      - 'frontend/**'
 
 jobs:
   test-backend:
     runs-on: ubuntu-latest
 
-    # ✅ ADD POSTGRES SERVICE (FIX)
     services:
       postgres:
         image: postgres:15
@@ -52,14 +52,11 @@ jobs:
         env:
           DEBUG: 'True'
           MANAGEMENT_SECRET_CODE: 'ci-mock-management-code-123'
-
-          # ✅ DATABASE FIX FOR CI
           DB_NAME: quest4rides
           DB_USER: postgres
           DB_PASSWORD: postgres
           DB_HOST: localhost
           DB_PORT: 5432
-
           EMAIL_HOST_USER: 'test@example.com'
           EMAIL_HOST_PASSWORD: 'testpassword'
         run: |
