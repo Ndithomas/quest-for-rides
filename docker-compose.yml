@@ -1,0 +1,54 @@
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: quest4rides_db
+    environment:
+      POSTGRES_DB: quest4rides
+      POSTGRES_USER: ndithomas
+      POSTGRES_PASSWORD: Tommy@123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ndithomas -d quest4rides"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Django Backend Service
+  backend:
+    image: ndithomas/quest4rides-backend:${APP_VERSION:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=quest4rides
+      - DB_USER=ndithomas
+      - DB_PASSWORD=Tommy@123
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. Angular Frontend Service
+  frontend:
+    image: ndithomas/quest4rides-frontend:${APP_VERSION:-latest}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    restart: always
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
