@@ -2,7 +2,7 @@ services:
   # 1. PostgreSQL Database Service
   db:
     image: postgres:15-alpine
-    container_name: quest4rides_db
+    container_name: quest_for_rides_db
     environment:
       POSTGRES_DB: quest4rides
       POSTGRES_USER: ndithomas
@@ -19,7 +19,7 @@ services:
 
   # 2. Django Backend Service
   backend:
-    image: ndithomas/quest4rides-backend:${APP_VERSION:-latest}
+    image: ndithomas/quest-for-rides-backend:${APP_VERSION:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -40,7 +40,7 @@ services:
 
   # 3. Angular Frontend Service
   frontend:
-    image: ndithomas/quest4rides-frontend:${APP_VERSION:-latest}
+    image: ndithomas/quest-for-rides-frontend:${APP_VERSION:-latest}
     build:
       context: ./frontend
       dockerfile: Dockerfile

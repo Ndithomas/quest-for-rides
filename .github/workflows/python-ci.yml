@@ -5,7 +5,6 @@ on:
   push:
     branches: [ "main" ]
     tags: [ "v*.*.*" ]
-    # Triggers on changes anywhere (like root files) EXCEPT frontend changes
     paths-ignore:
       - 'frontend/**'
   pull_request:
@@ -84,7 +83,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/quest4rides-backend
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/quest-for-rides-backend
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
