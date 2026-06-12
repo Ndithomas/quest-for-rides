@@ -119,9 +119,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.closeMobileMenu();
     this.closeSidebar();
     this.clearBrowserCache();
-    this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
-      window.location.reload();
-    });
+    this.router.navigate(['/login'], { replaceUrl: true });
   }
 
   private clearBrowserCache(): void {

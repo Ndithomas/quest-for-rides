@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://your-production-backend-url.com',
-  managementSetupToken: 'p9mZk!v8Lx2025-PROD-MGMT-ONLY-never-commit-this'
+  apiBaseUrl: 'http://localhost:8000',  // Browser needs localhost
+  managementSetupToken: 'x9k2mPx-2025-internal-mgmt-setup'
+
 };
