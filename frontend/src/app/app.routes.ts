@@ -110,7 +110,7 @@ export const routes: Routes = [
         data: { roles: ['guest', 'owner', 'management'] }
       },
 
-      
+
 
       {
         path: 'bookings',
@@ -236,9 +236,10 @@ export const routes: Routes = [
   },
 
   {
-    path: 'setup-mgmt-v3-9f8e2c7a1b4x2025-internal-only-never-share',
-    loadComponent: () => import('../management-setup/management-setup.component')
-      .then(m => m.ManagementSetupComponent),
+    path: 'management-setup/:token', // 👈 Changed from 'management-setup'
+    loadComponent: () =>
+      import('../management-setup/management-setup.component')
+        .then(m => m.ManagementSetupComponent),
     canActivate: [managementSetupGuard]
   },
 
