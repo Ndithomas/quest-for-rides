@@ -48,7 +48,7 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      # Keyless Authentication with Google Cloud
+      # Keyless Authentication with Google Cloud using Workload Identity Federation
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v2
         with:
