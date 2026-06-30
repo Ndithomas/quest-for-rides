@@ -14,6 +14,16 @@ class Booking(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
+    VALID_TRANSITIONS = {
+        'pending': ['confirmed', 'rejected', 'cancelled'],
+        'confirmed': ['active', 'cancelled'],
+        'active': ['completed'],
+        'completed': [],
+        'cancelled': [],
+        'rejected': [],
+    }
+    
+
     guest = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings_as_guest')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookings_as_owner')
     car = models.ForeignKey(Car, on_delete=models.CASCADE, related_name='bookings')
@@ -43,6 +53,9 @@ class Booking(models.Model):
             raise ValidationError("End date must be after start date")
         self.total_price = self.daily_rate * num_days
         super().save(*args, **kwargs)
+
+    def can_transition(self, new_status):
+        return new_status in self.VALID_TRANSITIONS.get(self.status, [])
     
     def __str__(self):
         return f"{self.guest.username} → {self.owner.username} | {self.car.title} ({self.status})"

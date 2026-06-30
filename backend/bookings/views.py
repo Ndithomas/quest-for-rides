@@ -96,6 +96,11 @@ class BookingConfirmAPIView(generics.UpdateAPIView):
         serializer.is_valid(raise_exception=True)
 
         new_status = serializer.validated_data['status']
+        if not booking.can_transition(new_status):
+            return Response(
+                {"detail": f"Cannot change booking from '{booking.status}' to '{new_status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+                )
         booking.status = new_status
         update_fields = ['status']
 
@@ -126,6 +131,12 @@ class BookingUpdateStatusAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        new_status = serializer.validated_data['status']
+        if not booking.can_transition(new_status):
+            return Response(
+                {"detail": f"Cannot change booking from '{booking.status}' to '{new_status}'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         booking.status = serializer.validated_data['status']
         booking.save(update_fields=['status'])
 
@@ -144,6 +155,11 @@ class GuestCancelBookingAPIView(generics.GenericAPIView):
             )
 
         with transaction.atomic():
+            if booking.can_transition('cancelled'):
+                return Response(
+                    {"detail": "Booking cannot be cancelled."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             booking.status = 'cancelled'
             booking.save(update_fields=['status'])
             if booking.payment:
@@ -310,7 +326,11 @@ class MarkBookingCompletedAPIView(generics.GenericAPIView):
                 {"detail": "Only active bookings can be marked as completed."},
                 status=400
             )
-
+        if not booking.can_transition('completed'):
+            return Response(
+                {"detail": "Booking cannot be completed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         booking.status = 'completed'
         booking.save(update_fields=['status'])
 
