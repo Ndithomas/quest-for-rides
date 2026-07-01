@@ -46,13 +46,14 @@ export class ListingsComponent implements OnInit {
 
     this.listingsService.search(filters, page).subscribe({
       next: (res) => {
+        const results = Array.isArray(res?.results) ? res.results : [];
         if (page === 1) {
-          this.cars.set(res.results); // replace first page
+          this.cars.set(results);
         } else {
-          this.cars.set([...this.cars(), ...res.results]); // append for Load More
+          this.cars.set([...this.cars(), ...results]);
         }
         this.currentPage.set(page);
-        this.hasNext.set(!!res.next);
+        this.hasNext.set(!!res?.next);
         this.loading.set(false);
       },
       error: () => {

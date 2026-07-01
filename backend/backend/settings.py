@@ -15,9 +15,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-0&=pa3ybkh@1zlx3fe=w+ire5fa8n%vqlml&*72aa)voe(fcl$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Convert the incoming string env variable to a true Python boolean safely
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = False
+
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = [
+        'quest-for-rides-backend-361383206203.africa-south1.run.app',
+        'quest-for-rides-frontend-361383206203.africa-south1.run.app',
+        'localhost',
+        '127.0.0.1',
+        '[::1]',
+    ]
 
 
 # Application definition
@@ -80,16 +94,36 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+DB_NAME = os.getenv('DB_NAME', 'quest4rides')
+DB_USER = os.getenv('DB_USER', 'thomas')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'Tommy@123')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
+
+if not DEBUG:
+    # Production Google Cloud SQL configuration
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+        }
     }
-}
+else:
+    # Local development fallback
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': DB_PORT,
+        }
+    }
 
 
 # Password validation
@@ -172,14 +206,24 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
+    "http://localhost:8000",
     "https://jvl4wmvx-4200.uks1.devtunnels.ms",
+    "https://quest-for-rides-frontend-361383206203.africa-south1.run.app",
+    "https://quest-for-rides-backend-361383206203.africa-south1.run.app",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://quest-for-rides-backend-361383206203.africa-south1.run.app",
+    "https://quest-for-rides-frontend-361383206203.africa-south1.run.app",
+    "http://localhost:4200",
+    "http://localhost:8000",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-ALLOWED_HOSTS = ['*']
 
 CAMPAY_USERNAME = "your_app_username"
 CAMPAY_PASSWORD = "your_app_password"
@@ -192,8 +236,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Use this for production:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+raw_email_port = os.getenv('EMAIL_PORT', 587)
+EMAIL_PORT = int(raw_email_port) if str(raw_email_port).isdigit() else 587
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = True
