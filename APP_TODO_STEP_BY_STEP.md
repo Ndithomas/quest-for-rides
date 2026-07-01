@@ -1,4 +1,4 @@
-# Application Step-by-Step TODO
+# Application Step-by-Step To do
 
 This file converts the domain roadmap into a concrete implementation sequence for the car-rental app.
 
