@@ -5,11 +5,22 @@ from bookings.models import Booking
 from .utils import get_status_badge, get_status_display
 
 class CarPhotoSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(use_url=True)
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = CarPhoto
         fields = ['id', 'image', 'is_primary', 'created_at']
         read_only_fields = ['created_at']
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+
+        url = obj.image.url
+        request = self.context.get('request')
+        if request is not None and not url.startswith(('http://', 'https://')):
+            return request.build_absolute_uri(url)
+        return url
 
 class PricingRuleSerializer(serializers.ModelSerializer):
     period_display = serializers.CharField(source='get_period_display', read_only=True)
@@ -71,7 +82,14 @@ class CarListSerializer(serializers.ModelSerializer):
 
     def get_primary_photo(self, obj):
         photo = obj.photos.filter(is_primary=True).first()
-        return photo.image.url if photo and photo.image else None
+        if not photo or not photo.image:
+            return None
+
+        url = photo.image.url
+        request = self.context.get('request')
+        if request is not None and not url.startswith(('http://', 'https://')):
+            return request.build_absolute_uri(url)
+        return url
 
     def get_avg_rating(self, obj):
         return float(obj.avg_rating) if obj.avg_rating else None

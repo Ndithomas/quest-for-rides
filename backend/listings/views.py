@@ -87,7 +87,7 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
             
             created_photos.append(photo)
         
-        photo_serializer = CarPhotoSerializer(created_photos, many=True)
+        photo_serializer = CarPhotoSerializer(created_photos, many=True, context={'request': request})
         return Response(photo_serializer.data, status=status.HTTP_201_CREATED)
 
 class SetPrimaryPhotoAPIView(generics.UpdateAPIView):

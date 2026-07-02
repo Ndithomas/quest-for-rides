@@ -221,8 +221,27 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+USE_GCS = bool(os.getenv('GS_BUCKET_NAME') or os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET_NAME'))
+
+if USE_GCS:
+    GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME') or os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET_NAME')
+    GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', '')
+    GS_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    GS_DEFAULT_ACL = os.getenv('GS_DEFAULT_ACL', 'publicRead')
+    GS_QUERYSTRING_AUTH = os.getenv('GS_QUERYSTRING_AUTH', 'False').lower() in {'1', 'true', 'yes', 'on'}
+    STORAGES = {
+        'default': {'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
+    MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+else:
+    STORAGES = {
+        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 CAMPAY_USERNAME = "your_app_username"
