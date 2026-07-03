@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://quest-for-rides-backend-361383206203.africa-south1.run.app',
+  apiBaseUrl: 'https://quest-for-rides-backend-htaqfhp5pq-bq.a.run.app',
   managementSetupToken: 'admin2026'
 };
+

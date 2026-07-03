@@ -22,16 +22,11 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 SECURE_SSL_REDIRECT = False
 
-if DEBUG:
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = [
-        'quest-for-rides-backend-361383206203.africa-south1.run.app',
-        'quest-for-rides-frontend-361383206203.africa-south1.run.app',
-        'localhost',
-        '127.0.0.1',
-        '[::1]',
-    ]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
+if not DEBUG:
+    ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -94,37 +89,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
+
 DB_NAME = os.getenv('DB_NAME', 'quest4rides')
 DB_USER = os.getenv('DB_USER', 'thomas')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'Tommy@123')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
+DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
 
-if not DEBUG:
-    # Production Google Cloud SQL configuration
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': DB_ENGINE,
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
-else:
-    # Local development fallback
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
-        }
-    }
-
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -221,14 +204,16 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-USE_GCS = bool(os.getenv('GS_BUCKET_NAME') or os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET_NAME'))
+# settings.py snippets optimized for Cloud Run
+
+USE_GCS = bool(os.getenv('GS_BUCKET_NAME'))
 
 if USE_GCS:
-    GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME') or os.getenv('GOOGLE_CLOUD_STORAGE_BUCKET_NAME')
-    GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', '')
-    GS_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    GS_DEFAULT_ACL = os.getenv('GS_DEFAULT_ACL', 'publicRead')
-    GS_QUERYSTRING_AUTH = os.getenv('GS_QUERYSTRING_AUTH', 'False').lower() in {'1', 'true', 'yes', 'on'}
+    GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+    GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', 'quest-for-rides-361383206203')
+    GS_DEFAULT_ACL = 'publicRead'
+    GS_QUERYSTRING_AUTH = False  # Hardcoded clean fallback for public URLs
+    
     STORAGES = {
         'default': {'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage'},
         'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
