@@ -112,3 +112,12 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy Backend to Cloud Run
+        run: |
+          gcloud run deploy quest-for-rides-backend \
+            --image africa-south1-docker.pkg.dev/project-95eb9e37-8269-4627-bb0/quest4rides-repo/backend:latest \
+            --region africa-south1 \
+            --platform managed \
+            --allow-unauthenticated \
+            --quiet
