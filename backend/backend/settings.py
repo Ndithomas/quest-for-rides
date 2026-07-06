@@ -91,23 +91,29 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 
 
-DB_NAME = os.getenv('DB_NAME', 'quest4rides')
-DB_USER = os.getenv('DB_USER', 'thomas')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'Tommy@123')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '5432')
-DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
+DB_NAME = os.getenv("DB_NAME", "quest4rides")
+DB_USER = os.getenv("DB_USER", "thomas")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "Tommy@123")
+DB_HOST = os.getenv("DB_HOST", "")
+DB_PORT = os.getenv("DB_PORT", "5432")
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT", "5432"),
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASSWORD,
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "CONN_MAX_AGE": 600,
     }
 }
+
+# Cloud SQL socket safety handling
+if DB_HOST.startswith("/cloudsql/"):
+    DATABASES["default"]["OPTIONS"] = {
+        "sslmode": "disable",
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
