@@ -220,80 +220,60 @@ class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
 
     def post(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
-        
+
         if booking.car.owner != request.user:
-            return Response({"detail": "Not your car."}, status=403)
-        
-        if booking.status != 'confirmed':
-            return Response({"detail": "Only confirmed bookings can be cancelled by owner."}, status=400)
-        
-        if booking.payment and booking.payment.status == 'completed':
-            return Response({"detail": "Cannot cancel a paid booking."}, status=400)
-        
-        hours_since_confirm = (timezone.now() - booking.confirmed_at).total_seconds() / 3600
-        if hours_since_confirm < 1:  # example: must wait at least 6 hours
-            return Response({"detail": "Guest still has time to pay."}, status=400)
+            return Response(
+                {"detail": "Not your car."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if booking.status != "confirmed":
+            return Response(
+                {"detail": "Only confirmed bookings can be cancelled by the owner."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if booking.payment and booking.payment.status == "completed":
+            return Response(
+                {"detail": "Cannot cancel a paid booking."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if booking.confirmed_at is None:
+            return Response(
+                {"detail": "Booking confirmation time is missing."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Guest has 1 hour to complete payment
+        hours_since_confirm = (
+            timezone.now() - booking.confirmed_at
+        ).total_seconds() / 3600
+
+        if hours_since_confirm < 1:
+            return Response(
+                {"detail": "Guest still has time to pay."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         with transaction.atomic():
-            booking.status = 'cancelled'
-            booking.rejection_reason = "Cancelled by owner: Payment not received in time."
-            booking.save(update_fields=['status', 'rejection_reason'])
-            
-            booking.car.status = 'available'
-            booking.car.save(update_fields=['status'])
-            
-            if booking.payment:
-                booking.payment.status = 'cancelled'
-                booking.payment.save(update_fields=['status'])
+            booking.status = "cancelled"
+            booking.rejection_reason = (
+                "Cancelled by owner: Payment not received within 1 hour."
+            )
+            booking.save(update_fields=["status", "rejection_reason"])
 
-        return Response({
-            "detail": "Booking cancelled. Car is now available again."
-        })
-    
-class BookingStatsAPIView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated, IsManagement]
-    
-    def get(self, request):
-        # Get counts for each booking status
-        bookings_by_status = Booking.objects.values('status').annotate(
-            count=Count('id')
+            booking.car.status = "available"
+            booking.car.save(update_fields=["status"])
+
+            if booking.payment:
+                booking.payment.status = "cancelled"
+                booking.payment.save(update_fields=["status"])
+
+        return Response(
+            {"detail": "Booking cancelled. Car is now available again."},
+            status=status.HTTP_200_OK
         )
-        
-        # Initialize stats
-        stats = {
-            'total_bookings': 0,
-            'pending_bookings': 0,
-            'confirmed_bookings': 0,
-            'active_bookings': 0,
-            'completed_bookings': 0,
-            'cancelled_bookings': 0,
-            'total_revenue': 0
-        }
-        
-        # Fill stats from database
-        for item in bookings_by_status:
-            status = item['status']
-            count = item['count']
-            stats['total_bookings'] += count
-            
-            if status == 'pending':
-                stats['pending_bookings'] = count
-            elif status == 'confirmed':
-                stats['confirmed_bookings'] = count
-            elif status == 'active':
-                stats['active_bookings'] = count
-            elif status == 'completed':
-                stats['completed_bookings'] = count
-            elif status == 'cancelled':
-                stats['cancelled_bookings'] = count
-        
-        # Calculate total revenue from completed bookings
-        completed_bookings = Booking.objects.filter(status='completed')
-        if completed_bookings.exists():
-            revenue = completed_bookings.aggregate(total=Sum('total_price'))
-            stats['total_revenue'] = revenue['total'] or 0
-        
-        return Response(stats)
 
 class OwnerBookingsListView(generics.ListAPIView):
     serializer_class = BookingListSerializer
