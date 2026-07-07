@@ -7,6 +7,8 @@ from .serializers import *
 from django.utils import timezone
 from bookings.models import Booking
 
+
+
 class CarListCreateAPIView(generics.ListCreateAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos')
     permission_classes = [permissions.IsAuthenticated]
@@ -50,44 +52,72 @@ class OwnerCarDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             self.permission_denied(self.request)
         return car    
    
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class CarPhotoCreateAPIView(generics.CreateAPIView):
     serializer_class = CarPhotoUploadSerializer
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def create(self, request, *args, **kwargs):
-        car = get_object_or_404(Car, id=self.kwargs['car_id'], owner=self.request.user)
+        car = get_object_or_404(
+            Car,
+            id=self.kwargs["car_id"],
+            owner=request.user
+        )
+
         current_photos = car.photos.count()
         if current_photos >= 6:
             return Response(
                 {"detail": "Maximum 6 photos allowed per car."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
-        images = request.FILES.getlist('images')
+
+        images = request.FILES.getlist("images")
         if not images:
             return Response(
                 {"detail": "No images provided."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        
+
         remaining_slots = 6 - current_photos
         images_to_upload = images[:remaining_slots]
-        
+
         created_photos = []
+
         for image in images_to_upload:
-            photo = CarPhoto.objects.create(car=car, image=image)
-            
-            if not car.photos.filter(is_primary=True).exists():
-                photo.is_primary = True
-                photo.save()
-            
-            created_photos.append(photo)
-        
-        photo_serializer = CarPhotoSerializer(created_photos, many=True, context={'request': request})
+            try:
+                logger.info("Uploading image: %s", image.name)
+
+                photo = CarPhoto.objects.create(
+                    car=car,
+                    image=image,
+                )
+
+                if not car.photos.filter(is_primary=True).exists():
+                    photo.is_primary = True
+                    photo.save(update_fields=["is_primary"])
+
+                logger.info("Upload successful: %s", photo.image.name)
+
+                created_photos.append(photo)
+
+            except Exception:
+                logger.exception("Image upload failed")
+                raise
+
+        photo_serializer = CarPhotoSerializer(
+            created_photos,
+            many=True,
+            context={"request": request},
+        )
+
         return Response(photo_serializer.data, status=status.HTTP_201_CREATED)
 
 class SetPrimaryPhotoAPIView(generics.UpdateAPIView):
