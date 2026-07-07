@@ -221,27 +221,18 @@ class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
     def post(self, request, pk):
         booking = get_object_or_404(Booking, pk=pk)
 
-        # ✅ Only the car owner can cancel
         if booking.car.owner != request.user:
             return Response({"detail": "Not your car."}, status=403)
 
-        # ✅ Only confirmed bookings can be cancelled
         if booking.status != 'confirmed':
             return Response({"detail": "Only confirmed bookings can be cancelled by owner."}, status=400)
 
-        # ✅ Cannot cancel if already paid
         if booking.payment and booking.payment.status == 'completed':
             return Response({"detail": "Cannot cancel a paid booking."}, status=400)
 
-        # ✅ Enforce 1 hour grace period
-        one_hour = timezone.timedelta(hours=1)
-        if timezone.now() < booking.confirmed_at + one_hour:
-            return Response({"detail": "Guest still has time to pay (1 hour grace period)."}, status=400)
-
-        # ✅ Perform cancellation atomically
         with transaction.atomic():
             booking.status = 'cancelled'
-            booking.rejection_reason = "Cancelled by owner: Payment not received in time."
+            booking.rejection_reason = "Cancelled by owner: Payment not received."
             booking.save(update_fields=['status', 'rejection_reason'])
 
             booking.car.status = 'available'
