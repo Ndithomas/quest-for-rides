@@ -4,7 +4,6 @@ from pathlib import Path
 
 load_dotenv()
 MANAGEMENT_SECRET_CODE = os.getenv('MANAGEMENT_SECRET_CODE')
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -212,27 +211,42 @@ CORS_ALLOW_CREDENTIALS = True
 
 # settings.py snippets optimized for Cloud Run
 
-USE_GCS = bool(os.getenv('GS_BUCKET_NAME'))
+GS_BUCKET_NAME = os.getenv("GS_BUCKET_NAME")
+GS_PROJECT_ID = os.getenv("GS_PROJECT_ID", "project-95eb9e37-8269-4627-bb0")
+
+USE_GCS = GS_BUCKET_NAME is not None and GS_BUCKET_NAME != ""
 
 if USE_GCS:
-    GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
-    GS_PROJECT_ID = os.getenv('GS_PROJECT_ID', 'quest-for-rides-361383206203')
-    GS_DEFAULT_ACL = 'publicRead'
-    GS_QUERYSTRING_AUTH = False  # Hardcoded clean fallback for public URLs
-    
     STORAGES = {
-        'default': {'BACKEND': 'storages.backends.gcloud.GoogleCloudStorage'},
-        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+        "default": {
+            "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
     }
-    MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+    # Required for buckets with Uniform Bucket-Level Access enabled
+    GS_DEFAULT_ACL = None
+
+    # Public bucket, so don't generate signed URLs
+    GS_QUERYSTRING_AUTH = False
+
+    MEDIA_URL = f"https://storage.googleapis.com/{GS_BUCKET_NAME}/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 else:
     STORAGES = {
-        'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
-        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
     }
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
 CAMPAY_USERNAME = "your_app_username"
