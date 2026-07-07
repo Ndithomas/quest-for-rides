@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -17,7 +17,6 @@ export class AuthService {
     private http: HttpClient,
     private router: Router
   ) {
-    // 🔄 Restore state on service init
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
     if (token) {
@@ -64,6 +63,20 @@ export class AuthService {
         this.setUser(safeUser);
         return safeUser;
       }),
+      catchError(this.handleError)
+    );
+  }
+
+  // ✅ Added back
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}forgot-password/`, { email }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // ✅ Added back
+  resetPassword(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}reset-password/`, data).pipe(
       catchError(this.handleError)
     );
   }
