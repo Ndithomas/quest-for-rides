@@ -231,7 +231,7 @@ class OwnerCancelUnpaidBookingAPIView(generics.GenericAPIView):
             return Response({"detail": "Cannot cancel a paid booking."}, status=400)
         
         hours_since_confirm = (timezone.now() - booking.confirmed_at).total_seconds() / 3600
-        if hours_since_confirm < 6:  # example: must wait at least 6 hours
+        if hours_since_confirm < 1:  # example: must wait at least 6 hours
             return Response({"detail": "Guest still has time to pay."}, status=400)
 
         with transaction.atomic():
