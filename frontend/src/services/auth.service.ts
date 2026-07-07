@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -10,11 +10,21 @@ import { environment } from '../environments/environment';
 })
 export class AuthService {
   private apiUrl = `${environment.apiBaseUrl}/api/auth/`;
+  private _user: any = null;
+  private _token: string | null = null;
 
   constructor(
     private http: HttpClient,
     private router: Router
-  ) { }
+  ) {
+    // 🔄 Restore state on service init
+    const token = localStorage.getItem('access_token');
+    const user = localStorage.getItem('user');
+    if (token) {
+      this._token = token;
+      this._user = user ? JSON.parse(user) : this.decodeUserFromToken();
+    }
+  }
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
@@ -62,10 +72,7 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}token/refresh/`, { refresh: refreshToken }).pipe(
       tap((response: any) => {
         if (response.access) {
-          localStorage.setItem('access_token', response.access);
-          if (response.refresh) {
-            localStorage.setItem('refresh_token', response.refresh);
-          }
+          this.setToken(response.access, response.refresh || refreshToken);
         }
       }),
       catchError((error) => {
@@ -92,31 +99,12 @@ export class AuthService {
     );
   }
 
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}forgot-password/`, { email }).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  resetPassword(data: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}reset-password/`, data).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  checkManagementUsers(): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}management-exists/`).pipe(
-      catchError(() => [false])
-    );
-  }
-
   decodeUserFromToken(): any {
     const token = this.getAccessToken();
     if (!token) return null;
 
     try {
       const payload = token.split('.')[1];
-
       const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
       const decoded = JSON.parse(atob(base64));
 
@@ -135,36 +123,27 @@ export class AuthService {
     if (!this.isBrowser()) return;
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
+    this._token = access;
+    this._user = this.decodeUserFromToken();
     this.enableBackNavigation();
   }
 
   private setUser(user: any): void {
     if (!this.isBrowser()) return;
     localStorage.setItem('user', JSON.stringify(user));
+    this._user = user;
   }
 
   getAccessToken(): string | null {
-    if (!this.isBrowser()) return null;
-    return localStorage.getItem('access_token');
+    return this._token || localStorage.getItem('access_token');
   }
 
   getRefreshToken(): string | null {
-    if (!this.isBrowser()) return null;
     return localStorage.getItem('refresh_token');
   }
 
   getUser(): any {
-    if (!this.isBrowser()) return null;
-
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        return JSON.parse(storedUser);
-      } catch (e) {
-        console.error('Error parsing stored user:', e);
-      }
-    }
-    return this.decodeUserFromToken();
+    return this._user || this.decodeUserFromToken();
   }
 
   isLoggedIn(): boolean {
@@ -176,6 +155,8 @@ export class AuthService {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    this._token = null;
+    this._user = null;
     sessionStorage.clear();
   }
 
