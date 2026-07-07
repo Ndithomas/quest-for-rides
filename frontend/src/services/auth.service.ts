@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, BehaviorSubject, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../environments/environment';
 
 @Injectable({
@@ -11,13 +12,36 @@ import { environment } from '../environments/environment';
 export class AuthService {
   private apiUrl = `${environment.apiBaseUrl}/api/auth/`;
 
+  private currentUserSubject = new BehaviorSubject<any>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+
   constructor(
     private http: HttpClient,
-    private router: Router
-  ) { }
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) { 
+    this.hydrateAuthSession();
+  }
 
   private isBrowser(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+  }
+
+  /**
+   * Restores session data from localStorage into memory instantly on page refresh
+   */
+  private hydrateAuthSession(): void {
+    if (!this.isBrowser()) return;
+    
+    const token = this.getAccessToken();
+    if (token) {
+      const user = this.getUser();
+      if (user) {
+        this.currentUserSubject.next(user);
+      }
+    } else {
+      this.clearAuthData();
+    }
   }
 
   register(data: any): Observable<any> {
@@ -116,7 +140,6 @@ export class AuthService {
 
     try {
       const payload = token.split('.')[1];
-
       const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
       const decoded = JSON.parse(atob(base64));
 
@@ -136,11 +159,18 @@ export class AuthService {
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
     this.enableBackNavigation();
+    
+    // Automatically extract user info right when tokens are set
+    const user = this.getUser();
+    if (user) {
+      this.currentUserSubject.next(user);
+    }
   }
 
   private setUser(user: any): void {
     if (!this.isBrowser()) return;
     localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   getAccessToken(): string | null {
@@ -177,6 +207,7 @@ export class AuthService {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     sessionStorage.clear();
+    this.currentUserSubject.next(null);
   }
 
   private preventBackNavigation(): void {
