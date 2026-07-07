@@ -7,7 +7,8 @@ from .serializers import *
 from django.utils import timezone
 from bookings.models import Booking
 
-
+import logging
+logger = logging.getLogger(__name__)
 
 class CarListCreateAPIView(generics.ListCreateAPIView):
     queryset = Car.objects.select_related('owner').prefetch_related('photos')
@@ -51,11 +52,6 @@ class OwnerCarDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if car.owner != self.request.user:
             self.permission_denied(self.request)
         return car    
-   
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 class CarPhotoCreateAPIView(generics.CreateAPIView):
     serializer_class = CarPhotoUploadSerializer
@@ -66,7 +62,7 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
         car = get_object_or_404(
             Car,
             id=self.kwargs["car_id"],
-            owner=request.user
+            owner=request.user,
         )
 
         current_photos = car.photos.count()
@@ -93,8 +89,6 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
 
         for image in images_to_upload:
             try:
-                logger.info("Uploading image: %s", image.name)
-
                 photo = CarPhoto.objects.create(
                     car=car,
                     image=image,
@@ -103,8 +97,6 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
                 if not car.photos.filter(is_primary=True).exists():
                     photo.is_primary = True
                     photo.save(update_fields=["is_primary"])
-
-                logger.info("Upload successful: %s", photo.image.name)
 
                 created_photos.append(photo)
 
@@ -118,7 +110,10 @@ class CarPhotoCreateAPIView(generics.CreateAPIView):
             context={"request": request},
         )
 
-        return Response(photo_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            photo_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 class SetPrimaryPhotoAPIView(generics.UpdateAPIView):
     queryset = CarPhoto.objects.all()
