@@ -1,10 +1,11 @@
 <footer class="app-footer">
   <div class="container py-5">
 
-    <div class="row g-5">
+    <div class="row g-4">
 
+      <!-- Brand -->
       <div class="col-lg-4">
-        <div class="footer-brand mb-4">
+        <div class="footer-brand mb-3">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00D1BF" stroke-width="2.5">
             <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
             <path d="M21 16v-2a4 4 0 0 0-4-4 4 4 0 0 0-4 4"></path>
@@ -12,23 +13,29 @@
             <circle cx="7" cy="17" r="3"></circle>
             <circle cx="17" cy="17" r="3"></circle>
           </svg>
-          <span class="ms-2 fw-bold text-dark">CarRentals</span>
+
+          <span class="ms-2 fw-bold">Quest4Rides</span>
         </div>
-        <p class="text-secondary mb-3">
-          Book premium cars from local hosts across South Africa — affordable, trusted, and hassle-free.
+
+        <p class="text-muted">
+          Rent trusted vehicles from local hosts across Cameroon. Safe,
+          affordable, and hassle-free.
         </p>
+
         <div class="social-links">
-          <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
+          <a href="#"><i class="bi bi-facebook"></i></a>
+          <a href="#"><i class="bi bi-instagram"></i></a>
+          <a href="#"><i class="bi bi-twitter-x"></i></a>
         </div>
       </div>
 
+      <!-- Explore -->
       <div class="col-6 col-lg-2">
-        <h6 class="fw-bold text-dark mb-3">Explore</h6>
+        <h6>Explore</h6>
+
         <ul class="list-unstyled">
           <li><a routerLink="/cars" class="footer-link">Browse Cars</a></li>
-          <li><a routerLink="/about" class="footer-link">How it Works</a></li>
+          <li><a routerLink="/about" class="footer-link">How It Works</a></li>
           <li><a routerLink="/owner" class="footer-link">Become a Host</a></li>
           <li><a routerLink="/contact" class="footer-link">Contact</a></li>
         </ul>
@@ -36,32 +43,43 @@
 
       <!-- Company -->
       <div class="col-6 col-lg-2">
-        <h6 class="fw-bold text-dark mb-3">Company</h6>
+        <h6>Company</h6>
+
         <ul class="list-unstyled">
-          <li><a href="#" class="dep">About Us</a></li>
-          <li><a href="#" class="footer-link">Careers</a></li>
-          <li><a href="#" class="footer-link">Blog</a></li>
-          <li><a href="#" class="footer-link">Press</a></li>
+          <li><a routerLink="/about" class="footer-link">About Us</a></li>
+          <li><a routerLink="/careers" class="footer-link">Careers</a></li>
+          <li><a routerLink="/blog" class="footer-link">Blog</a></li>
+          <li><a routerLink="/press" class="footer-link">Press</a></li>
         </ul>
       </div>
 
+      <!-- Support -->
       <div class="col-6 col-lg-2">
-        <h6 class="fw-bold text-dark mb-3">Support</h6>
+        <h6>Support</h6>
+
         <ul class="list-unstyled">
-          <li><a href="#" class="footer-link">Help Center</a></li>
-          <li><a href="#" class="footer-link">Safety</a></li>
-          <li><a href="#" class="footer-link">Terms</a></li>
-          <li><a href="#" class="footer-link">Privacy Policy</a></li>
+          <li><a routerLink="/help" class="footer-link">Help Center</a></li>
+          <li><a routerLink="/safety" class="footer-link">Safety</a></li>
+          <li><a routerLink="/terms" class="footer-link">Terms</a></li>
+          <li><a routerLink="/privacy" class="footer-link">Privacy Policy</a></li>
         </ul>
       </div>
 
+      <!-- Newsletter -->
       <div class="col-lg-2">
-        <h6 class="fw-bold text-dark mb-3">Stay Updated</h6>
-        <p class="text-secondary small mb-3">Get exclusive deals in your inbox</p>
-        <form class="d-flex flex-column gap-2">
-          <input type="email" placeholder="Your email" name="email" autocomplete="email"
-            class="form-control clean-input-sm">
-          <button type="submit" class="btn turo-btn-primary w-100 rounded-pill fw-bold">
+        <h6>Stay Updated</h6>
+
+        <p class="small text-muted">
+          Get travel tips and exclusive deals.
+        </p>
+
+        <form>
+          <input
+            type="email"
+            class="form-control mb-2"
+            placeholder="Enter your email">
+
+          <button class="btn btn-primary w-100 subscribe-btn">
             Subscribe
           </button>
         </form>
@@ -69,19 +87,16 @@
 
     </div>
 
-    <hr class="my-5 border-secondary-subtle">
+    <hr>
 
-    <div class="row align-items-center">
-      <div class="col-md-6 text-center text-md-start">
-        <p class="mb-0 text-secondary small">
-          © 2025 CarRentals South Africa. All rights reserved.
-        </p>
-      </div>
-      <div class="col-md-6 text-center text-md-end">
-        <small class="text-secondary">
-          Made with <span class="text-danger">♥</span> in Cape Town
-        </small>
-      </div>
+    <div class="d-md-flex justify-content-between text-center">
+      <small class="text-muted">
+        © 2026 Quest4Rides. All rights reserved.
+      </small>
+
+      <small class="text-muted">
+        Made with ❤️ in Cameroon
+      </small>
     </div>
 
   </div>
