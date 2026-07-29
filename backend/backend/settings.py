@@ -11,15 +11,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0&=pa3ybkh@1zlx3fe=w+ire5fa8n%vqlml&*72aa)voe(fcl$'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-default-key-replace-this-in-prod')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Convert the incoming string env variable to a true Python boolean safely
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+MANAGEMENT_SECRET_CODE = os.getenv('MANAGEMENT_SECRET_CODE', 'default-mgmt-secret')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = not DEBUG
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 if not DEBUG:
@@ -181,7 +182,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer'),
+    'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -249,8 +250,9 @@ else:
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-CAMPAY_USERNAME = "your_app_username"
-CAMPAY_PASSWORD = "your_app_password"
+CAMPAY_USERNAME = os.getenv("CAMPAY_USERNAME", "your_app_username")
+CAMPAY_PASSWORD = os.getenv("CAMPAY_PASSWORD", "your_app_password")
+PLATFORM_COMMISSION_PERCENTAGE = Decimal(os.getenv("PLATFORM_COMMISSION_PERCENTAGE", "10"))
 
 # ============ EMAIL CONFIGURATION ============
 # For development/testing, emails will be printed to console
